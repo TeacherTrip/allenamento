@@ -45,9 +45,9 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 ## Stato per ripartire
 - Fase 5 scritta (piano in `docs/piano.md`): timer del circuito a tutto schermo (immagine grande, bip 3-2-1, pausa, round registrati) e grafici Chart.js (per esercizio e per gruppo muscolare). Ultimo commit funzionale `76ee1b3`.
 - Prove: 90 Vitest + 78 Playwright, verdi su localhost. Build ok (JS ~181 KB compressi).
-- **Push in attesa**: 5 commit solo in locale; si fa il push solo dopo che l'utente conferma la prova sul telefono.
-- Da provare sul telefono (Xiaomi, `adb reverse tcp:5173 tcp:5173`): circuito (suoni, pausa, Interrompi, Indietro, schermo acceso) e grafici (leggibilità, tocco sui punti). Elenco in `docs/aperti.md`.
+- Fase 5 **provata sul telefono dall'utente (tutto ok) e pubblicata con push** il 2026-11-19 (`a8fd679`).
+- Telefono (Xiaomi): `adb reverse tcp:5173 tcp:5173`. Se la shell non trova `adb`, ricaricare il PATH utente nella sessione.
 - Immagini: originali in `immagini-originali/` (esclusa da Git); `npm run immagini` crea `public/esercizi/<id>.webp`; percorso sempre con `imageUrl()`.
 - Repo `TeacherTrip/allenamento` collegato e **privato** (diventa pubblico in Fase 6, con conferma).
-- Prossimo passo: prova sul telefono → push → **Fase 6** (PWA, Actions, Pages).
+- Prossimo passo: **Fase 6** (PWA, Actions, Pages).
 - gitleaks e adb sono già nel PATH utente: se la shell non li trova, riavviare il terminale / Claude Code (la sessione è partita prima).

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, requestPersistence, type PersistState } from './db/db';
 import { useHistory, useSettings } from './hooks/useData';
@@ -6,10 +6,13 @@ import { useWakeLock } from './hooks/useWakeLock';
 import { SessionScreen } from './screens/SessionScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
 import { InfoScreen } from './screens/InfoScreen';
-import { ChartsScreen } from './screens/ChartsScreen';
 import { RestBar, restRemaining, type RestState } from './components/RestBar';
+import { UpdateBanner } from './components/UpdateBanner';
 import { fmtElapsed } from './logic/format';
 import type { Day } from './program/types';
+
+// Grafici (Chart.js) caricati solo quando si apre la schermata: avvio più leggero
+const ChartsScreen = lazy(() => import('./screens/ChartsScreen').then((m) => ({ default: m.ChartsScreen })));
 
 type Tab = Day | 'H' | 'G' | 'I';
 const TABS: [Tab, string][] = [
@@ -64,6 +67,8 @@ export function App() {
   // allenamento in corso = bozza con orario di inizio
   const active = useLiveQuery(() => db.drafts.filter((d) => !!d.startedAt).first(), []);
 
+  const circuitRunning = useLiveQuery(() => db.drafts.filter((d) => !!d.circuitRun).count(), []);
+
   useWakeLock(!!active);
 
   useEffect(() => {
@@ -107,7 +112,12 @@ export function App() {
   let body;
   if (!history || !settings) body = <p className="sub">Caricamento…</p>;
   else if (tab === 'H') body = <HistoryScreen sessions={history.sessions} logs={history.logs} toast={toast} />;
-  else if (tab === 'G') body = <ChartsScreen sessions={history.sessions} logs={history.logs} />;
+  else if (tab === 'G')
+    body = (
+      <Suspense fallback={<p className="sub">Caricamento…</p>}>
+        <ChartsScreen sessions={history.sessions} logs={history.logs} />
+      </Suspense>
+    );
   else if (tab === 'I')
     body = <InfoScreen sessions={history.sessions} logs={history.logs} settings={settings} persist={persist} toast={toast} />;
   else
@@ -135,7 +145,10 @@ export function App() {
           </button>
         )}
       </header>
-      <main className={rest ? 'with-rest' : ''}>{body}</main>
+      <main className={rest ? 'with-rest' : ''}>
+        <UpdateBanner busy={!!active || !!rest || !!circuitRunning} toast={toast} />
+        {body}
+      </main>
       {rest && <RestBar rest={rest} onPlus={plusRest} onStop={stopRest} />}
       <nav className="tabbar">
         {TABS.map(([k, label]) => (

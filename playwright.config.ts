@@ -17,11 +17,20 @@ export default defineConfig({
     locale: 'it-IT',
     timezoneId: 'Europe/Rome',
   },
+  // 5174 = sviluppo; 4174 = versione costruita (service worker, offline: e2e/pwa.spec.ts)
   webServer: external
     ? undefined
-    : {
-        command: 'npx vite --port 5174 --strictPort',
-        url: 'http://localhost:5174/allenamento/',
-        reuseExistingServer: false,
-      },
+    : [
+        {
+          command: 'npx vite --port 5174 --strictPort',
+          url: 'http://localhost:5174/allenamento/',
+          reuseExistingServer: false,
+        },
+        {
+          command: 'npx vite build --logLevel warn && npx vite preview --port 4174 --strictPort',
+          url: 'http://localhost:4174/allenamento/',
+          reuseExistingServer: false,
+          timeout: 180_000,
+        },
+      ],
 });

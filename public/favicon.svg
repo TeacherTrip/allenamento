@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="96" fill="#111214"/>
+  <rect x="150" y="168" width="212" height="20" rx="6" fill="#5ad08a"/>
+  <rect x="150" y="118" width="34" height="120" rx="8" fill="#5ad08a"/>
+  <rect x="118" y="138" width="26" height="80" rx="7" fill="#5ad08a"/>
+  <rect x="328" y="118" width="34" height="120" rx="8" fill="#5ad08a"/>
+  <rect x="368" y="138" width="26" height="80" rx="7" fill="#5ad08a"/>
+  <text x="256" y="382" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-weight="700" font-size="172" letter-spacing="4" fill="#ecedef">TG</text></svg>

@@ -239,6 +239,9 @@ td, th { text-align: left; padding: 7px 6px; border-bottom: 1px solid var(--line
 th { color: var(--mut); font-weight: 600; font-size: 12.5px; }
 ul { margin: 4px 0; padding-left: 18px; }
 
+/* avviso di nuova versione (in cima al contenuto, non copre nulla) */
+.update { background: var(--card2); border: 1px solid var(--ac); border-radius: var(--r); padding: 10px 12px; margin: 0 0 12px; font-size: 14px; }
+
 .toast {
   position: fixed; left: 50%; top: calc(56px + env(safe-area-inset-top)); transform: translateX(-50%);
   background: var(--ac); color: var(--ac-tx); font-weight: 700;

@@ -43,8 +43,10 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 - `/chiudi` (`.claude/commands/chiudi.md`): chiusura sessione (stato, diario in `docs/storia.md`, punti aperti in `docs/aperti.md`, controlli, commit, push).
 
 ## Stato per ripartire
-- Fase 0 (domande) e Fase 1 (ambiente: Node 26 LTS, Git, gh 2.105 + login TeacherTrip) completate.
-- **Fase 2** completata: git init, email GitHub privata + blocco push, identità noreply locale (TeacherGym), `.gitignore`, `.gitattributes` (LF), hook pre-commit (gitleaks 8.30 + backup + email + lista parole private) testato, primo commit.
-- Prossimo passo: **Fase 3 — piano** (struttura, schermate, modello dati, ordine di sviluppo) da far approvare.
-- Repo remoto `TeacherTrip/allenamento`: vuoto, privato, non ancora collegato (si collega in Fase 6).
-- Nota: se `gitleaks` non viene trovato dall'hook, riavviare il terminale (PATH aggiornato da winget).
+- Fasi 0-3 completate (piano in `docs/piano.md`). **Fase 4 (MVP) quasi chiusa**: sedute A/B/C, storico, backup/import, cronometro, recupero automatico, "Via!" centrato + 4 bip, [Sx][Dx], "+ Serie". Ultimo commit funzionale `80aa5e2`.
+- Prove: 35 Vitest + 57 Playwright, verdi su localhost e su `E2E_BASE_URL=http://192.168.1.10:5173/allenamento/`.
+- Repo `TeacherTrip/allenamento` collegato e **privato** (diventa pubblico in Fase 6, con conferma).
+- Da provare sul telefono (Xiaomi, `adb reverse tcp:5173 tcp:5173`, `npx vite --host`): recupero a schermo acceso e bloccato, Sx/Dx, "+ Serie". Vibrazione solo con "Vibrazione tattile" attiva (limite HyperOS).
+- Cartella `immagini-originali/` dell'utente: non versionata, da decidere (escluderla con `.gitignore`?).
+- Prossimo passo: esito prova telefono → **Fase 5** (timer circuito, grafici Chart.js).
+- Nota: se `gitleaks` non viene trovato dall'hook, aggiungere al PATH la cartella WinGet di Gitleaks o riavviare il terminale.

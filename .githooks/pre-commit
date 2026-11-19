@@ -1,0 +1,69 @@
+#!/bin/sh
+# Pre-commit TeacherGym: blocca segreti, file di backup, email e parole personali.
+# Regole: CLAUDE.md, sezione "Regole di sicurezza". Mai saltarlo con --no-verify.
+
+fail=0
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$staged" ] && exit 0
+added=$(git diff --cached -U0 --diff-filter=ACMR | grep '^+' | grep -v '^+++')
+
+# 1. Segreti (chiavi, token, password) con gitleaks
+if command -v gitleaks >/dev/null 2>&1; then
+  if ! gitleaks git --pre-commit --staged --redact --no-banner; then
+    echo "BLOCCATO: gitleaks ha trovato possibili segreti (vedi sopra)."
+    fail=1
+  fi
+else
+  echo "BLOCCATO: gitleaks non e' installato (winget install --id Gitleaks.Gitleaks -e)."
+  fail=1
+fi
+
+# 2. File di backup / export
+bad_files=$(printf '%s\n' "$staged" | grep -iE '(backup|export)[^/]*\.json$|(^|/)(backup|export)/')
+if [ -n "$bad_files" ]; then
+  echo "BLOCCATO: file di backup/export (contengono lo storico personale):"
+  printf '  %s\n' $bad_files
+  fail=1
+fi
+
+# 3. Email diverse dalla noreply di GitHub
+bad_mails=$(printf '%s\n' "$added" \
+  | grep -oiE '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}' \
+  | grep -viE '@users\.noreply\.github\.com$' | sort -u)
+if [ -n "$bad_mails" ]; then
+  echo "BLOCCATO: indirizzi email non ammessi nelle righe aggiunte:"
+  printf '  %s\n' $bad_mails
+  fail=1
+fi
+
+# 4. Parole personali vietate (lista privata, non versionata: una parola per riga,
+#    righe con # ignorate). Parola intera, maiuscole/minuscole indifferenti.
+#    Se la lista manca o e' vuota il controllo viene saltato.
+#    NON stampare mai la parola trovata: solo file e numero di riga.
+list="$(git rev-parse --show-toplevel)/.githooks/parole-vietate.local"
+if [ -s "$list" ]; then
+  hits=""
+  while IFS= read -r word || [ -n "$word" ]; do
+    # rimuove a capo Windows, BOM UTF-8 e spazi ai bordi
+    word=$(printf '%s' "$word" | tr -d '\r' | sed -e 's/^\xEF\xBB\xBF//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    [ -z "$word" ] && continue
+    case "$word" in \#*) continue ;; esac
+    for f in $staged; do
+      lines=$(git show ":$f" 2>/dev/null | grep -niwF -- "$word" | cut -d: -f1 | tr '\n' ' ')
+      [ -n "$lines" ] && hits="$hits    $f  (righe: $lines)
+"
+    done
+  done < "$list"
+  if [ -n "$hits" ]; then
+    echo "BLOCCATO: trovate parole della lista privata (.githooks/parole-vietate.local)."
+    printf '%s' "$hits"
+    fail=1
+  fi
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo ""
+  echo "Commit annullato. Correggi e riprova (non usare --no-verify)."
+  exit 1
+fi
+exit 0

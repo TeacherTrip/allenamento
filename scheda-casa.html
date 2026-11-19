@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111214">
+<title>Scheda Casa</title>
+<style>
+:root{--bg:#111214;--card:#1c1d21;--card2:#25272c;--tx:#ecedef;--mut:#9a9da5;--ac:#5ad08a;--ac2:#3b82f6;--warn:#f59e0b;--red:#ef4444;--r:12px}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid #2a2c31;padding:10px 12px 8px}
+header h1{margin:0 0 8px;font-size:17px;font-weight:650}
+.tabs{display:flex;gap:6px}
+.tabs button{flex:1;padding:9px 0;border:0;border-radius:10px;background:var(--card);color:var(--mut);font-weight:600;font-size:14px}
+.tabs button.on{background:var(--ac);color:#0b1a11}
+main{padding:12px 12px 110px;max-width:640px;margin:0 auto}
+h2{margin:6px 0 2px;font-size:20px}
+.sub{color:var(--mut);margin:0 0 12px;font-size:14px}
+.box{background:var(--card);border-radius:var(--r);padding:12px;margin:10px 0;font-size:14px}
+.box b{display:block;margin-bottom:4px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
+.toggle{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:var(--r);padding:12px;font-size:14px}
+.toggle input{width:22px;height:22px;accent-color:var(--ac)}
+.ex{background:var(--card);border-radius:var(--r);padding:12px;margin:12px 0}
+.ex.ssA{border-left:4px solid var(--ac2);border-bottom-left-radius:0;border-bottom-right-radius:0;margin-bottom:2px}
+.ex.ssB{border-left:4px solid var(--ac2);border-top-left-radius:0;border-top-right-radius:0;margin-top:0}
+.exh{display:flex;align-items:baseline;gap:8px}
+.tag{background:var(--ac2);color:#fff;font-size:12px;font-weight:700;border-radius:6px;padding:1px 6px}
+.exh h3{margin:0;font-size:17px}
+.meta{color:var(--mut);font-size:13.5px;margin:3px 0 6px}
+details.note{font-size:13.5px;color:#c9cbd1;margin:4px 0 8px}
+details.note summary{color:var(--mut);cursor:pointer}
+.last{font-size:13px;color:var(--warn);margin:2px 0 8px}
+.set{display:grid;grid-template-columns:34px 1fr 1fr;gap:8px;align-items:center;margin:6px 0}
+.set.nl{grid-template-columns:34px 1fr}
+.set span{color:var(--mut);font-weight:600;font-size:14px}
+input[type=text],input:not([type]),textarea{width:100%;background:var(--card2);color:var(--tx);border:1px solid #33363c;border-radius:10px;padding:11px 10px;font-size:16px}
+input:focus,textarea:focus{outline:2px solid var(--ac);border-color:transparent}
+textarea{min-height:70px;margin-top:10px;font-family:inherit}
+.rest{margin-top:6px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--card2);color:var(--tx);font-weight:600;font-size:14px}
+.next{display:block;margin-top:6px;font-size:13px;color:var(--ac2);font-weight:600}
+.primary{width:100%;padding:14px;border:0;border-radius:12px;background:var(--ac);color:#0b1a11;font-weight:700;font-size:16px;margin-top:12px}
+.ghost{width:100%;padding:12px;border:1px solid #33363c;border-radius:12px;background:transparent;color:var(--mut);font-weight:600;font-size:14px;margin-top:8px}
+.danger{color:var(--red);border-color:#5a2424}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{text-align:left;padding:7px 6px;border-bottom:1px solid #2a2c31;vertical-align:top}
+th{color:var(--mut);font-weight:600;font-size:12.5px}
+#timerbar{position:fixed;left:0;right:0;bottom:0;background:#0b0c0e;border-top:1px solid #2a2c31;padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:10px;z-index:10}
+#timerbar .t{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;min-width:86px}
+#timerbar .l{flex:1;color:var(--mut);font-size:13px}
+#timerbar button{padding:10px 12px;border:0;border-radius:10px;background:var(--card2);color:var(--tx);font-weight:600}
+.circ{background:var(--card);border-radius:var(--r);padding:12px;margin:16px 0}
+.circ h3{margin:0 0 6px}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.seg button{flex:1;min-width:70px;padding:8px 4px;border:0;border-radius:9px;background:var(--card2);color:var(--mut);font-size:12.5px;font-weight:600}
+.seg button.on{background:var(--ac2);color:#fff}
+#cdisp{text-align:center;padding:14px 6px;border-radius:12px;background:var(--card2);margin:8px 0}
+#cdisp .ph{font-size:13px;font-weight:700;letter-spacing:.06em}
+#cdisp .cd{font-size:52px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+#cdisp .cx{font-size:16px;font-weight:600}
+.row2{display:flex;gap:8px}
+.row2 button{flex:1}
+.hist details{background:var(--card);border-radius:var(--r);padding:10px 12px;margin:8px 0}
+.hist summary{font-weight:600;cursor:pointer}
+.hist .it{font-size:14px;margin:6px 0;color:#c9cbd1}
+.hist .it b{color:var(--tx)}
+#toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:var(--ac);color:#0b1a11;font-weight:700;padding:10px 16px;border-radius:10px;z-index:20;display:none}
+.warnbox{background:#3a2a0c;color:#fcd34d;border-radius:var(--r);padding:10px 12px;font-size:13.5px;margin:8px 0}
+ul{margin:4px 0;padding-left:18px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Scheda casa</h1>
+  <div class="tabs" id="tabs"></div>
+</header>
+<main id="app"></main>
+<div id="timerbar" hidden>
+  <div class="t" id="tt">0:00</div>
+  <div class="l" id="tl"></div>
+  <button data-act="tplus">+15</button>
+  <button data-act="tstop">Stop</button>
+</div>
+<div id="toast"></div>
+<input type="file" id="imp" accept="application/json,.json" hidden>
+
+<script>
+"use strict";
+const WARMUP = "10 squat a corpo libero · 10 ponti glutei · 10 monster walk per lato (fascia) · 10 band pull-apart · 2 hang alla barra da 15-20 s";
+
+const P = {
+  A: { title: "Seduta A — Full body", sub: "Lunedì · ~45 min", ex: [
+    {id:"gsq", n:"Goblet squat", e:"Manubrio 14 kg", s:3, r:"8-12", rest:90,
+     note:"Discesa in 3 s. Talloni a terra, ginocchia in linea con le punte dei piedi."},
+    {id:"pu", n:"Push-up inclinati", e:"Mani rialzate", s:3, r:"8-12", rest:0, ss:"2a", next:"2b", ph:"appoggio",
+     note:"Scegli l'appoggio che ti tiene in 8-12 reps a RIR 2. Scala: piano cucina/tavolo → schienale o bracciolo divano → seduta divano → gradino → terra. Scrivi l'appoggio nel primo campo. Corpo rigido come una tavola."},
+    {id:"row", n:"Rematore a un braccio", e:"Manubrio 14 kg", s:3, r:"8-12 /lato", rest:75, ss:"2b", uni:true,
+     note:"Mano e ginocchio su sedia o divano. Parti dal sinistro, stesse reps col destro."},
+    {id:"rdl", n:"Romanian deadlift", e:"2 × 10 kg", s:3, r:"10-15", rest:75,
+     note:"Discesa in 3 s, bacino indietro, schiena neutra, manubri che sfiorano le gambe. Scendi finché senti tirare i femorali, non oltre."},
+    {id:"pull", n:"Trazioni assistite", e:"Barra + elastico 30 kg", s:3, r:"3-6", rest:90, ph:"elastico",
+     note:"Rigorose, zero slancio (corridoio stretto). Sali su una sedia per infilare ginocchio o piede nell'elastico. Se non ne completi 3: negative, discesa in 5 s. Controlla la tenuta della barra prima di ogni seduta."},
+    {id:"db", n:"Dead bug", e:"Materassino", s:3, r:"8 /lato", rest:45, load:false,
+     note:"Lombare schiacciata a terra per tutta la serie. Espira mentre estendi braccio e gamba opposti."}
+  ]},
+  B: { title: "Seduta B — Full body", sub: "Venerdì · ~45 min", ex: [
+    {id:"bss", n:"Bulgarian split squat", e:"2 × 10 kg oppure 14 kg al petto", s:3, r:"8-12 /lato", rest:90, uni:true,
+     note:"Piede dietro sul divano. Parti dal sinistro. Busto leggermente inclinato in avanti, ginocchio anteriore stabile."},
+    {id:"ht", n:"Hip thrust", e:"14 kg + fascia sopra le ginocchia", s:3, r:"12-15", rest:75,
+     note:"Scapole sul bordo del divano, pausa 1 s in alto, mento verso il petto, spingi le ginocchia contro la fascia."},
+    {id:"fp", n:"Floor press", e:"2 × 10 kg", s:3, r:"10-15", rest:0, ss:"3a", next:"3b",
+     note:"Sul materassino (pavimento duro). Gomiti a ~45° dal busto, pausa breve con i tricipiti a terra."},
+    {id:"lpd", n:"Lat pulldown con elastico", e:"Elastico 20 o 30 kg", s:3, r:"12-15", rest:75, ss:"3b", ph:"elastico",
+     note:"In ginocchio sotto la barra, tira verso il petto portando i gomiti in basso e indietro."},
+    {id:"mp", n:"Military press a un braccio", e:"10 kg", s:3, r:"8-12 /lato", rest:0, ss:"4a", next:"4b", uni:true,
+     note:"In ginocchio su una gamba, gluteo della gamba a terra contratto, non inarcare la schiena. Parti dal sinistro."},
+    {id:"pa", n:"Band pull-apart", e:"Elastico 10 kg", s:3, r:"15-20", rest:60, ss:"4b", ph:"elastico",
+     note:"Braccia tese all'altezza del petto, apri fino a toccare il petto con l'elastico, scapole che si avvicinano."},
+    {id:"sp", n:"Side plank", e:"Materassino", s:2, r:"20-40 s /lato", rest:45, load:false, rp:"sec",
+     note:"Gomito sotto la spalla, corpo in linea. Inizia dal lato sinistro."}
+  ]},
+  C: { title: "Seduta C — Braccia, spalle, femorali + cardio", sub: "Mercoledì · ~45 min", ex: [
+    {id:"slrdl", n:"Stacco rumeno a una gamba", e:"10 kg", s:3, r:"8-10 /lato", rest:75, uni:true,
+     note:"Manubrio nella mano opposta alla gamba d'appoggio. Puoi sfiorare il muro con l'altra mano per l'equilibrio. Parti dal sinistro."},
+    {id:"lc", n:"Leg curl con asciugamano", e:"Pavimento liscio + materassino sotto le spalle", s:3, r:"8-12", rest:75, load:false,
+     note:"Supino, talloni su un asciugamano, bacino alto per tutta la serie. Se non completi il movimento: solo la fase di distensione lenta (4 s), poi risali in ponte."},
+    {id:"ap", n:"Arnold press (seduto)", e:"2 × 6-8 kg", s:3, r:"8-12", rest:75,
+     note:"Parti con i palmi verso di te, ruotali mentre spingi sopra la testa."},
+    {id:"lr", n:"Alzate laterali", e:"2 × 4-6 kg", s:3, r:"12-20", rest:60,
+     note:"Gomiti leggermente piegati, sali fino all'altezza delle spalle, niente slancio."},
+    {id:"cu", n:"Curl alternato", e:"2 × 8-10 kg", s:3, r:"8-12 /lato", rest:0, ss:"5a", next:"5b",
+     note:"Ruota il palmo verso l'alto mentre sali, gomiti fermi ai fianchi."},
+    {id:"fr", n:"French press sopra la testa", e:"Manubrio singolo 10-14 kg", s:3, r:"10-15", rest:60, ss:"5b",
+     note:"A due mani, gomiti che puntano in avanti, discesa controllata dietro la testa."},
+    {id:"rd", n:"Alzate posteriori", e:"2 × 4 kg", s:2, r:"15-20", rest:45,
+     note:"Busto piegato in avanti, apri le braccia lateralmente, scapole che si avvicinano."}
+  ]}
+};
+const NAMES = {}; Object.values(P).forEach(d => d.ex.forEach(x => NAMES[x.id] = x.n));
+
+const PROTO = [
+  {l:"Sett. 1-2", r:6, w:30, p:30},
+  {l:"Sett. 3-4", r:8, w:30, p:30},
+  {l:"Sett. 5-6", r:8, w:40, p:20},
+  {l:"Sett. 7+",  r:10, w:40, p:20}
+];
+const CEX = ["Shadow boxing", "Step-out jack", "Marcia ginocchia alte", "Mountain climber lento (mani sul divano)"];
+
+/* ---------- storage ---------- */
+const KEY = "schedaCasa_v1";
+let storageOK = true;
+try { localStorage.setItem("__t", "1"); localStorage.removeItem("__t"); } catch (e) { storageOK = false; }
+let st = {};
+try { st = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { st = {}; }
+function norm() {
+  st.sessions = Array.isArray(st.sessions) ? st.sessions : [];
+  st.draft = st.draft || {};
+  st.notes = st.notes || {};
+  if (typeof st.phase1 !== "boolean") st.phase1 = true;
+  if (typeof st.proto !== "number") st.proto = 0;
+  if (!st.tab) st.tab = "A";
+}
+norm();
+function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { storageOK = false; } }
+
+/* ---------- utils ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtDate = iso => { const d = new Date(iso); return d.toLocaleDateString("it-IT", {weekday:"short", day:"2-digit", month:"2-digit", year:"numeric"}); };
+const mmss = s => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(toast.h); toast.h = setTimeout(() => t.style.display = "none", 1800); }
+function setsStr(arr) {
+  return (arr || []).filter(v => v && (v.l || v.r)).map(v => (v.l ? v.l : "") + (v.l && v.r ? " × " : "") + (v.r ? v.r : "")).join(" · ");
+}
+function lastFor(id) {
+  for (let i = st.sessions.length - 1; i >= 0; i--) {
+    const s = st.sessions[i], arr = s.entries && s.entries[id];
+    const str = setsStr(arr);
+    if (str) return new Date(s.date).toLocaleDateString("it-IT", {day:"2-digit", month:"2-digit"}) + ": " + str;
+  }
+  return "";
+}
+
+/* ---------- audio / vibrazione ---------- */
+let ac = null;
+function ensureAudio() {
+  if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (ac && ac.state === "suspended") ac.resume();
+}
+function beep(f = 880, d = 0.25) {
+  if (ac) {
+    try {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.frequency.value = f; o.connect(g); g.connect(ac.destination);
+      g.gain.setValueAtTime(0.35, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + d);
+      o.start(); o.stop(ac.currentTime + d);
+    } catch (e) {}
+  }
+  if (navigator.vibrate) navigator.vibrate(200);
+}
+
+/* ---------- render ---------- */
+function renderTabs() {
+  const t = [["A","A"],["B","B"],["C","C"],["H","Storico"],["I","Info"]];
+  $("tabs").innerHTML = t.map(([k, l]) => `<button data-act="tab" data-t="${k}" class="${st.tab === k ? "on" : ""}">${l}</button>`).join("");
+}
+
+function renderEx(d, ex, prevSS) {
+  const n = st.phase1 ? Math.min(ex.s, 2) : ex.s;
+  const dr = (st.draft[d] || {})[ex.id] || [];
+  const last = lastFor(ex.id);
+  const cls = ex.ss ? (ex.ss.endsWith("a") ? "ssA" : "ssB") : "";
+  let h = `<div class="ex ${cls}"><div class="exh">${ex.ss ? `<span class="tag">${ex.ss}</span>` : ""}<h3>${esc(ex.n)}</h3></div>`;
+  h += `<div class="meta">${esc(ex.e)} · ${n} × ${esc(ex.r)}${ex.rest ? ` · rec. ${ex.rest}s` : ""}</div>`;
+  h += `<details class="note"><summary>Esecuzione</summary>${esc(ex.note)}</details>`;
+  if (last) h += `<div class="last">Ultima volta ${esc(last)}</div>`;
+  for (let i = 0; i < n; i++) {
+    const v = dr[i] || {};
+    h += `<div class="set ${ex.load === false ? "nl" : ""}"><span>S${i + 1}</span>`;
+    if (ex.load !== false) h += `<input data-d="${d}" data-e="${ex.id}" data-i="${i}" data-f="l" inputmode="${ex.ph ? "text" : "decimal"}" placeholder="${ex.ph || "kg"}" value="${esc(v.l)}">`;
+    h += `<input data-d="${d}" data-e="${ex.id}" data-i="${i}" data-f="r" inputmode="numeric" placeholder="${ex.rp || "reps"}${ex.uni ? " /lato" : ""}" value="${esc(v.r)}"></div>`;
+  }
+  if (ex.rest) h += `<button class="rest" data-act="rest" data-s="${ex.rest}" data-n="${esc(ex.n)}">Avvia recupero ${ex.rest}s</button>`;
+  else if (ex.next) h += `<span class="next">↓ Passa subito a ${ex.next}, recupero dopo la coppia</span>`;
+  return h + `</div>`;
+}
+
+function renderCircuit() {
+  let h = `<div class="circ"><h3>Circuito cardio senza salti</h3>`;
+  h += `<div class="meta">Rotazione: ${CEX.map(esc).join(" → ")}. Intensità: affannato ma riesci a dire una frase breve.</div>`;
+  h += `<div class="seg">${PROTO.map((p, i) => `<button data-act="proto" data-i="${i}" class="${st.proto === i ? "on" : ""}">${p.l}<br>${p.r}× ${p.w}/${p.p}s</button>`).join("")}</div>`;
+  h += `<div id="cdisp"></div>`;
+  h += `<div class="row2"><button class="primary" data-act="cstart" id="cbtn">Avvia</button><button class="ghost" data-act="creset" style="margin-top:12px">Reset</button></div></div>`;
+  return h;
+}
+
+function renderDay(d) {
+  const p = P[d];
+  let h = `<h2>${esc(p.title)}</h2><p class="sub">${esc(p.sub)}</p>`;
+  if (!storageOK) h += `<div class="warnbox">Il browser non permette di salvare i dati in questo file. Aprilo con Chrome (Android) o esporta il backup a fine seduta.</div>`;
+  h += `<label class="toggle"><input type="checkbox" data-act="phase" ${st.phase1 ? "checked" : ""}> Settimane 1-2: 2 serie, RIR 3</label>`;
+  h += `<div class="box"><b>Riscaldamento (5-6 min)</b>${esc(WARMUP)}</div>`;
+  p.ex.forEach(ex => h += renderEx(d, ex));
+  if (d === "C") h += renderCircuit();
+  h += `<textarea data-note="${d}" placeholder="Note della seduta (sensazioni, dolori, appoggio push-up...)">${esc(st.notes[d] || "")}</textarea>`;
+  h += `<button class="primary" data-act="save" data-d="${d}">Salva seduta</button>`;
+  h += `<button class="ghost" data-act="clear" data-d="${d}">Svuota i campi</button>`;
+  return h;
+}
+
+function renderHist() {
+  let h = `<h2>Storico</h2><p class="sub">${st.sessions.length} sedute salvate</p>`;
+  h += `<div class="row2"><button class="ghost" data-act="exp">Esporta backup</button><button class="ghost" data-act="imp">Importa backup</button></div>`;
+  h += `<div class="box" style="margin-top:10px">I dati restano in questo browser. Esporta un backup ogni tanto: se cancelli i dati del browser o cambi telefono, lo reimporti da qui.</div>`;
+  h += `<div class="hist">`;
+  [...st.sessions].reverse().forEach(s => {
+    h += `<details><summary>${esc(fmtDate(s.date))} · Seduta ${esc(s.day)}</summary>`;
+    Object.entries(s.entries || {}).forEach(([id, arr]) => {
+      const str = setsStr(arr);
+      if (str) h += `<div class="it"><b>${esc(NAMES[id] || id)}</b>: ${esc(str)}</div>`;
+    });
+    if (s.note) h += `<div class="it"><b>Note</b>: ${esc(s.note)}</div>`;
+    h += `<button class="ghost danger" data-act="del" data-id="${s.id}">Elimina seduta</button></details>`;
+  });
+  return h + `</div>`;
+}
+
+function renderInfo() {
+  return `<h2>Settimana tipo</h2>
+  <table><tr><th>Giorno</th><th>Attività</th></tr>
+  <tr><td>Lun</td><td>Seduta A — full body</td></tr>
+  <tr><td>Mar</td><td>Camminata veloce 30-40 min</td></tr>
+  <tr><td>Mer</td><td>Seduta C — braccia, spalle, femorali + circuito</td></tr>
+  <tr><td>Gio</td><td>Riposo (passi quotidiani)</td></tr>
+  <tr><td>Ven</td><td>Seduta B — full body</td></tr>
+  <tr><td>Sab</td><td>Camminata veloce 30-40 min</td></tr>
+  <tr><td>Dom</td><td>Riposo</td></tr></table>
+  <div class="box"><b>Ogni giorno</b>7.000-9.000 passi. Camminate in zona 2: riesci a parlare, non a cantare. Tra A e B almeno 48 ore.</div>
+  <div class="box"><b>Regole</b><ul>
+  <li><strong>RIR 2</strong> (Reps In Reserve): chiudi la serie quando ne avresti ancora 2.</li>
+  <li><strong>Settimane 1-2</strong>: 2 serie, RIR 3 (interruttore in cima a ogni seduta).</li>
+  <li><strong>Doppia progressione</strong>: quando arrivi al massimo del range su tutte le serie, aumenta il carico o passa alla variante più difficile.</li>
+  <li><strong>Esercizi a un arto</strong>: parti dal sinistro, stesse reps col destro. Ricontrolla le cosce col metro ogni 6-8 settimane.</li>
+  <li><strong>Superset</strong> (stessa lettera, es. 2a/2b): esercizi di seguito, recupero solo dopo la coppia.</li>
+  <li><strong>Gambe senza carico extra</strong> (quando 14 kg diventa leggero): discesa in 4-5 s, pausa 2 s in basso, 1,5 reps.</li>
+  <li><strong>Dolore articolare</strong> (non fatica muscolare): fermati e cambia esercizio.</li></ul></div>
+  <div class="box"><b>Push-up: scala degli appoggi</b>Piano cucina/tavolo → schienale divano → seduta divano → gradino → terra. Passi al livello successivo quando fai 3 × 12 a RIR 2.</div>`;
+}
+
+function render() {
+  renderTabs();
+  const t = st.tab;
+  $("app").innerHTML = t === "H" ? renderHist() : t === "I" ? renderInfo() : renderDay(t);
+  if (t === "C") updCirc();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- timer recupero ---------- */
+const tm = { end: 0, iv: null };
+function startTimer(sec, label) {
+  ensureAudio();
+  tm.end = Date.now() + sec * 1000;
+  $("tl").textContent = "Recupero · " + label;
+  $("timerbar").hidden = false;
+  clearInterval(tm.iv); tickT(); tm.iv = setInterval(tickT, 250);
+}
+function tickT() {
+  const rem = Math.ceil((tm.end - Date.now()) / 1000);
+  if (rem <= 0) {
+    clearInterval(tm.iv); $("tt").textContent = "Via!"; beep(988, 0.4);
+    setTimeout(() => { if (Date.now() >= tm.end) $("timerbar").hidden = true; }, 2500);
+    return;
+  }
+  $("tt").textContent = mmss(rem);
+}
+
+/* ---------- circuito ---------- */
+const cs = { phase: "idle", round: 0, end: 0, remain: 0, iv: null, running: false };
+function updCirc() {
+  const el = $("cdisp"); if (!el) return;
+  const p = PROTO[st.proto];
+  let ph, cd, cx, col;
+  if (cs.phase === "idle") { ph = "PRONTO"; cd = mmss(p.w); cx = `${p.r} round · primo: ${CEX[0]}`; col = "var(--mut)"; }
+  else if (cs.phase === "done") { ph = "COMPLETATO"; cd = "✓"; cx = `${p.r} round fatti`; col = "var(--ac)"; }
+  else {
+    const rem = cs.running ? Math.max(0, Math.ceil((cs.end - Date.now()) / 1000)) : Math.ceil(cs.remain / 1000);
+    cd = mmss(rem);
+    if (cs.phase === "work") { ph = `LAVORO · round ${cs.round}/${p.r}`; cx = CEX[(cs.round - 1) % CEX.length]; col = "var(--ac)"; }
+    else { ph = `PAUSA · poi round ${cs.round + 1}/${p.r}`; cx = "Prossimo: " + CEX[cs.round % CEX.length]; col = "var(--warn)"; }
+    if (!cs.running) ph += " · IN PAUSA";
+  }
+  el.innerHTML = `<div class="ph" style="color:${col}">${esc(ph)}</div><div class="cd">${esc(cd)}</div><div class="cx">${esc(cx)}</div>`;
+  const b = $("cbtn"); if (b) b.textContent = cs.running ? "Pausa" : (cs.phase === "idle" || cs.phase === "done" ? "Avvia" : "Riprendi");
+}
+function tickC() {
+  const p = PROTO[st.proto];
+  if (Date.now() >= cs.end) {
+    if (cs.phase === "work") {
+      if (cs.round >= p.r) { cs.phase = "done"; cs.running = false; clearInterval(cs.iv); beep(660, 0.6); updCirc(); return; }
+      cs.phase = "rest"; cs.end = Date.now() + p.p * 1000; beep(520, 0.3);
+    } else {
+      cs.round++; cs.phase = "work"; cs.end = Date.now() + p.w * 1000; beep(988, 0.3);
+    }
+  }
+  updCirc();
+}
+function cToggle() {
+  ensureAudio();
+  const p = PROTO[st.proto];
+  if (cs.running) { cs.remain = cs.end - Date.now(); cs.running = false; clearInterval(cs.iv); updCirc(); return; }
+  if (cs.phase === "idle" || cs.phase === "done") { cs.round = 1; cs.phase = "work"; cs.end = Date.now() + p.w * 1000; beep(988, 0.3); }
+  else cs.end = Date.now() + cs.remain;
+  cs.running = true; clearInterval(cs.iv); cs.iv = setInterval(tickC, 250); updCirc();
+}
+function cReset() { clearInterval(cs.iv); cs.phase = "idle"; cs.round = 0; cs.running = false; updCirc(); }
+
+/* ---------- eventi ---------- */
+let delArm = null;
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const a = b.dataset.act;
+  if (a === "tab") { st.tab = b.dataset.t; save(); render(); }
+  else if (a === "rest") startTimer(+b.dataset.s, b.dataset.n);
+  else if (a === "tplus") { tm.end += 15000; if ($("timerbar").hidden === false) { clearInterval(tm.iv); tm.iv = setInterval(tickT, 250); tickT(); } }
+  else if (a === "tstop") { clearInterval(tm.iv); $("timerbar").hidden = true; }
+  else if (a === "proto") { if (cs.running) return toast("Metti in pausa prima di cambiare"); st.proto = +b.dataset.i; save(); cReset(); render(); }
+  else if (a === "cstart") cToggle();
+  else if (a === "creset") cReset();
+  else if (a === "save") {
+    const d = b.dataset.d, dr = st.draft[d] || {}, entries = {};
+    Object.entries(dr).forEach(([id, arr]) => { const f = (arr || []).filter(v => v && (v.l || v.r)); if (f.length) entries[id] = arr.map(v => v || {}); });
+    if (!Object.keys(entries).length) return toast("Nessun dato inserito");
+    st.sessions.push({ id: Date.now(), day: d, date: new Date().toISOString(), entries, note: st.notes[d] || "" });
+    delete st.draft[d]; st.notes[d] = ""; save(); render(); toast("Seduta salvata");
+  }
+  else if (a === "clear") {
+    if (delArm !== "clear" + b.dataset.d) { delArm = "clear" + b.dataset.d; b.textContent = "Tocca di nuovo per confermare"; return; }
+    delete st.draft[b.dataset.d]; st.notes[b.dataset.d] = ""; delArm = null; save(); render();
+  }
+  else if (a === "del") {
+    if (delArm !== b.dataset.id) { delArm = b.dataset.id; b.textContent = "Tocca di nuovo per eliminare"; return; }
+    st.sessions = st.sessions.filter(s => String(s.id) !== b.dataset.id); delArm = null; save(); render(); st.tab = "H";
+  }
+  else if (a === "exp") {
+    const blob = new Blob([JSON.stringify(st, null, 1)], { type: "application/json" });
+    const u = URL.createObjectURL(blob), l = document.createElement("a");
+    l.href = u; l.download = "scheda-casa-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+    document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(u), 2000);
+  }
+  else if (a === "imp") $("imp").click();
+});
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.dataset.note) { st.notes[t.dataset.note] = t.value; save(); return; }
+  if (!t.dataset.e) return;
+  const { d, e: id, i, f } = t.dataset;
+  st.draft[d] = st.draft[d] || {};
+  st.draft[d][id] = st.draft[d][id] || [];
+  st.draft[d][id][i] = st.draft[d][id][i] || {};
+  st.draft[d][id][i][f] = t.value.trim();
+  save();
+});
+document.addEventListener("change", e => {
+  if (e.target.dataset.act === "phase") { st.phase1 = e.target.checked; save(); render(); }
+});
+$("imp").addEventListener("change", e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const o = JSON.parse(r.result);
+      if (!o || !Array.isArray(o.sessions)) throw 0;
+      st = o; norm(); st.tab = "H"; save(); render(); toast("Backup importato");
+    } catch (err) { toast("File non valido"); }
+  };
+  r.readAsText(f); e.target.value = "";
+});
+
+render();
+</script>
+</body>
+</html>

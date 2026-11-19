@@ -1,0 +1,4 @@
+# A capo sempre in formato Unix (LF): necessario per gli script dell'hook e standard per i progetti web.
+* text=auto eol=lf
+*.png binary
+*.ico binary

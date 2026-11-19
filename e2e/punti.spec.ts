@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   autoDialogs, card, checkSet, expectToast, fakes, goTab, installFakes, openApp, openHistory, row, saveSession,
-  setVisibility, typeSet, uncheckSet,
+  setVisibility, typeSet, uncheckSet, via,
 } from './helpers';
 
 // Prove dei punti 1-6 (revisione del 2026-11-19).
@@ -52,28 +52,29 @@ test('T02 recupero già scaduto al rientro: "Via!" senza suono né vibrazione', 
   await setVisibility(page, 'hidden');
   await page.clock.fastForward(5 * 60_000); // 5 minuti a schermo bloccato
   await setVisibility(page, 'visible');
-  await expect(page.locator('.restbar .t')).toHaveText('Via!');
+  await expect(via(page)).toContainText('Via!');
   await page.clock.runFor(1_000);
   const f = await fakes(page);
   expect(f.vib).toBe(0);
   expect(f.audio.osc).toBe(0);
 });
 
-test('T03 fine recupero normale: suono e vibrazione UNA sola volta', async ({ page }) => {
+test('T03 fine recupero normale: 4 bip e vibrazione UNA sola volta', async ({ page }) => {
   await installFakes(page);
   await page.clock.install();
   await openApp(page);
   await card(page, 'db').getByRole('button', { name: 'Avvia recupero 45s' }).click();
   await page.clock.runFor(46_000);
-  await expect(page.locator('.restbar .t')).toHaveText('Via!');
+  await expect(via(page)).toContainText('Via!');
   await page.clock.runFor(1_000);
   let f = await fakes(page);
   expect(f.vib).toBe(1);
-  expect(f.audio.osc).toBe(2); // doppio bip
+  expect(f.audio.osc).toBe(4); // due coppie di bip
   await page.clock.runFor(5_000);
   f = await fakes(page);
   expect(f.vib).toBe(1);
-  await expect(page.locator('.restbar')).toHaveCount(0);
+  expect(f.audio.osc).toBe(4);
+  await expect(via(page)).toHaveCount(0);
 });
 
 test('T04 cronometro della seduta giusto dopo un salto di tempo', async ({ page }) => {

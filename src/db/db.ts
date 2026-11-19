@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { Draft, Session, SetLog, Settings } from './models';
+import type { Draft, DraftEntry, Session, SetLog, Settings } from './models';
 import { DEFAULT_SETTINGS } from './models';
 import type { Day } from '../program/types';
 import { EXERCISE_BY_ID, PROGRAM_VERSION } from '../program/program';
@@ -69,16 +69,22 @@ export async function saveSessionFromDraft(
 ): Promise<number> {
   const sessionId = newId();
   const logs: SetLog[] = [];
-  for (const [exerciseId, arr] of Object.entries(draft.sets)) {
+  const add = (exerciseId: string, entries: (DraftEntry | null)[], firstIndex: number, extra: boolean) => {
     const ex = EXERCISE_BY_ID[exerciseId];
-    if (!ex) continue;
-    const limit = maxSets[exerciseId] ?? arr.length;
-    arr.slice(0, limit).forEach((entry, setIndex) => {
+    if (!ex) return;
+    entries.forEach((entry, k) => {
       if (!entry || entry.pending) return; // non confermata
       const v = entryToValues(entry);
       if (!isComplete(ex.metric, v)) return;
-      logs.push({ id: newId(), sessionId, exerciseId, setIndex, confirmed: true, ...v });
+      logs.push({ id: newId(), sessionId, exerciseId, setIndex: firstIndex + k, confirmed: true, ...v, ...(extra ? { extra } : {}) });
     });
+  };
+  // serie previste (maxSets = quante ne prevede ora la scheda), poi le extra numerate di seguito
+  for (const [exerciseId, arr] of Object.entries(draft.sets)) {
+    add(exerciseId, arr.slice(0, maxSets[exerciseId] ?? arr.length), 0, false);
+  }
+  for (const [exerciseId, arr] of Object.entries(draft.extra ?? {})) {
+    add(exerciseId, arr, maxSets[exerciseId] ?? 0, true);
   }
   const hasCircuit = !!draft.circuit && draft.circuit.completedRounds > 0;
   if (logs.length === 0 && !hasCircuit) return 0;

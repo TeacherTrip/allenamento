@@ -65,7 +65,7 @@ export function HistoryScreen({ sessions, logs, toast }: Props) {
                 const ex = EXERCISE_BY_ID[id];
                 return (
                   <div className="it" key={id}>
-                    <b>{ex?.name ?? id}</b>: {ex ? arr.map((l) => formatSet(ex, l)).join(' · ') : ''}
+                    <b>{ex?.name ?? id}</b>: {ex ? arr.map((l) => formatSet(ex, l) + (l.extra ? ' (extra)' : '')).join(' · ') : ''}
                   </div>
                 );
               })}
@@ -109,6 +109,7 @@ interface EditRow {
   id: string;
   exerciseId: string;
   setIndex: number;
+  extra: boolean;
   load: string;
   reps: string;
   seconds: string;
@@ -130,6 +131,7 @@ function SessionEditor({ session, logs, onDone }: { session: Session; logs: SetL
         id: l.id,
         exerciseId: l.exerciseId,
         setIndex: l.setIndex,
+        extra: !!l.extra,
         load: fmtNum(l.load),
         reps: l.reps != null ? String(l.reps) : '',
         seconds: l.seconds != null ? String(l.seconds) : '',
@@ -146,6 +148,7 @@ function SessionEditor({ session, logs, onDone }: { session: Session; logs: SetL
     const newDate = new Date(y, m - 1, d, orig.getHours(), orig.getMinutes()).toISOString();
     const newLogs: SetLog[] = rows.map((r) => {
       const l: SetLog = { id: r.id, sessionId: session.id, exerciseId: r.exerciseId, setIndex: r.setIndex, confirmed: true };
+      if (r.extra) l.extra = true;
       const load = parseNum(r.load), reps = parseNum(r.reps), seconds = parseNum(r.seconds);
       if (load != null) l.load = load;
       if (reps != null) l.reps = Math.round(reps);
@@ -176,6 +179,7 @@ function SessionEditor({ session, logs, onDone }: { session: Session; logs: SetL
           <div className="editrow" key={r.id}>
             <span className="edname">
               {ex.name} S{r.setIndex + 1}
+              {r.extra && ' (extra)'}
             </span>
             {(ex.metric === 'kg' || ex.metric === 'band' || ex.metric === 'level') && (
               <input

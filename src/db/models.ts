@@ -33,6 +33,8 @@ export interface SetLog extends SetValues {
   exerciseId: string;
   setIndex: number;
   confirmed: boolean; // nel database sono sempre true: le serie non confermate non si salvano
+  /** Serie aggiunta con "+ Serie" oltre a quelle previste: conta nel volume, non nel suggerimento di progressione. */
+  extra?: boolean;
 }
 
 /** Valore di un campo nella bozza: testo grezzo, così "12," durante la digitazione non si perde. */
@@ -49,6 +51,8 @@ export interface Draft {
   day: Day;
   updatedAt: string;
   sets: Record<string, (DraftEntry | null)[]>;
+  /** Serie extra ("+ Serie"), separate da quelle previste: null = precompilata dalla riga sopra. */
+  extra?: Record<string, (DraftEntry | null)[]>;
   notes: string;
   circuit?: CircuitLog;
   /** Orario di inizio (ISO) se il cronometro è partito: sopravvive a chiusura e ricaricamento. */

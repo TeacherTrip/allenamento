@@ -29,24 +29,31 @@ export async function typeSet(page: Page, id: string, i: number, v: { kg?: numbe
   if (v.sec != null) await r.locator('input[placeholder^="sec"]').fill(String(v.sec));
 }
 
-/** Conferma col tasto (per gli esercizi per lato: Sx poi Dx). */
+/** Conferma col tasto (per gli esercizi con lati separati: [Sx] poi [Dx]). */
 export async function checkSet(page: Page, id: string, i: number) {
-  const b = row(page, id, i).locator('.check');
-  await b.click();
-  if ((await b.textContent())?.trim() === 'Dx') await b.click();
+  const r = row(page, id, i);
+  const sx = r.getByRole('button', { name: 'Conferma lato sinistro' });
+  if (await sx.count()) {
+    await sx.click();
+    await r.getByRole('button', { name: 'Conferma lato destro' }).click();
+  } else {
+    await r.getByRole('button', { name: 'Conferma serie' }).click();
+  }
 }
 
 /** Toglie la conferma (i valori restano). */
 export async function uncheckSet(page: Page, id: string, i: number) {
-  await row(page, id, i).locator('.check.on').click();
+  await row(page, id, i).getByRole('button', { name: 'Annulla conferma' }).click();
 }
+
+export const via = (page: Page) => page.locator('.via-overlay');
 
 /**
  * Sostituisce AudioContext, vibrazione e (opzionale) Wake Lock con versioni finte che contano le chiamate.
  * wakeLock: 'fake' = API presente; 'none' = API assente (come su http).
  */
-export async function installFakes(page: Page, wakeLock: 'fake' | 'none' = 'fake') {
-  await page.addInitScript((wl) => {
+export async function installFakes(page: Page, wakeLock: 'fake' | 'none' = 'fake', broken = false) {
+  await page.addInitScript(([wl, broken]) => {
     const w = window as unknown as Record<string, unknown>;
     const audio = { created: 0, resumed: 0, osc: 0 };
     const vib = { calls: 0 };
@@ -60,11 +67,22 @@ export async function installFakes(page: Page, wakeLock: 'fake' | 'none' = 'fake
       destination = {};
       constructor() { audio.created++; }
       resume() { audio.resumed++; this.state = 'running'; return Promise.resolve(); }
-      createOscillator() { audio.osc++; return { frequency: { value: 0 }, connect() {}, start() {}, stop() {} }; }
+      createOscillator() {
+        audio.osc++;
+        if (broken) throw new Error('audio rotto (prova)');
+        return { frequency: { value: 0 }, connect() {}, start() {}, stop() {} };
+      }
       createGain() { return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect() {} }; }
     }
     w.AudioContext = FakeAC;
-    Object.defineProperty(Navigator.prototype, 'vibrate', { value: () => { vib.calls++; return true; }, configurable: true });
+    Object.defineProperty(Navigator.prototype, 'vibrate', {
+      value: () => {
+        vib.calls++;
+        if (broken) throw new Error('vibrazione rotta (prova)');
+        return true;
+      },
+      configurable: true,
+    });
     if (wl === 'none') {
       delete (Navigator.prototype as unknown as Record<string, unknown>).wakeLock;
     } else {
@@ -78,7 +96,7 @@ export async function installFakes(page: Page, wakeLock: 'fake' | 'none' = 'fake
       };
       Object.defineProperty(Navigator.prototype, 'wakeLock', { get: () => fake, configurable: true });
     }
-  }, wakeLock);
+  }, [wakeLock, broken] as const);
 }
 
 export const fakes = (page: Page) =>

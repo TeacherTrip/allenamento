@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { db, saveDraft, saveSessionFromDraft, setSetting } from '../db/db';
-import type { Draft, DraftEntry, Session, SetLog, Settings } from '../db/models';
+import type { Draft, DraftEntry, Session, SetLog, SetValues, Settings } from '../db/models';
 import { DAYS, WARMUP, exercisesForDay, supersetPartner } from '../program/program';
 import type { Day, Exercise } from '../program/types';
 import { buildPrefill, lastSessionSets } from '../logic/prefill';
@@ -8,6 +8,7 @@ import { progressionHint } from '../logic/progression';
 import { durationSec, fmtDuration, formatSet } from '../logic/format';
 import { entryToValues, hasValues, isComplete } from '../logic/values';
 import { unlockAudio } from '../hooks/sound';
+import { wakeLockSupported } from '../hooks/useWakeLock';
 import { ExerciseCard } from '../components/ExerciseCard';
 
 interface Props {
@@ -19,10 +20,30 @@ interface Props {
   activeDay: Day | null;
   goToDay: (day: Day) => void;
   startRest: (sec: number, label: string) => void;
-  toast: (msg: string) => void;
+  toast: (msg: string, ms?: number) => void;
 }
 
 const emptyDraft = (day: Day): Draft => ({ day, updatedAt: '', sets: {}, notes: '' });
+
+export const SCREEN_WARNING = 'Lo schermo può spegnersi: allunga il tempo di spegnimento del telefono';
+
+/** Avviso "schermo può spegnersi": una sola volta su questo dispositivo. */
+let screenWarned = false;
+function shouldWarnScreen(): boolean {
+  if (wakeLockSupported() || screenWarned) return false;
+  screenWarned = true;
+  try {
+    if (localStorage.getItem('tg.screenWarned')) return false;
+    localStorage.setItem('tg.screenWarned', '1');
+  } catch {
+    /* storage non disponibile: vale la variabile in memoria */
+  }
+  return true;
+}
+
+/** Valori mostrati in una riga: quelli scritti/confermati o, se manca la bozza, la precompilazione. */
+const shownValues = (entry: DraftEntry | null | undefined, prefill: SetValues | undefined): SetValues | undefined =>
+  entry ? entryToValues(entry) : prefill;
 
 export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDay, startRest, toast }: Props) {
   const plan = DAYS.find((d) => d.day === day)!;
@@ -55,19 +76,36 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
       exercises.map((ex) => {
         const count = phase1 ? Math.min(ex.sets, 2) : ex.sets;
         const last = lastSessionSets(ex.id, sessions, logs);
+        // precompilazione e suggerimento usano solo le serie PREVISTE dell'ultima volta (non le extra)
+        const planned = last.filter((l) => !l.extra);
         const lastDate = last.length ? sessions.find((s) => s.id === last[0].sessionId)?.date : undefined;
         const lastText = last.length
-          ? `${new Date(lastDate!).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' })} · ${last.map((l) => formatSet(ex, l)).join(' · ')}`
+          ? `${new Date(lastDate!).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' })} · ${last
+              .map((l) => formatSet(ex, l) + (l.extra ? ' (extra)' : ''))
+              .join(' · ')}`
           : null;
-        return { ex, count, prefill: buildPrefill(last, count), hint: progressionHint(ex, last), lastText };
+        return { ex, count, prefill: buildPrefill(planned, count), hint: progressionHint(ex, planned), lastText };
       }),
     [exercises, sessions, logs, phase1],
   );
 
-  if (!draft) return <p className="sub">Caricamento…</p>;
+  // draft.day !== day: appena cambiata scheda, la bozza è ancora quella del giorno prima → aspetta
+  if (!draft || draft.day !== day) return <p className="sub">Caricamento…</p>;
 
   const started = draft.startedAt;
   const otherActive = activeDay && activeDay !== day ? activeDay : null;
+
+  // serie extra: precompilate con i valori della riga sopra
+  const extraOf = (exId: string) => draft.extra?.[exId] ?? [];
+  const extraPrefillOf = (r: (typeof rows)[number]): (SetValues | undefined)[] => {
+    const out: (SetValues | undefined)[] = [];
+    let prev = shownValues(draft.sets[r.ex.id]?.[r.count - 1], r.prefill[r.count - 1]);
+    for (const entry of extraOf(r.ex.id)) {
+      out.push(prev);
+      prev = shownValues(entry, prev);
+    }
+    return out;
+  };
 
   const setEntry = (exId: string, i: number, entry: DraftEntry | null) =>
     update((d) => {
@@ -77,8 +115,11 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
       return { ...d, sets: { ...d.sets, [exId]: arr } };
     });
 
-  /** ✓ toccato: recupero automatico, avviso superset, niente timer sull'ultima serie della seduta. */
-  const onCheck = (ex: Exercise, i: number, count: number) => {
+  const setExtra = (exId: string, fn: (arr: (DraftEntry | null)[]) => (DraftEntry | null)[]) =>
+    update((d) => ({ ...d, extra: { ...(d.extra ?? {}), [exId]: fn([...(d.extra?.[exId] ?? [])]) } }));
+
+  /** Tasto di conferma: avviso superset, recupero automatico, niente timer sull'ultima serie della seduta (extra comprese). */
+  const onCheck = (ex: Exercise, rowIndex: number, totalRows: number) => {
     unlockAudio();
     const partner = supersetPartner(ex);
     if (partner) {
@@ -86,26 +127,28 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
       return;
     }
     const isLastEx = exercises[exercises.length - 1]?.id === ex.id;
-    if (isLastEx && i === count - 1) return;
+    if (isLastEx && rowIndex === totalRows - 1) return;
     if (settings.autoRest && ex.restSec > 0) startRest(ex.restSec, ex.name);
   };
 
-  // conteggi per il salvataggio
+  // conteggi per il salvataggio (serie previste + extra)
   let complete = 0;
   let incomplete = 0;
   let pending = 0;
-  for (const r of rows) {
-    for (let i = 0; i < r.count; i++) {
-      const entry = draft.sets[r.ex.id]?.[i];
-      if (entry && !entry.pending) {
-        const v = entryToValues(entry);
-        if (isComplete(r.ex.metric, v)) complete++;
-        else if (hasValues(v)) incomplete++;
-      } else {
-        const v = entry ? entryToValues(entry) : r.prefill[i];
-        if (v && hasValues(v)) pending++;
-      }
+  const countRow = (ex: Exercise, entry: DraftEntry | null | undefined, prefill: SetValues | undefined) => {
+    if (entry && !entry.pending) {
+      const v = entryToValues(entry);
+      if (isComplete(ex.metric, v)) complete++;
+      else if (hasValues(v)) incomplete++;
+    } else {
+      const v = shownValues(entry, prefill);
+      if (v && hasValues(v)) pending++;
     }
+  };
+  for (const r of rows) {
+    for (let i = 0; i < r.count; i++) countRow(r.ex, draft.sets[r.ex.id]?.[i], r.prefill[i]);
+    const xp = extraPrefillOf(r);
+    extraOf(r.ex.id).forEach((e, k) => countRow(r.ex, e, xp[k]));
   }
   const hasCircuit = !!draft.circuit && draft.circuit.completedRounds > 0;
 
@@ -116,6 +159,7 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
     }
     unlockAudio();
     update((d) => ({ ...d, startedAt: new Date().toISOString() }));
+    if (shouldWarnScreen()) toast(SCREEN_WARNING, 6000);
   };
 
   const onCancelTimer = () => {
@@ -156,7 +200,7 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
 
   const onClear = () => {
     if (!confirm('Svuotare tutti i campi di questa seduta?')) return;
-    update((d) => ({ ...d, sets: {}, notes: '' }));
+    update((d) => ({ ...d, sets: {}, extra: {}, notes: '' }));
   };
 
   return (
@@ -210,27 +254,36 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
         <span className="dot prefilled" /> precompilato dall'ultima volta · <span className="dot confirmed" /> confermato
       </p>
 
-      {rows.map((r) => (
-        <ExerciseCard
-          key={r.ex.id}
-          ex={r.ex}
-          count={r.count}
-          prefill={r.prefill}
-          entries={draft.sets[r.ex.id] ?? []}
-          hint={r.hint}
-          lastText={r.lastText}
-          onSetChange={(i, e) => setEntry(r.ex.id, i, e)}
-          onSetCheck={(i) => onCheck(r.ex, i, r.count)}
-          onSetLeft={() => {
-            unlockAudio();
-            toast('→ Lato destro, senza pausa');
-          }}
-          onRest={(sec) => {
-            unlockAudio();
-            startRest(sec, r.ex.name);
-          }}
-        />
-      ))}
+      {rows.map((r) => {
+        const extras = extraOf(r.ex.id);
+        const totalRows = r.count + extras.length;
+        return (
+          <ExerciseCard
+            key={r.ex.id}
+            ex={r.ex}
+            count={r.count}
+            prefill={r.prefill}
+            entries={draft.sets[r.ex.id] ?? []}
+            extraEntries={extras}
+            extraPrefill={extraPrefillOf(r)}
+            hint={r.hint}
+            lastText={r.lastText}
+            onSetChange={(i, e) => setEntry(r.ex.id, i, e)}
+            onExtraChange={(k, e) => setExtra(r.ex.id, (arr) => ((arr[k] = e), arr))}
+            onExtraRemove={(k) => setExtra(r.ex.id, (arr) => (arr.splice(k, 1), arr))}
+            onAddSet={() => setExtra(r.ex.id, (arr) => [...arr, null])}
+            onSetCheck={(i) => onCheck(r.ex, i, totalRows)}
+            onSetLeft={() => {
+              unlockAudio();
+              toast('→ Lato destro, senza pausa');
+            }}
+            onRest={(sec) => {
+              unlockAudio();
+              startRest(sec, r.ex.name);
+            }}
+          />
+        );
+      })}
 
       {day === 'C' && (
         <div className="box">

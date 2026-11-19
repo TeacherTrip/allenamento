@@ -75,6 +75,24 @@ main.with-rest { padding-bottom: calc(170px + env(safe-area-inset-bottom)); }
 .restbar .t { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; min-width: 92px; }
 .restbar .l { flex: 1; min-width: 0; color: var(--mut); font-size: 13px; }
 .restbar button { padding: 10px 12px; border: 0; border-radius: 10px; background: var(--card); font-weight: 700; }
+
+/* ---------- "Via!" a fine recupero: grande, al centro, tocca per chiudere ---------- */
+.via-overlay {
+  position: fixed; inset: 0; z-index: 30;
+  display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  animation: via-in .2s ease-out;
+}
+.via-circle {
+  width: min(72vw, 320px); aspect-ratio: 1; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  background: var(--ac); color: var(--ac-tx);
+  box-shadow: 0 0 0 12px color-mix(in srgb, var(--ac) 30%, transparent);
+}
+.via-text { font-size: clamp(56px, 20vw, 96px); font-weight: 900; line-height: 1; }
+.via-label { font-size: 15px; font-weight: 700; opacity: .85; max-width: 80%; text-align: center; }
+@keyframes via-in { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .via-overlay { animation: none; } }
 h2 { margin: 8px 0 2px; font-size: 20px; }
 .sub { color: var(--mut); margin: 0 0 12px; font-size: 14px; }
 .muted { color: var(--mut); }
@@ -154,8 +172,13 @@ textarea { min-height: 70px; margin-top: 10px; }
   color: var(--pre); font-size: 20px; font-weight: 800;
 }
 .check.on { background: var(--ac); border: 0; color: var(--ac-tx); }
-.check.half { border: 2px solid var(--ac2); color: var(--ac2); font-size: 16px; }
-.setrow .check:not(.on):not(.half) { font-size: 16px; }
+.check.half { border: 0; background: var(--ac2); color: #fff; }
+.setrow.two-sides { grid-template-columns: 30px 1fr 96px; }
+.sides { display: flex; gap: 4px; }
+.check.side-btn { width: 46px; font-size: 15px; }
+.extra-tag { display: block; font-size: 10px; font-weight: 700; color: var(--ac2); text-transform: uppercase; }
+.add-set { margin-top: 6px; width: 100%; padding: 9px; border: 1px dashed var(--line); border-radius: 10px; background: transparent; color: var(--mut); font-weight: 650; font-size: 14px; }
+.inputs .x { flex: 0 0 40px; height: auto; }
 .check:disabled { opacity: .35; }
 
 /* ---------- pulsanti ---------- */

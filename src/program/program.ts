@@ -41,7 +41,7 @@ export const EXERCISES: Exercise[] = [
   },
   {
     id: 'row', name: 'Rematore a un braccio', day: 'A', order: 3, superset: '2b', sets: 3, repRange: [8, 12], restSec: 75,
-    metric: 'kg', unilateral: true, equipment: 'Manubrio 14 kg',
+    metric: 'kg', unilateral: true, confirmSides: true, equipment: 'Manubrio 14 kg',
     muscles: { primary: ['schiena'], secondary: ['bicipiti'] },
     notes: 'Mano e ginocchio su sedia o divano. Parti dal sinistro, stesse reps col destro.',
   },
@@ -67,7 +67,7 @@ export const EXERCISES: Exercise[] = [
   // ---------- Seduta B ----------
   {
     id: 'bss', name: 'Bulgarian split squat', day: 'B', order: 1, sets: 3, repRange: [8, 12], restSec: 90,
-    metric: 'kg', unilateral: true, equipment: '2 × 10 kg oppure 14 kg al petto',
+    metric: 'kg', unilateral: true, confirmSides: true, equipment: '2 × 10 kg oppure 14 kg al petto',
     muscles: { primary: ['quadricipiti', 'glutei'], secondary: [] },
     notes: 'Piede dietro sul divano. Parti dal sinistro. Busto leggermente inclinato in avanti, ginocchio anteriore stabile.',
   },
@@ -91,7 +91,7 @@ export const EXERCISES: Exercise[] = [
   },
   {
     id: 'mp', name: 'Military press a un braccio', day: 'B', order: 5, superset: '4a', sets: 3, repRange: [8, 12], restSec: 0,
-    metric: 'kg', unilateral: true, equipment: '10 kg',
+    metric: 'kg', unilateral: true, confirmSides: true, equipment: '10 kg',
     muscles: { primary: ['spalle'], secondary: ['tricipiti'] },
     notes: 'In ginocchio su una gamba, gluteo della gamba a terra contratto, non inarcare la schiena. Parti dal sinistro.',
   },
@@ -103,7 +103,7 @@ export const EXERCISES: Exercise[] = [
   },
   {
     id: 'sp', name: 'Side plank', day: 'B', order: 7, sets: 2, repRange: [20, 40], restSec: 45,
-    metric: 'time', unilateral: true, equipment: 'Materassino',
+    metric: 'time', unilateral: true, confirmSides: true, equipment: 'Materassino',
     muscles: { primary: ['core'], secondary: [] },
     notes: 'Gomito sotto la spalla, corpo in linea. Inizia dal lato sinistro.',
   },
@@ -111,7 +111,7 @@ export const EXERCISES: Exercise[] = [
   // ---------- Seduta C ----------
   {
     id: 'slrdl', name: 'Stacco rumeno a una gamba', day: 'C', order: 1, sets: 3, repRange: [8, 10], restSec: 75,
-    metric: 'kg', unilateral: true, equipment: '10 kg',
+    metric: 'kg', unilateral: true, confirmSides: true, equipment: '10 kg',
     muscles: { primary: ['femorali', 'glutei'], secondary: [] },
     notes: "Manubrio nella mano opposta alla gamba d'appoggio. Puoi sfiorare il muro con l'altra mano per l'equilibrio. Parti dal sinistro.",
   },

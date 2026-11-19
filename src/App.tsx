@@ -69,10 +69,10 @@ export function App() {
     void requestPersistence().then(setPersist);
   }, []);
 
-  const toast = useCallback((msg: string) => {
+  const toast = useCallback((msg: string, ms = 2200) => {
     setToastMsg(msg);
     window.clearTimeout(toastTimer.current);
-    toastTimer.current = window.setTimeout(() => setToastMsg(''), 2200);
+    toastTimer.current = window.setTimeout(() => setToastMsg(''), ms);
   }, []);
 
   const startRest = useCallback(

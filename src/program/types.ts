@@ -38,6 +38,11 @@ export interface Exercise {
   bandDirection?: BandDirection;
   /** Ripetizioni/secondi "per lato". */
   unilateral: boolean;
+  /**
+   * Lati fatti uno dopo l'altro (sinistro → destro senza pausa): due tasti [Sx] [Dx].
+   * Assente per gli esercizi a lati alternati (es. dead bug, curl alternato): un solo ✓.
+   */
+  confirmSides?: boolean;
   muscles: { primary: Muscle[]; secondary: Muscle[] };
   equipment: string;
   notes: string;

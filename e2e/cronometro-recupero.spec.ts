@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import {
-  autoDialogs, card, checkSet, chip, expectToast, goTab, openApp, openHistory, patchDraft, row, saveSession, typeSet, uncheckSet,
+  autoDialogs, card, checkSet, chip, expectToast, goTab, openApp, openHistory, patchDraft, row, saveSession, typeSet, uncheckSet, via,
 } from './helpers';
 
 // ---------- Cronometro della seduta ----------
@@ -149,16 +149,19 @@ test('R04 recupero automatico disattivato in Info: ✓ non avvia il timer; il pu
   await expect(page.locator('.restbar')).toContainText('Goblet squat');
 });
 
-test('R05 +15 e Stop; a fine recupero compare "Via!" e la barra si chiude', async ({ page }) => {
+test('R05 +15 e Stop; a fine recupero compare "Via!" grande per 4 s', async ({ page }) => {
   await page.clock.install();
   await openApp(page);
   await card(page, 'db').getByRole('button', { name: 'Avvia recupero 45s' }).click();
   await expect(page.locator('.restbar .t')).toHaveText('00:45');
   await page.locator('.restbar').getByRole('button', { name: '+15' }).click();
   await expect(page.locator('.restbar .t')).toHaveText('01:00');
-  await page.clock.runFor(60_500);
-  await expect(page.locator('.restbar .t')).toHaveText('Via!');
-  await page.clock.runFor(3_000);
+  await page.clock.runFor(60_100);
+  await expect(via(page)).toContainText('Via!');
+  await page.clock.runFor(3_300);
+  await expect(via(page)).toBeVisible(); // ancora visibile a ~3,4 s
+  await page.clock.runFor(1_000);
+  await expect(via(page)).toHaveCount(0);
   await expect(page.locator('.restbar')).toHaveCount(0);
   await card(page, 'db').getByRole('button', { name: 'Avvia recupero 45s' }).click();
   await page.locator('.restbar').getByRole('button', { name: 'Stop' }).click();

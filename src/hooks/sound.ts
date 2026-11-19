@@ -1,29 +1,34 @@
 // Suono e vibrazione. I browser permettono l'audio solo dopo un tocco dell'utente:
-// unlockAudio() va chiamata dentro un gestore di tocco (✓, Inizia, Avvia recupero).
+// unlockAudio() va chiamata dentro un gestore di tocco (✓, Sx/Dx, Inizia, Avvia recupero).
+// Ogni funzione è protetta: se un'API manca o fallisce, non blocca nient'altro.
 
 let ac: AudioContext | null = null;
 
 export function unlockAudio(): void {
   try {
-    ac ??= new AudioContext();
-    if (ac.state === 'suspended') void ac.resume();
+    const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AC) return;
+    ac ??= new AC();
+    if (ac.state === 'suspended') void ac.resume().catch(() => undefined);
   } catch {
     /* audio non disponibile */
   }
 }
 
-export function beep(freq = 880, dur = 0.3): void {
-  if (!ac) return;
+/** Un bip, eventualmente ritardato di `delaySec` (programmato nell'orologio audio, non con setTimeout). */
+export function beep(freq = 988, dur = 0.3, delaySec = 0): void {
   try {
+    if (!ac) return;
+    const t = ac.currentTime + delaySec;
     const o = ac.createOscillator();
     const g = ac.createGain();
     o.frequency.value = freq;
     o.connect(g);
     g.connect(ac.destination);
-    g.gain.setValueAtTime(0.4, ac.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
-    o.start();
-    o.stop(ac.currentTime + dur);
+    g.gain.setValueAtTime(0.4, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.start(t);
+    o.stop(t + dur);
   } catch {
     /* ignora */
   }
@@ -31,15 +36,21 @@ export function beep(freq = 880, dur = 0.3): void {
 
 export function vibrate(pattern: number | number[]): void {
   try {
-    navigator.vibrate?.(pattern);
+    if (typeof navigator.vibrate === 'function') navigator.vibrate(pattern);
   } catch {
-    /* non supportata */
+    /* non supportata: su Xiaomi serve "Vibrazione tattile" attiva */
   }
 }
 
-/** Fine recupero: doppio bip + vibrazione. */
+/** Istanti dei 4 bip di fine recupero: due coppie. */
+export const END_BEEPS = [0, 0.45, 1.2, 1.65];
+
+/** Fine recupero: 4 bip (due coppie) + vibrazione. Suono e vibrazione indipendenti. */
 export function restEndAlert(): void {
-  beep(988, 0.35);
-  setTimeout(() => beep(988, 0.35), 450);
-  vibrate([300, 150, 300]);
+  try {
+    for (const t of END_BEEPS) beep(988, 0.3, t);
+  } catch {
+    /* ignora */
+  }
+  vibrate([300, 150, 300, 450, 300, 150, 300]);
 }

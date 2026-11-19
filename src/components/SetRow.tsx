@@ -6,52 +6,48 @@ import { parseNum, valuesToEntry } from '../logic/values';
 
 interface Props {
   ex: Exercise;
-  index: number;
+  /** Etichetta della riga: "S1", "S2", … (anche per le extra). */
+  label: string;
   prefill: SetValues | undefined;
   /** null/undefined = non confermata (mostra la precompilazione). */
   entry: DraftEntry | null | undefined;
   onChange: (entry: DraftEntry | null) => void;
-  /** Serie confermata col tasto ✓ (per esercizi per lato: dopo il lato destro). */
+  /** Serie confermata col tasto (per esercizi con lati separati: dopo [Dx]). */
   onCheck?: () => void;
-  /** Esercizi per lato: confermato il lato sinistro. */
+  /** Esercizi con lati separati: confermato il lato sinistro. */
   onLeft?: () => void;
+  /** Serie extra non confermata: si può eliminare. */
+  onRemove?: () => void;
+  extra?: boolean;
 }
 
 /**
- * Una serie: campi della metrica + tasto di conferma. Grigio = da confermare, pieno = confermato.
- * Esercizi per lato: il tasto va toccato due volte, "Sx" poi "Dx" (stesse reps per lato).
+ * Una serie: campi della metrica + conferma. Grigio = da confermare, pieno = confermato.
+ * Esercizi con lati separati (confirmSides): due tasti affiancati [Sx] [Dx].
  */
-export function SetRow({ ex, index, prefill, entry, onChange, onCheck, onLeft }: Props) {
+export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, onRemove, extra }: Props) {
   const confirmed = entry != null && !entry.pending;
   const leftDone = !confirmed && !!entry?.leftDone;
   const shown: DraftEntry = entry ? { load: entry.load, reps: entry.reps, seconds: entry.seconds } : valuesToEntry(prefill);
   const hasAny = [shown.load, shown.reps, shown.seconds].some((x) => x != null && x !== '');
+  const sides = !!ex.confirmSides;
 
   // scrivere = confermare (ma a metà tra sinistro e destro si resta in attesa del destro)
   const edit = (field: DraftField, value: string) =>
     onChange(leftDone ? { ...shown, [field]: value, pending: true, leftDone: true } : { ...shown, [field]: value });
 
-  const toggle = () => {
-    if (confirmed) return onChange({ ...shown, pending: true }); // toglie la conferma, tiene i valori
-    if (ex.unilateral && !leftDone) {
-      onChange({ ...shown, pending: true, leftDone: true });
-      onLeft?.();
-      return;
-    }
+  const unconfirm = () => onChange({ ...shown, pending: true }); // toglie la conferma, tiene i valori
+  const confirm = () => {
     onChange(shown);
     onCheck?.();
+  };
+  const left = () => {
+    onChange({ ...shown, pending: true, leftDone: true });
+    onLeft?.();
   };
 
   const cls = confirmed ? 'confirmed' : 'prefilled';
   const repsLabel = ex.unilateral ? 'reps /lato' : 'reps';
-  const checkText = confirmed ? '✓' : ex.unilateral ? (leftDone ? 'Dx' : 'Sx') : '✓';
-  const checkLabel = confirmed
-    ? 'Annulla conferma'
-    : ex.unilateral
-      ? leftDone
-        ? 'Conferma lato destro'
-        : 'Conferma lato sinistro'
-      : 'Conferma serie';
 
   const numInput = (field: DraftField, placeholder: string, decimal = false) => (
     <input
@@ -60,7 +56,7 @@ export function SetRow({ ex, index, prefill, entry, onChange, onCheck, onLeft }:
       placeholder={placeholder}
       value={shown[field] ?? ''}
       onChange={(e) => edit(field, e.target.value)}
-      aria-label={`Serie ${index + 1} ${placeholder}`}
+      aria-label={`${label} ${placeholder}`}
     />
   );
 
@@ -82,9 +78,50 @@ export function SetRow({ ex, index, prefill, entry, onChange, onCheck, onLeft }:
     );
   };
 
+  let buttons;
+  if (!sides) {
+    buttons = (
+      <button
+        type="button"
+        className={`check ${confirmed ? 'on' : ''}`}
+        onClick={confirmed ? unconfirm : confirm}
+        disabled={!confirmed && !hasAny}
+        aria-label={confirmed ? 'Annulla conferma' : 'Conferma serie'}
+      >
+        ✓
+      </button>
+    );
+  } else {
+    buttons = (
+      <div className="sides">
+        <button
+          type="button"
+          className={`check side-btn ${confirmed ? 'on' : leftDone ? 'half' : ''}`}
+          onClick={confirmed ? unconfirm : leftDone ? undefined : left}
+          disabled={!confirmed && !leftDone && !hasAny}
+          aria-label={confirmed ? 'Annulla conferma' : leftDone ? 'Lato sinistro fatto' : 'Conferma lato sinistro'}
+        >
+          Sx
+        </button>
+        <button
+          type="button"
+          className={`check side-btn ${confirmed ? 'on' : ''}`}
+          onClick={leftDone ? confirm : undefined}
+          disabled={!leftDone}
+          aria-label={confirmed ? 'Lato destro fatto' : 'Conferma lato destro'}
+        >
+          Dx
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className={`setrow ${cls} ${leftDone ? 'left-done' : ''}`}>
-      <span className="setn">S{index + 1}</span>
+    <div className={`setrow ${cls} ${leftDone ? 'left-done' : ''} ${sides ? 'two-sides' : ''} ${extra ? 'extra' : ''}`}>
+      <span className="setn">
+        {label}
+        {extra && <small className="extra-tag">extra</small>}
+      </span>
       <div className="setfields">
         {ex.metric === 'band' && chips(bandOptions(ex.bandDirection ?? 'resistance'))}
         {ex.metric === 'level' &&
@@ -92,17 +129,14 @@ export function SetRow({ ex, index, prefill, entry, onChange, onCheck, onLeft }:
         <div className="inputs">
           {ex.metric === 'kg' && numInput('load', 'kg', true)}
           {ex.metric === 'time' ? numInput('seconds', ex.unilateral ? 'sec /lato' : 'sec') : numInput('reps', repsLabel)}
+          {onRemove && !confirmed && (
+            <button type="button" className="x" onClick={onRemove} aria-label={`Elimina ${label}`}>
+              ✕
+            </button>
+          )}
         </div>
       </div>
-      <button
-        type="button"
-        className={`check ${confirmed ? 'on' : ''} ${leftDone ? 'half' : ''}`}
-        onClick={toggle}
-        disabled={!confirmed && !hasAny}
-        aria-label={checkLabel}
-      >
-        {checkText}
-      </button>
+      {buttons}
     </div>
   );
 }

@@ -165,6 +165,7 @@ export function CircuitOverlay({ run, onPause, onResume, onProgress, onClose }: 
           </div>
         </>
       )}
+      {!done && <div className="co-note">Non bloccare il telefono: a schermo spento suoni e vibrazioni non partono.</div>}
       <div className="co-buttons">
         {!done &&
           (paused ? (

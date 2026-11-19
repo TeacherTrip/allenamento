@@ -105,6 +105,10 @@ export function InfoScreen({ sessions, logs, settings, persist, toast }: Props) 
         da Chrome <b>cancella tutto lo storico</b>. Il backup è l’unica copia di sicurezza: tienine una copia anche fuori dal
         telefono (es. inviala a te stesso o su Drive).
       </div>
+      <div className="warnbox" data-testid="address-note">
+        I dati sono legati all'indirizzo dell'app. Prima di passare dalla versione di prova a quella pubblicata, esporta il
+        backup e importalo nella nuova.
+      </div>
       <div className="box">
         <b>Backup</b>
         Ultimo backup: {settings.lastBackupAt ? fmtDate(settings.lastBackupAt) : 'mai'}

@@ -144,3 +144,9 @@ test('CI08 rifare il circuito chiede conferma e sostituisce il precedente', asyn
   expect(msgs.some((m) => m.includes('Circuito già registrato (1/6 round)'))).toBe(true);
   await expect(phase(page)).toHaveText('PREPARATI');
 });
+
+test('CI09 avviso nella schermata del circuito: non bloccare il telefono', async ({ page }) => {
+  await openC(page);
+  await start(page);
+  await expect(overlay(page)).toContainText('Non bloccare il telefono: a schermo spento suoni e vibrazioni non partono.');
+});

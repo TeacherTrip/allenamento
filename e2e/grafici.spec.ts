@@ -128,3 +128,8 @@ test('G05 tema scuro: i grafici si disegnano senza errori', async ({ page }) => 
   await page.screenshot({ path: test.info().outputPath('gruppi-scuro.png'), fullPage: true });
   expect(errors).toEqual([]);
 });
+
+test('G06 Info: nota sui dati legati all\'indirizzo dell\'app', async ({ page }) => {
+  await openApp(page, 'Info');
+  await expect(page.getByTestId('address-note')).toContainText('esporta il backup e importalo nella nuova');
+});

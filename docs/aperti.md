@@ -10,6 +10,7 @@
 ## Prossime fasi
 - [x] Fase 5: timer del circuito (immagine grande, commit 1aa0679) e grafici Chart.js (commit 6a3cf8e). Manca solo la prova sul telefono, poi push.
 - [ ] Fase 6: PWA (vite-plugin-pwa, icona), protezioni del repo (branch protection), repo pubblico con conferma, GitHub Actions + Pages. Valutare la notifica di fine recupero (vibra anche a telefono bloccato).
+  - [ ] Prima della pubblicazione: export delle sedute registrate su localhost → import su teachertrip.github.io/allenamento.
   - [ ] Pacchetto JS ~181 KB compressi (Chart.js compreso): valutare il caricamento della schermata Grafici solo quando serve.
   - [ ] `globPatterns` deve includere `webp`; verificare che le 28 immagini (`public/esercizi/`, ~0,7 MB) entrino nel precache.
 - [ ] Fase 7: verifica finale con checklist.

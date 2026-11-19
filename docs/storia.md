@@ -9,10 +9,10 @@
 - Fase 3: piano approvato (`docs/piano.md`), con elastici "assistenza"/"resistenza" e indice di progressione.
 - Fase 4 (MVP): scheda nel codice, database Dexie, sedute A/B/C con precompilazione, storico modificabile, backup/import (anche dal prototipo), cronometro della seduta, recupero automatico e manuale, schermo sempre acceso (dove supportato).
 - Prove automatiche: 35 Vitest + 57 Playwright, anche sull'indirizzo di rete non sicuro (`E2E_BASE_URL`).
-- Diagnosi sul telefono (Xiaomi 15 Ultra, Chrome) via adb + DevTools:
+- Diagnosi sul telefono Android (Chrome) via adb + DevTools:
   - a schermo bloccato la pagina è nascosta e "Via!" si chiudeva prima dello sblocco;
   - in sviluppo, allo sblocco il server ricarica la pagina;
-  - la vibrazione funziona solo con "Vibrazione tattile" attiva (limite di HyperOS).
+  - la vibrazione funziona solo con "Vibrazione tattile" attiva (limite del sistema del telefono).
 - Correzioni dal telefono:
   - "Via!" grande e centrato, per 4 s dopo lo sblocco;
   - 4 bip;

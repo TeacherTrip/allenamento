@@ -38,7 +38,7 @@ export function vibrate(pattern: number | number[]): void {
   try {
     if (typeof navigator.vibrate === 'function') navigator.vibrate(pattern);
   } catch {
-    /* non supportata: su Xiaomi serve "Vibrazione tattile" attiva */
+    /* non supportata: su alcuni telefoni Android serve "Vibrazione tattile" attiva */
   }
 }
 

@@ -4,7 +4,7 @@ import {
   setVisibility, typeSet, uncheckSet, via,
 } from './helpers';
 
-// Prove nate dalla diagnosi sul telefono (Xiaomi 15 Ultra, Chrome 157), 2026-11-19.
+// Prove nate dalla diagnosi sul telefono (telefono Android, Chrome 157), 2026-11-19.
 
 // ---------- A: fine recupero a schermo acceso ----------
 
@@ -65,7 +65,7 @@ test('B1 recupero scaduto a telefono bloccato: "Via!" resta finché non sblocchi
   await openApp(page);
   await card(page, 'db').getByRole('button', { name: 'Avvia recupero 45s' }).click();
   await setVisibility(page, 'hidden');
-  // a telefono bloccato i timer continuano a girare (come visto sullo Xiaomi): il recupero scade e passa altro tempo
+  // a telefono bloccato i timer continuano a girare (come visto sul telefono Android): il recupero scade e passa altro tempo
   await page.clock.runFor(45_000 + 4_000 + 60_000);
   await expect(via(page)).toBeVisible(); // NON si è chiuso mentre era bloccato
   await setVisibility(page, 'visible');

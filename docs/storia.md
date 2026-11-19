@@ -74,4 +74,39 @@
 - gitleaks e adb sono già nel PATH utente: nessuna modifica al sistema; percorso esplicito nell'hook scartato (conterrebbe il nome della cartella utente).
 - Push rimandato a dopo la prova sul telefono (richiesta dell'utente).
 
-**Commit:** 1aa0679, 6a3cf8e, 29a0d1b, 6ab96ff, 76ee1b3 (+ commit di chiusura sessione).
+**Commit:** 1aa0679, 6a3cf8e, 29a0d1b, 6ab96ff, 76ee1b3 + chiusura a8fd679.
+
+**Pubblicazione (correzione):** alla chiusura (a8fd679, ore 22:26) la Fase 5 era davvero solo in locale, come diceva il report. Il push è avvenuto **subito dopo, nella sessione successiva**:
+1. 22:26 · commit di chiusura a8fd679 ("push in attesa della prova sul telefono");
+2. nuova sessione: telefono collegato con adb, l'utente conferma "tutto ok" e chiede il push;
+3. 22:28 · push dei 6 commit 1aa0679 → a8fd679 (repo ancora **privato**), dopo il controllo noreply;
+4. 22:28 · push di e4252cb (note aggiornate: Fase 5 provata e pubblicata).
+Orari presi da `git reflog show origin/main`.
+
+## 2026-11-19 (quarta sessione) — Fase 6: pubblicazione
+
+- **PWA** (vite-plugin-pwa 2.0.0, nel progetto):
+  - manifest (nome, `start_url`/`scope` `/allenamento/`, standalone, icone 192/512 + maskable);
+  - icona manubrio + "TG" generata da un solo SVG (`npm run icone`), contenuto dentro la zona sicura della maskable;
+  - precache di tutta l'app: 39 file, 1,28 MB, compresi i 28 `.webp` degli esercizi (0,70 MB); tolti i doppioni di favicon e icone;
+  - aggiornamento solo a richiesta ("Nuova versione disponibile" → Aggiorna / Dopo), **mai** durante allenamento, recupero o circuito;
+  - schermata Grafici caricata a parte: JS iniziale da ~181 a ~118 KB compressi.
+- Prove: 4 Playwright sulla versione costruita (manifest e icone, offline con immagini e grafici, precache completo senza doppioni, nessun avviso al primo avvio). Totale 90 Vitest + 82 Playwright.
+- Hook pre-commit: bloccato un commit per `i@izs.me` (email pubblica dell'autore di `glob`, scritta da npm in package-lock). Con l'utente: eccezione **solo per quell'indirizzo intero** (`grep -x -F`). Provato con email inventate: un indirizzo qualunque, uno con una lettera in più davanti e uno con un dominio più lungo restano bloccati; passa solo l'indirizzo esatto (anche in maiuscolo).
+- Controlli §6-bis su tutta la cronologia prima di renderla pubblica: 19 commit tutti noreply; gitleaks nessun segreto; nessun backup/`.env`; nessuna email esterna.
+- **GitHub, un passo alla volta con conferma dell'utente:**
+  1. repository reso **pubblico**;
+  2. secret scanning + push protection attivi;
+  3. Issues, Projects e Wiki spenti;
+  4. `main` protetto: niente force push né cancellazione, anche per l'amministratore;
+  5. Pages attivo con sorgente GitHub Actions;
+  6. 22:52 · push di 6b0dec7, 204bff9, c5b28fa → workflow `pubblica.yml` (npm test + build + deploy) riuscito.
+- **App pubblicata il 19/11/2026** su https://teachertrip.github.io/allenamento/. Verificata: pagina, manifest, service worker e 28/28 immagini sotto `/allenamento/esercizi/`; in Chrome (Pixel 7) si apre, funziona offline, nessun errore.
+- L'utente ha installato l'app sul telefono; nessun dato da importare.
+
+**Decisioni**
+- Conferma dell'utente prima di ogni modifica su GitHub (visibilità, impostazioni, push).
+- Nel workflow girano tipi + Vitest; Playwright solo sul PC.
+- Eccezioni nell'hook solo per indirizzi interi e con l'utente.
+
+**Commit:** 6b0dec7, 204bff9, c5b28fa, c60db2a (+ precache senza doppioni e note).

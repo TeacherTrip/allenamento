@@ -1,5 +1,7 @@
 # Punti aperti
 
+Stato: app **pubblicata il 19/11/2026** su https://teachertrip.github.io/allenamento/ e installata sul telefono. Repository **pubblico**; protezioni GitHub attive (secret scanning + push protection, `main` protetto da force push e cancellazione, Issues/Projects/Wiki spenti).
+
 ## Da decidere
 - [ ] Stringere il firewall: una sola regola Allow per node.exe (profilo Private, solo TCP 5173). I comandi li esegue l'utente come amministratore.
 

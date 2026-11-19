@@ -160,6 +160,26 @@ test('R05 +15 e Stop; a fine recupero compare "Via!" grande per 4 s', async ({ p
   await expect(page.locator('.restbar')).toHaveCount(0);
 });
 
+test('R07 "Termina e salva" ferma il recupero partito dall’ultima ✓ (trovato sul telefono)', async ({ page }) => {
+  autoDialogs(page);
+  await openApp(page);
+  await page.getByRole('button', { name: '▶ Inizia allenamento' }).click();
+  await logSet(page, 'gsq', 0, { kg: 14, reps: 10 });
+  await expect(page.locator('.restbar')).toContainText('Goblet squat');
+  await saveSession(page);
+  await expectToast(page, 'Seduta salvata');
+  await expect(page.locator('.restbar')).toHaveCount(0);
+});
+
+test('R08 se il salvataggio viene annullato, il recupero continua', async ({ page }) => {
+  page.on('dialog', (d) => void d.dismiss());
+  await openApp(page);
+  await page.getByRole('button', { name: '▶ Inizia allenamento' }).click();
+  await logSet(page, 'gsq', 0, { kg: 14, reps: 10 });
+  await saveSession(page);
+  await expect(page.locator('.restbar')).toContainText('Goblet squat');
+});
+
 test('R06 ogni esercizio mostra "rec. Xs"', async ({ page }) => {
   await openApp(page);
   await expect(card(page, 'gsq').locator('.meta')).toContainText('rec. 90s');

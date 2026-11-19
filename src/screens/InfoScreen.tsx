@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { markBackupDone, mergeSessions, replaceAllData, setSetting, type PersistState } from '../db/db';
 import type { Session, SetLog, Settings } from '../db/models';
 import { backupFileName, buildBackup, detectFormat, parseBackup } from '../logic/backup';
-import { convertPrototype } from '../logic/importPrototype';
+import { convertPrototype, protoImportMessage } from '../logic/importPrototype';
 import { fmtDate } from '../logic/format';
 import { PUSHUP_LEVELS } from '../program/program';
 import { wakeLockSupported } from '../hooks/useWakeLock';
@@ -69,8 +69,8 @@ export function InfoScreen({ sessions, logs, settings, persist, toast }: Props) 
       } else if (fmt === 'prototype') {
         const res = convertPrototype(obj);
         if (!confirm(`Backup del prototipo: ${res.sessions.length} sedute. Le aggiungo allo storico (quelle già importate vengono saltate)?`)) return;
-        const added = await mergeSessions(res.sessions, res.setLogs);
-        alert([`Importate ${added} sedute dal prototipo.`, ...res.warnings].join('\n'));
+        const addedIds = await mergeSessions(res.sessions, res.setLogs);
+        alert(protoImportMessage(res, addedIds));
       } else {
         alert('File non riconosciuto: non è un backup di TeacherGym né del prototipo.');
       }

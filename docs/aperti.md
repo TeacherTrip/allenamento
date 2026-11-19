@@ -20,10 +20,12 @@ Stato: app **pubblicata il 19/11/2026** su https://teachertrip.github.io/allenam
     - [ ] 9 timer di recupero e del circuito: suono e vibrazione (serve l'utente: suono e vibrazione non si verificano dal PC)
     - [x] 10 app installata, a schermo intero (display-mode standalone, nessuna barra di Chrome)
   - Osservazioni dalle prove (da decidere):
-    - [ ] Dopo "Termina e salva" il timer di recupero resta acceso (partito dall'ultima ✓): fermarlo al salvataggio?
-    - [ ] Secondo import dello stesso backup del prototipo: "Importate 0 sedute" ma anche "1 valori non interpretati" (l'avviso conta pure le sedute saltate).
+    - [x] Dopo "Termina e salva" il timer di recupero restava acceso: ora si ferma al salvataggio (resta se il salvataggio viene annullato). Prove R07-R08.
+    - [x] Secondo import dello stesso backup del prototipo: "Importate 0 sedute" + "1 valori non interpretati". Verificato: anche il primo import segnalava 1 valore, quindi il file è letto sempre allo stesso modo; l'avviso contava anche le sedute saltate. Ora gli avvisi valgono solo per le sedute aggiunte e il secondo import dice "Nessuna seduta nuova: 1 già presente, saltata.". Prove in `tests/dataio.test.ts` e P20.
+    - [x] Scrivere kg/ripetizioni confermava la serie da solo senza avviare il recupero: ora conferma solo il tasto ✓, che avvia il recupero (decisione dell'utente, 19/11/2026; aggiornato anche PROMPT.md).
     - [ ] "Ultimo backup" si aggiorna al tocco di "Esporta" anche se il download fallisce (l'app non può saperlo; limite noto).
-    - [ ] Import di un backup **vero** del prototipo: solo se l'utente ne ha uno.
+    - [x] Import di un backup **vero** del prototipo: chiuso, l'utente non ne ha (19/11/2026). Provato solo con dati inventati.
+    - [ ] Le correzioni di questa sessione arrivano sul telefono solo dopo il push (da confermare).
     - [x] 11 solo email noreply (19/11/2026: 24 commit locali, 23 su GitHub, autore e committer)
     - [x] 12 il pre-commit blocca `test-backup.json` (bloccato anche da `.gitignore`; file cancellato)
     - [x] 13 nessun backup/`.env`/dato personale su GitHub (file attuali e cronologia; gitleaks ok; tolto il modello del telefono dai file attuali)

@@ -217,6 +217,7 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
     const maxSets = Object.fromEntries(rows.map((r) => [r.ex.id, r.count]));
     const n = await saveSessionFromDraft(draft, phase1, maxSets, dur);
     if (n > 0) {
+      stopRest(); // seduta finita: il recupero partito dall'ultima ✓ non serve più
       setDraft(emptyDraft(day));
       window.scrollTo(0, 0);
       toast(dur != null ? `Seduta salvata · ${fmtDuration(dur)}` : 'Seduta salvata');

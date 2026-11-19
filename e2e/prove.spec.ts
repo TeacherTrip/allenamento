@@ -223,3 +223,23 @@ test('P19 rematore e bulgarian split squat: "Parti dal lato sinistro"', async ({
   await goTab(page, 'B');
   await expect(card(page, 'bss')).toContainText('Parti dal lato sinistro');
 });
+
+test('P20 backup del prototipo importato due volte: il secondo dice "nessuna seduta nuova" (trovato sul telefono)', async ({ page }) => {
+  const msgs = autoDialogs(page);
+  await openApp(page, 'Info');
+  // dati INVENTATI
+  const proto = {
+    sessions: [
+      { id: 1700000000000, day: 'A', date: '2026-01-10T08:00:00.000Z', note: 'nota finta', entries: { gsq: [{ l: '14', r: '10' }], pu: [{ l: 'boh', r: '8' }] } },
+    ],
+  };
+  const file = { name: 'prototipo-finto.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(proto)) };
+  await page.locator('input[type="file"]').setInputFiles(file);
+  await expect.poll(() => msgs.length).toBe(2);
+  expect(msgs[1]).toBe('Importate dal prototipo: 1 seduta.\n1 valore non interpretato: li trovi nelle note delle sedute importate.');
+  await page.locator('input[type="file"]').setInputFiles(file);
+  await expect.poll(() => msgs.length).toBe(4);
+  expect(msgs[3]).toBe('Nessuna seduta nuova: 1 già presente, saltata.');
+  await goTab(page, 'Storico');
+  await expect(page.locator('.hist details')).toHaveCount(1);
+});

@@ -143,14 +143,15 @@ export async function replaceAllData(sessions: Session[], setLogs: SetLog[], set
 }
 
 /** Aggiunge sedute (es. dal prototipo) saltando quelle già presenti. Restituisce quante ne ha aggiunte. */
-export async function mergeSessions(sessions: Session[], setLogs: SetLog[]): Promise<number> {
-  let added = 0;
+/** Aggiunge le sedute non ancora presenti; restituisce gli id di quelle aggiunte. */
+export async function mergeSessions(sessions: Session[], setLogs: SetLog[]): Promise<string[]> {
+  const added: string[] = [];
   await db.transaction('rw', [db.sessions, db.setLogs], async () => {
     for (const s of sessions) {
       if (await db.sessions.get(s.id)) continue;
       await db.sessions.add(s);
       await db.setLogs.bulkAdd(setLogs.filter((l) => l.sessionId === s.id));
-      added++;
+      added.push(s.id);
     }
   });
   return added;

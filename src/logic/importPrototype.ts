@@ -20,10 +20,16 @@ interface ProtoSession {
   note?: string;
 }
 
+/** Avviso dell'import: sessionId = seduta a cui si riferisce (null = seduta non valida, già scartata). */
+export interface ProtoWarning {
+  sessionId: string | null;
+  text: string;
+}
+
 export interface ProtoImportResult {
   sessions: Session[];
   setLogs: SetLog[];
-  warnings: string[];
+  warnings: ProtoWarning[];
 }
 
 const numbers = (s: string) => (s.match(/\d+(?:[.,]\d+)?/g) ?? []).map((x) => Number(x.replace(',', '.')));
@@ -70,11 +76,11 @@ export function convertPrototype(obj: unknown): ProtoImportResult {
 
   const sessions: Session[] = [];
   const setLogs: SetLog[] = [];
-  const warnings: string[] = [];
+  const warnings: ProtoWarning[] = [];
 
   for (const ps of o.sessions) {
     if (!ps || !['A', 'B', 'C'].includes(ps.day) || Number.isNaN(Date.parse(ps.date))) {
-      warnings.push('Una seduta del prototipo non è valida ed è stata saltata.');
+      warnings.push({ sessionId: null, text: 'Una seduta del prototipo non è valida ed è stata saltata.' });
       continue;
     }
     const sessionId = `proto-${ps.id}`;
@@ -83,7 +89,7 @@ export function convertPrototype(obj: unknown): ProtoImportResult {
     for (const [exId, arr] of Object.entries(ps.entries ?? {})) {
       const ex = EXERCISE_BY_ID[exId];
       if (!ex) {
-        warnings.push(`Esercizio sconosciuto "${exId}" saltato.`);
+        warnings.push({ sessionId, text: `Esercizio sconosciuto "${exId}" saltato.` });
         continue;
       }
       (arr ?? []).forEach((set, i) => {
@@ -118,7 +124,29 @@ export function convertPrototype(obj: unknown): ProtoImportResult {
     });
   }
 
-  const unparsed = sessions.reduce((n, s) => n + (s.notes.match(/\[Import\]/g)?.length ?? 0), 0);
-  if (unparsed) warnings.push(`${unparsed} valori non interpretati: li trovi nelle note delle sedute.`);
   return { sessions, setLogs, warnings };
+}
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+/**
+ * Messaggio di fine import. Gli avvisi (valori non interpretati, esercizi sconosciuti)
+ * riguardano solo le sedute AGGIUNTE adesso: quelle già presenti vengono saltate e non contano.
+ */
+export function protoImportMessage(res: ProtoImportResult, addedIds: string[]): string {
+  const added = new Set(addedIds);
+  const addedSessions = res.sessions.filter((s) => added.has(s.id));
+  const skipped = res.sessions.length - addedSessions.length;
+  const skippedText = `${plural(skipped, 'già presente, saltata', 'già presenti, saltate')}`;
+  const lines: string[] = [];
+  if (addedSessions.length === 0) {
+    lines.push(skipped ? `Nessuna seduta nuova: ${skippedText}.` : 'Nessuna seduta da importare.');
+  } else {
+    lines.push(`Importate dal prototipo: ${plural(addedSessions.length, 'seduta', 'sedute')}.`);
+    if (skipped) lines.push(`${skippedText[0].toUpperCase()}${skippedText.slice(1)}.`);
+  }
+  const unparsed = addedSessions.reduce((n, s) => n + (s.notes.match(/\[Import\]/g)?.length ?? 0), 0);
+  if (unparsed) lines.push(`${plural(unparsed, 'valore non interpretato', 'valori non interpretati')}: li trovi nelle note delle sedute importate.`);
+  for (const w of res.warnings) if (w.sessionId == null || added.has(w.sessionId)) lines.push(w.text);
+  return lines.join('\n');
 }

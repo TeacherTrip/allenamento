@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildBackup, detectFormat, parseBackup } from '../src/logic/backup';
-import { convertPrototype, parseProtoLoad } from '../src/logic/importPrototype';
+import { convertPrototype, parseProtoLoad, protoImportMessage } from '../src/logic/importPrototype';
 import { DEFAULT_SETTINGS, type Session, type SetLog } from '../src/db/models';
 import { EXERCISE_BY_ID } from '../src/program/program';
 
@@ -65,6 +65,45 @@ describe('import dal prototipo', () => {
     expect(by('db')).toEqual([[undefined, 8]]);
     expect(s.notes).toContain('nota finta');
     expect(s.notes).toContain('"boh" non interpretato');
+  });
+
+  it('lo stesso file viene letto sempre allo stesso modo (primo e secondo import)', () => {
+    const a = convertPrototype(JSON.parse(JSON.stringify(proto)));
+    const b = convertPrototype(JSON.parse(JSON.stringify(proto)));
+    expect(b).toEqual(a);
+    expect(a.warnings).toEqual([]); // "boh" sta nelle note della seduta, non negli avvisi generali
+  });
+
+  it('messaggio: primo import con i valori non interpretati, secondo import "nessuna seduta nuova"', () => {
+    const res = convertPrototype(proto);
+    const id = res.sessions[0].id;
+    expect(protoImportMessage(res, [id])).toBe(
+      'Importate dal prototipo: 1 seduta.\n1 valore non interpretato: li trovi nelle note delle sedute importate.',
+    );
+    // stesso file di nuovo: la seduta c'è già → niente avviso sui valori (riguarda una seduta saltata)
+    expect(protoImportMessage(res, [])).toBe('Nessuna seduta nuova: 1 già presente, saltata.');
+  });
+
+  it('messaggio: import parziale e avvisi solo delle sedute aggiunte', () => {
+    const two = {
+      sessions: [
+        proto.sessions[0],
+        { id: 2, day: 'B', date: '2026-01-12T08:00:00.000Z', entries: { boh: [{ l: '1', r: '1' }] } },
+        { id: 3, day: 'X', date: 'non una data', entries: {} },
+      ],
+    };
+    const res = convertPrototype(two);
+    expect(protoImportMessage(res, ['proto-2'])).toBe(
+      [
+        'Importate dal prototipo: 1 seduta.',
+        '1 già presente, saltata.',
+        'Esercizio sconosciuto "boh" saltato.',
+        'Una seduta del prototipo non è valida ed è stata saltata.',
+      ].join('\n'),
+    );
+    expect(protoImportMessage(res, [])).toBe(
+      'Nessuna seduta nuova: 2 già presenti, saltate.\nUna seduta del prototipo non è valida ed è stata saltata.',
+    );
   });
 
   it('parseProtoLoad rispetta la direzione degli elastici', () => {

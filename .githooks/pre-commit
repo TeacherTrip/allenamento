@@ -30,9 +30,14 @@ if [ -n "$bad_files" ]; then
 fi
 
 # 3. Email diverse dalla noreply di GitHub
+# Eccezioni: indirizzi PUBBLICI di terzi che npm scrive da solo in package-lock.json.
+# Confronto sull'indirizzo intero (-x), testo letterale (-F): nessuna ricerca parziale.
+#   i@izs.me = autore della libreria glob (avviso "deprecated"), aggiunta il 2026-11-19
+email_ok='i@izs.me'
 bad_mails=$(printf '%s\n' "$added" \
   | grep -oiE '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}' \
-  | grep -viE '@users\.noreply\.github\.com$' | sort -u)
+  | grep -viE '@users\.noreply\.github\.com$' \
+  | grep -vixF -e "$email_ok" | sort -u)
 if [ -n "$bad_mails" ]; then
   echo "BLOCCATO: indirizzi email non ammessi nelle righe aggiunte:"
   printf '  %s\n' $bad_mails

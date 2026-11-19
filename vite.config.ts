@@ -11,7 +11,8 @@ export default defineConfig({
       // aggiornamento SOLO a richiesta: compare un avviso, l'app si ricarica quando lo decide l'utente
       registerType: 'prompt',
       injectRegister: false,
-      includeAssets: ['favicon.svg', 'icone/apple-touch-icon.png'],
+      // favicon e icone entrano già in cache con globPatterns: niente doppioni nell'elenco
+      includeManifestIcons: false,
       manifest: {
         name: 'TeacherGym',
         short_name: 'TeacherGym',

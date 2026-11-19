@@ -43,6 +43,18 @@ test('senza rete: l\'app si apre, con immagini e grafici', async ({ page, contex
   await context.setOffline(false);
 });
 
+test('precache: tutte le immagini degli esercizi, nessun doppione', async ({ request }) => {
+  const sw = await (await request.get(PWA + 'sw.js')).text();
+  const urls = [...sw.matchAll(/url:"([^"]+)"/g)].map((m) => m[1]);
+  expect(new Set(urls).size, 'voci doppie nel precache').toBe(urls.length);
+  const fs = await import('node:fs');
+  const webp = fs.readdirSync('public/esercizi').filter((f) => f.endsWith('.webp'));
+  expect(webp.length).toBeGreaterThan(0);
+  for (const f of webp) expect(urls, f).toContain(`esercizi/${f}`);
+  for (const f of ['index.html', 'manifest.webmanifest', 'favicon.svg', 'icone/icona-192.png', 'icone/icona-512.png'])
+    expect(urls, f).toContain(f);
+});
+
 test('nessun avviso di aggiornamento al primo avvio', async ({ page }) => {
   await page.goto(PWA);
   await page.evaluate(() => navigator.serviceWorker.ready);

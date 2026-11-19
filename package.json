@@ -12,6 +12,7 @@
     "immagini": "node scripts/ottimizza-immagini.mjs"
   },
   "dependencies": {
+    "chart.js": "^4.6.1",
     "dexie": "^4.4.7",
     "dexie-react-hooks": "^4.4.0",
     "react": "^19.3.1",

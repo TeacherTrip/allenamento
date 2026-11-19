@@ -15,6 +15,9 @@
   --red: #ef4444;
   --pre: #6f727a; /* valori precompilati */
   --r: 12px;
+  /* grafici: colori validati (luminosità, daltonismo, contrasto) per lo sfondo scuro */
+  --c1: #34a865;
+  --c2: #3b82f6;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: light) {
@@ -33,6 +36,8 @@
     --warn-tx: #78350f;
     --red: #dc2626;
     --pre: #9a9da5;
+    --c1: #1f9d55;
+    --c2: #2563eb;
     color-scheme: light;
   }
 }
@@ -238,4 +243,39 @@ ul { margin: 4px 0; padding-left: 18px; }
   position: fixed; left: 50%; top: calc(56px + env(safe-area-inset-top)); transform: translateX(-50%);
   background: var(--ac); color: var(--ac-tx); font-weight: 700;
   padding: 10px 16px; border-radius: 10px; z-index: 20; max-width: 90vw; text-align: center;
+}
+
+/* ---------- circuito cardio ---------- */
+.seg { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 4px; }
+.seg button { flex: 1; min-width: 70px; padding: 8px 4px; border: 0; border-radius: 9px; background: var(--card2); color: var(--mut); font-size: 12.5px; font-weight: 600; line-height: 1.3; }
+.seg button.on { background: var(--ac2); color: #fff; }
+.circuit-done { margin: 8px 0 0; color: var(--ac); font-weight: 600; font-size: 14px; }
+.circuit-done .link { display: inline; margin: 0 0 0 6px; }
+
+/* Timer del circuito a tutto schermo: sopra a tutto (anche al "Via!" del recupero). */
+.circuit-overlay {
+  position: fixed; inset: 0; z-index: 40; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: max(14px, env(safe-area-inset-top)) 16px max(14px, env(safe-area-inset-bottom));
+  --phase: var(--mut);
+}
+.circuit-overlay[data-phase='work'] { --phase: var(--ac); }
+.circuit-overlay[data-phase='rest'] { --phase: var(--warn); }
+.circuit-overlay[data-phase='done'] { --phase: var(--ac); }
+.co-phase {
+  width: 100%; text-align: center; padding: 10px; border-radius: 12px;
+  background: var(--phase); color: #0b0c0e; font-weight: 800; font-size: 18px; letter-spacing: .5px;
+}
+.circuit-overlay[data-paused] .co-phase { background: var(--card2); color: var(--tx); }
+.co-img { flex: 1 1 auto; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; }
+.co-img img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px; background: #fff; border: 3px solid var(--phase); }
+.circuit-overlay[data-phase='rest'] .co-img img { opacity: .75; }
+.co-name { font-size: 20px; font-weight: 700; text-align: center; }
+.co-time { font-size: 76px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; color: var(--phase); }
+.co-done { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: 18px; }
+.co-check { font-size: 96px; color: var(--ac); line-height: 1; }
+.co-buttons { width: 100%; display: flex; gap: 10px; }
+.co-buttons button { flex: 1; margin-top: 0; padding: 16px; font-size: 17px; }
+@media (orientation: landscape) and (max-height: 500px) {
+  .co-time { font-size: 48px; }
 }

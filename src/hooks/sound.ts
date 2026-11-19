@@ -54,3 +54,30 @@ export function restEndAlert(): void {
   }
   vibrate([300, 150, 300, 450, 300, 150, 300]);
 }
+
+// ---------- circuito cardio ----------
+
+/** Conto alla rovescia negli ultimi 3 secondi di ogni fase: bip corto. */
+export function countdownTick(): void {
+  beep(660, 0.12);
+}
+
+/** Inizio del lavoro: bip alto e lungo + vibrazione. */
+export function workStartAlert(): void {
+  beep(988, 0.5);
+  vibrate(400);
+}
+
+/** Inizio della pausa: bip basso + doppia vibrazione corta. */
+export function restStartAlert(): void {
+  beep(520, 0.5);
+  vibrate([200, 100, 200]);
+}
+
+/** Fine circuito: tre note salenti + vibrazione lunga. */
+export function circuitDoneAlert(): void {
+  beep(660, 0.25, 0);
+  beep(880, 0.25, 0.3);
+  beep(1175, 0.6, 0.6);
+  vibrate([500, 200, 500]);
+}

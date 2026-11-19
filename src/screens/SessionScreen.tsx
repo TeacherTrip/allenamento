@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { db, saveDraft, saveSessionFromDraft, setSetting } from '../db/db';
 import type { Draft, DraftEntry, Session, SetLog, SetValues, Settings } from '../db/models';
 import { DAYS, WARMUP, exercisesForDay, supersetPartner } from '../program/program';
@@ -11,7 +11,9 @@ import { unlockAudio } from '../hooks/sound';
 import { wakeLockSupported } from '../hooks/useWakeLock';
 import { ExerciseCard } from '../components/ExerciseCard';
 import { Thumb } from '../components/Thumb';
-import { CARDIO_EXERCISES } from '../program/cardio';
+import { CARDIO_EXERCISES, CARDIO_INTENSITY, CARDIO_PROTOCOLS } from '../program/cardio';
+import { CircuitOverlay } from '../components/CircuitOverlay';
+import { pauseRun, resumeRun } from '../logic/circuit';
 import type { SimpleItem } from '../program/types';
 
 interface Props {
@@ -23,6 +25,7 @@ interface Props {
   activeDay: Day | null;
   goToDay: (day: Day) => void;
   startRest: (sec: number, label: string) => void;
+  stopRest: () => void;
   toast: (msg: string, ms?: number) => void;
 }
 
@@ -48,7 +51,7 @@ function shouldWarnScreen(): boolean {
 const shownValues = (entry: DraftEntry | null | undefined, prefill: SetValues | undefined): SetValues | undefined =>
   entry ? entryToValues(entry) : prefill;
 
-export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDay, startRest, toast }: Props) {
+export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDay, startRest, stopRest, toast }: Props) {
   const plan = DAYS.find((d) => d.day === day)!;
   const exercises = useMemo(() => exercisesForDay(day), [day]);
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -90,6 +93,25 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
         return { ex, count, prefill: buildPrefill(planned, count), hint: progressionHint(ex, planned), lastText };
       }),
     [exercises, sessions, logs, phase1],
+  );
+
+  // ---------- circuito (seduta C) ----------
+  const [protocol, setProtocol] = useState(settings.cardioProtocol);
+  useEffect(() => setProtocol(settings.cardioProtocol), [settings.cardioProtocol]);
+
+  const circuitLog = (p: number, completedRounds: number) => {
+    const cp = CARDIO_PROTOCOLS[p];
+    return { protocol: p, label: cp.label, rounds: cp.rounds, completedRounds };
+  };
+
+  /** Ogni round finito si registra subito nella bozza (sopravvive a chiusure improvvise). */
+  const onCircuitProgress = useCallback(
+    (completedRounds: number) =>
+      update((d) => {
+        if (!d.circuitRun || completedRounds === 0) return d;
+        return { ...d, circuit: circuitLog(d.circuitRun.protocol, completedRounds) };
+      }),
+    [day],
   );
 
   // draft.day !== day: appena cambiata scheda, la bozza è ancora quella del giorno prima → aspetta
@@ -201,6 +223,35 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
     }
   };
 
+  const onCircuitStart = () => {
+    if (draft.circuit && !confirm(`Circuito già registrato (${draft.circuit.completedRounds}/${draft.circuit.rounds} round). Rifarlo da capo?`))
+      return;
+    unlockAudio();
+    stopRest();
+    update((d) => {
+      const next: Draft = { ...d, circuitRun: { protocol, startedAt: Date.now(), pausedMs: 0 } };
+      delete next.circuit;
+      return next;
+    });
+  };
+
+  const onCircuitClose = (completedRounds: number) =>
+    update((d) => {
+      const next: Draft = { ...d };
+      if (d.circuitRun && completedRounds > 0) next.circuit = circuitLog(d.circuitRun.protocol, completedRounds);
+      delete next.circuitRun;
+      return next;
+    });
+
+  const onCircuitRemove = () => {
+    if (!confirm('Togliere il circuito registrato da questa seduta?')) return;
+    update((d) => {
+      const next = { ...d };
+      delete next.circuit;
+      return next;
+    });
+  };
+
   const onClear = () => {
     if (!confirm('Svuotare tutti i campi di questa seduta?')) return;
     update((d) => ({ ...d, sets: {}, extra: {}, notes: '' }));
@@ -289,11 +340,49 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
       })}
 
       {day === 'C' && (
-        <div className="box">
-          <b>Circuito cardio</b>
+        <div className="box circuit" data-testid="circuit-box">
+          <b>Circuito cardio senza salti</b>
           <ItemList items={CARDIO_EXERCISES} testId="circuit" />
-          <div className="sub">Il timer del circuito arriva nella Fase 5.</div>
+          <div className="sub">Rotazione dei 4 esercizi, uno per round. Intensità: {CARDIO_INTENSITY.toLowerCase()}</div>
+          <div className="seg" role="radiogroup" aria-label="Protocollo del circuito">
+            {CARDIO_PROTOCOLS.map((p, i) => (
+              <button
+                key={p.label}
+                role="radio"
+                aria-checked={protocol === i}
+                className={protocol === i ? 'on' : ''}
+                onClick={() => {
+                  setProtocol(i);
+                  void setSetting('cardioProtocol', i);
+                }}
+              >
+                {p.label}
+                <br />
+                {p.rounds}× {p.workSec}/{p.restSec} s
+              </button>
+            ))}
+          </div>
+          {draft.circuit && (
+            <p className="circuit-done" data-testid="circuit-recorded">
+              ✓ Registrato: {draft.circuit.label}, {draft.circuit.completedRounds}/{draft.circuit.rounds} round{' '}
+              <button className="link" onClick={onCircuitRemove}>
+                Togli
+              </button>
+            </p>
+          )}
+          <button className="primary" onClick={onCircuitStart}>
+            ▶ Avvia circuito
+          </button>
         </div>
+      )}
+      {day === 'C' && draft.circuitRun && (
+        <CircuitOverlay
+          run={draft.circuitRun}
+          onPause={() => update((d) => (d.circuitRun ? { ...d, circuitRun: pauseRun(d.circuitRun) } : d))}
+          onResume={() => update((d) => (d.circuitRun ? { ...d, circuitRun: resumeRun(d.circuitRun) } : d))}
+          onProgress={onCircuitProgress}
+          onClose={onCircuitClose}
+        />
       )}
 
       <textarea

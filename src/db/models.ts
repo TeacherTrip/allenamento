@@ -1,4 +1,5 @@
 import type { Day } from '../program/types';
+import type { CircuitRun } from '../logic/circuit';
 
 /** Valori di una serie. Il significato di `load` dipende dalla metrica:
  *  kg → kg; band → kg dell'elastico (0 = nessuno); level → livello 1-5. */
@@ -55,6 +56,8 @@ export interface Draft {
   extra?: Record<string, (DraftEntry | null)[]>;
   notes: string;
   circuit?: CircuitLog;
+  /** Timer del circuito in corso (seduta C). */
+  circuitRun?: CircuitRun;
   /** Orario di inizio (ISO) se il cronometro è partito: sopravvive a chiusura e ricaricamento. */
   startedAt?: string;
 }

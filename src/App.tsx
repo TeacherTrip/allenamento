@@ -119,6 +119,7 @@ export function App() {
         activeDay={active?.day ?? null}
         goToDay={go}
         startRest={startRest}
+        stopRest={stopRest}
         toast={toast}
       />
     );

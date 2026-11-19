@@ -43,13 +43,11 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 - `/chiudi` (`.claude/commands/chiudi.md`): chiusura sessione (stato, diario in `docs/storia.md`, punti aperti in `docs/aperti.md`, controlli, commit, push).
 
 ## Stato per ripartire
-- Fase 5 scritta (piano in `docs/piano.md`): timer del circuito a tutto schermo (immagine grande, bip 3-2-1, pausa, round registrati) e grafici Chart.js (per esercizio e per gruppo muscolare). Ultimo commit funzionale `76ee1b3`.
-- Prove: 90 Vitest + 82 Playwright (4 sulla versione costruita: manifest, offline, precache), verdi. Build ok (JS iniziale ~118 KB compressi + Grafici ~64 KB a parte).
-- Fase 5 provata sul telefono e pubblicata (2026-11-19).
-- **Fase 6 chiusa**: app **pubblicata il 19/11/2026** su `https://teachertrip.github.io/allenamento/`, installata sul telefono (nessun dato da importare). Precache: 39 file, 1,28 MB, tutti i 28 `.webp`. PWA con vite-plugin-pwa (aggiornamento solo a richiesta, mai durante allenamento/recupero/circuito), icone generate da `npm run icone`, Grafici caricati a parte. Workflow `.github/workflows/pubblica.yml`: a ogni push su main → `npm test` + build → Pages (Playwright gira solo sul PC).
-- GitHub (19/11/2026): repo **pubblico**; protezioni attive: secret scanning + push protection attivi; Issues/Projects/Wiki spenti; `main` protetto (niente force push né cancellazione, anche per l'admin). L'utente vuole **conferma prima di ogni modifica su GitHub**.
-- Hook pre-commit: eccezione esatta (`-x -F`) solo per `i@izs.me` (email pubblica in package-lock). Nuove eccezioni solo con l'utente.
-- Telefono Android (modello mai scritto nei file versionati): `adb reverse tcp:5173 tcp:5173`. Se la shell non trova `adb`, ricaricare il PATH utente nella sessione.
-- Immagini: originali in `immagini-originali/` (esclusa da Git); `npm run immagini` crea `public/esercizi/<id>.webp`; percorso sempre con `imageUrl()`.
-- Prossimo passo: **Fase 7** (checklist finale sul telefono, vedi `docs/aperti.md`).
-- gitleaks e adb sono già nel PATH utente: se la shell non li trova, riavviare il terminale / Claude Code (la sessione è partita prima).
+- **Fase 7 in corso.** Fase 6 chiusa: app **pubblicata il 19/11/2026** su `https://teachertrip.github.io/allenamento/` (versione 3 installata sul telefono, nessun dato importato). PWA: aggiornamento solo a richiesta, mai durante allenamento/recupero/circuito (provato sul telefono); versione in fondo a Info.
+- GitHub: repo **pubblico**, secret scanning + push protection, Issues/Projects/Wiki spenti, `main` protetto. Workflow `pubblica.yml`: push su main → `npm test` + build → Pages. **Conferma dell'utente prima di ogni modifica su GitHub** (push compresi, tranne /chiudi).
+- Prove: 90 Vitest + 83 Playwright (4 sulla build: manifest, offline, precache, versione), verdi. Precache 39 file, 1,28 MB.
+- Fase 7, checklist §10 in `docs/aperti.md`: fatti dal PC i punti 11-14. **Da provare sul telefono:** punti 1-10, partendo dalla prova 1 (seduta A con 2 serie ✓ + 1 senza ✓ → Termina → riavvio del telefono → Storico).
+- Lista privata di parole: **nessuna voce attiva** → il controllo parole non agisce; la compila l'utente, poi rilanciare il controllo sulla cronologia (stampa solo commit e file).
+- Hook: eccezione esatta solo per `i@izs.me` (package-lock). Modello del telefono mai nei file versionati. Immagini: `npm run immagini`; icone: `npm run icone`.
+- Shell partita prima del PATH aggiornato: per gitleaks/adb/gh ricaricare il PATH utente o riavviare Claude Code.
+- Prossimo passo: prove 1-10 sul telefono; alla fine cancellare le sedute di prova e spegnere il debug USB.

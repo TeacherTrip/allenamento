@@ -109,4 +109,23 @@ Orari presi da `git reflog show origin/main`.
 - Nel workflow girano tipi + Vitest; Playwright solo sul PC.
 - Eccezioni nell'hook solo per indirizzi interi e con l'utente.
 
-**Commit:** 6b0dec7, 204bff9, c5b28fa, c60db2a (+ precache senza doppioni e note).
+**Commit:** 6b0dec7, 204bff9, c5b28fa, c60db2a, d458394, 02d7431.
+
+## 2026-11-19 (quarta sessione, seguito) — avvio Fase 7
+
+- **Versione in Info**: "TeacherGym · versione N (commit)", scritta da GitHub Actions (`VITE_BUILD_NUMBER`, `VITE_COMMIT`); in locale "sviluppo locale". Ogni pubblicazione cambia davvero l'app. Prova Playwright dedicata (83 in totale).
+- **Prova dell'aggiornamento sul telefono, superata**: versione 2 → "Aggiorna" funziona; versione 3 pubblicata con allenamento avviato → avviso senza pulsante; dopo aver terminato → aggiornata; Info mostra "versione 3 (044f35a)". Seduta di prova eliminata dall'utente.
+- **Fase 7, controlli dal PC (checklist §10, punti 11-14) superati**:
+  - 11: autori e committer solo noreply (24 commit locali, 23 su GitHub via API);
+  - 12: `test-backup.json` fermato da `.gitignore` e, forzato con `git add -f`, bloccato dall'hook; poi cancellato;
+  - 13: nessun backup/`.env`/`.local`/`PROMPT.md` su GitHub, né oggi né nella cronologia; gitleaks ok; ricerca di indizi di dati personali: solo falsi allarmi;
+  - 14: secret scanning e push protection `enabled`.
+- Controllo con la lista privata di parole (con il consenso dell'utente, stessa pulizia dell'hook, parole mai stampate): la lista ha **0 voci attive**, quindi il controllo non è eseguibile e l'hook non ha mai bloccato parole.
+- Modello del telefono tolto da tutti i file attuali (anche il nome del sistema), su richiesta dell'utente; resta nella cronologia già pubblicata (nessuna riscrittura: `main` protetto).
+
+**Decisioni**
+- Il modello del telefono non va scritto nei file versionati.
+- Cronologia pubblicata non riscritta per il modello del telefono (non identifica una persona).
+- Le sedute delle prove sul telefono si cancellano alla fine della Fase 7.
+
+**Commit:** 044f35a, 95107d6, bbcbe5c (+ commit di chiusura sessione).

@@ -42,6 +42,13 @@ Punteggio della serie migliore di ogni seduta:
 - `bodyweight`: reps; `time`: secondi.
 Indice esercizio = punteggio / punteggio della prima seduta × 100. Indice di gruppo = media degli indici degli esercizi in cui il gruppo è primario (ultimo valore noto di ciascuno).
 
+## Aggiunte del 2026-11-19 (anticipate nella Fase 4)
+- **Cronometro della seduta**: "▶ Inizia allenamento" salva l'orario di inizio nella bozza (sopravvive a chiusura/ricarica); cronometro sempre visibile in alto; wake lock finché è attivo; "■ Termina allenamento" = stessa azione di "Salva seduta" (conferma con durata + avviso serie non confermate). Durata nello storico, modificabile, nel backup. Un solo allenamento attivo alla volta.
+- **Recupero automatico**: parte col tasto ✓ (non scrivendo); superset: dopo 2a avviso "→ Passa a 2b", timer dopo 2b; niente timer sull'ultima serie dell'ultimo esercizio; pulsante manuale "Avvia recupero"; interruttore in Info (attivo di default).
+- **Serie complete**: si salvano solo serie con ripetizioni (o secondi) e, dove serve, carico. Avviso per le incomplete.
+- **Togliere la conferma** con ✓ mantiene i valori scritti (tornano grigi, non salvati).
+- **Prove automatiche** nel browser: Playwright con Chrome del PC, emulazione Pixel 7, profilo pulito (`npx playwright test`).
+
 ## Circuito (decisione B)
 La seduta C registra il circuito: protocollo scelto e round completati.
 

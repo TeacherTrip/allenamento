@@ -26,6 +26,26 @@ export function fmtDate(iso: string): string {
   return new Date(iso).toLocaleDateString('it-IT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+/** Durata trascorsa: "23:41" oppure "1:02:03". */
+export function fmtElapsed(ms: number): string {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return h > 0 ? `${h}:${p(m)}:${p(s % 60)}` : `${p(m)}:${p(s % 60)}`;
+}
+
+/** Secondi trascorsi dall'inizio (mai negativi). */
+export function durationSec(startedAt: string, now = Date.now()): number {
+  return Math.max(0, Math.round((now - Date.parse(startedAt)) / 1000));
+}
+
+/** 2820 → "47 min"; 4500 → "1 h 15 min". */
+export function fmtDuration(sec: number): string {
+  const min = Math.round(sec / 60);
+  return min >= 60 ? `${Math.floor(min / 60)} h ${min % 60} min` : `${min} min`;
+}
+
 export function fmtRange(ex: Exercise): string {
   const [a, b] = ex.repRange;
   const r = a === b ? `${a}` : `${a}-${b}`;

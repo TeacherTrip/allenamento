@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { markBackupDone, mergeSessions, replaceAllData, type PersistState } from '../db/db';
+import { markBackupDone, mergeSessions, replaceAllData, setSetting, type PersistState } from '../db/db';
 import type { Session, SetLog, Settings } from '../db/models';
 import { backupFileName, buildBackup, detectFormat, parseBackup } from '../logic/backup';
 import { convertPrototype } from '../logic/importPrototype';
@@ -25,6 +25,8 @@ const PERSIST_TEXT: Record<PersistState, string> = {
 export function InfoScreen({ sessions, logs, settings, persist, toast }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [usage, setUsage] = useState<string>('');
+  const [autoRest, setAutoRest] = useState(settings.autoRest);
+  useEffect(() => setAutoRest(settings.autoRest), [settings.autoRest]);
 
   useEffect(() => {
     navigator.storage?.estimate?.().then((e) => {
@@ -71,6 +73,19 @@ export function InfoScreen({ sessions, logs, settings, persist, toast }: Props) 
 
   return (
     <>
+      <h2>Impostazioni</h2>
+      <label className="toggle">
+        <input
+          type="checkbox"
+          checked={autoRest}
+          onChange={(e) => {
+            setAutoRest(e.target.checked);
+            void setSetting('autoRest', e.target.checked);
+          }}
+        />
+        Recupero automatico (parte quando confermi una serie con ✓)
+      </label>
+
       <h2>Dati e backup</h2>
       <div className="box">
         <b>Archiviazione</b>

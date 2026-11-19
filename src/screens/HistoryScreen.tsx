@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { deleteSession, updateSession } from '../db/db';
 import type { Session, SetLog } from '../db/models';
 import { EXERCISE_BY_ID, EXERCISES } from '../program/program';
-import { fmtDate, formatSet } from '../logic/format';
+import { fmtDate, fmtDuration, formatSet } from '../logic/format';
 import { fmtNum, parseNum } from '../logic/values';
 
 interface Props {
@@ -51,8 +51,16 @@ export function HistoryScreen({ sessions, logs, toast }: Props) {
           return (
             <details key={s.id}>
               <summary>
-                {fmtDate(s.date)} · Seduta {s.day} <span className="muted">· {sLogs.length} serie</span>
+                {fmtDate(s.date)} · Seduta {s.day}{' '}
+                <span className="muted">
+                  · {sLogs.length} serie{s.durationSec != null && ` · ${fmtDuration(s.durationSec)}`}
+                </span>
               </summary>
+              {s.durationSec != null && (
+                <div className="it">
+                  <b>Durata</b>: {fmtDuration(s.durationSec)}
+                </div>
+              )}
               {groupByExercise(sLogs).map(([id, arr]) => {
                 const ex = EXERCISE_BY_ID[id];
                 return (
@@ -115,6 +123,7 @@ function toLocalDate(iso: string) {
 function SessionEditor({ session, logs, onDone }: { session: Session; logs: SetLog[]; onDone: (saved: boolean) => void }) {
   const [date, setDate] = useState(toLocalDate(session.date));
   const [notes, setNotes] = useState(session.notes);
+  const [minutes, setMinutes] = useState(session.durationSec != null ? String(Math.round(session.durationSec / 60)) : '');
   const [rows, setRows] = useState<EditRow[]>(() =>
     groupByExercise(logs).flatMap(([, arr]) =>
       arr.map((l) => ({
@@ -143,7 +152,11 @@ function SessionEditor({ session, logs, onDone }: { session: Session; logs: SetL
       if (seconds != null) l.seconds = Math.round(seconds);
       return l;
     });
-    await updateSession({ ...session, date: newDate, notes }, newLogs);
+    const updated: Session = { ...session, date: newDate, notes };
+    const min = parseNum(minutes);
+    if (min != null && min > 0) updated.durationSec = Math.round(min * 60);
+    else delete updated.durationSec; // campo vuoto = nessuna durata
+    await updateSession(updated, newLogs);
     onDone(true);
   };
 
@@ -152,6 +165,10 @@ function SessionEditor({ session, logs, onDone }: { session: Session; logs: SetL
       <b>Modifica seduta {session.day}</b>
       <label className="field">
         Data <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      </label>
+      <label className="field">
+        Durata (minuti, vuoto = nessuna)
+        <input inputMode="numeric" className="duration" value={minutes} onChange={(e) => setMinutes(e.target.value)} />
       </label>
       {rows.map((r) => {
         const ex = EXERCISE_BY_ID[r.exerciseId] ?? EXERCISES[0];

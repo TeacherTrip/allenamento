@@ -23,6 +23,8 @@ export interface Session {
   notes: string;
   programVersion: number;
   circuit?: CircuitLog;
+  /** Durata dell'allenamento in secondi (solo se è stato premuto "Inizia allenamento"). */
+  durationSec?: number;
 }
 
 export interface SetLog extends SetValues {
@@ -35,15 +37,20 @@ export interface SetLog extends SetValues {
 
 /** Valore di un campo nella bozza: testo grezzo, così "12," durante la digitazione non si perde. */
 export type DraftField = 'load' | 'reps' | 'seconds';
-export type DraftEntry = Partial<Record<DraftField, string>>;
+export type DraftEntry = Partial<Record<DraftField, string>> & {
+  /** true = valori tenuti ma NON confermati (conferma tolta con ✓): grigi, non salvati. */
+  pending?: boolean;
+};
 
-/** Seduta in corso. Una serie presente qui è "confermata"; se manca è "precompilata". */
+/** Seduta in corso. Una serie presente qui (senza `pending`) è "confermata"; se manca è "precompilata". */
 export interface Draft {
   day: Day;
   updatedAt: string;
   sets: Record<string, (DraftEntry | null)[]>;
   notes: string;
   circuit?: CircuitLog;
+  /** Orario di inizio (ISO) se il cronometro è partito: sopravvive a chiusura e ricaricamento. */
+  startedAt?: string;
 }
 
 export interface Settings {
@@ -51,6 +58,8 @@ export interface Settings {
   cardioProtocol: number;
   lastBackupAt: string | null;
   sessionsSinceBackup: number;
+  /** Il recupero parte da solo quando si conferma una serie con ✓. */
+  autoRest: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -58,4 +67,5 @@ export const DEFAULT_SETTINGS: Settings = {
   cardioProtocol: 0,
   lastBackupAt: null,
   sessionsSinceBackup: 0,
+  autoRest: true,
 };

@@ -69,6 +69,7 @@ export function parseBackup(obj: unknown): BackupData {
     notes: isStr(s.notes) ? s.notes : '',
     programVersion: isNum(s.programVersion) ? s.programVersion : 1,
     ...(s.circuit ? { circuit: s.circuit } : {}),
+    ...(isNum(s.durationSec) ? { durationSec: s.durationSec } : {}),
   }));
   if (sessions.length !== o.sessions.length) throw new Error('Il backup contiene sedute non valide.');
 

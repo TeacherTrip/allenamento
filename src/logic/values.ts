@@ -1,4 +1,5 @@
 import type { DraftEntry, SetValues } from '../db/models';
+import type { Metric } from '../program/types';
 
 /** "12,5" → 12.5; vuoto o non numerico → undefined. */
 export function parseNum(s: string | undefined | null): number | undefined {
@@ -36,6 +37,17 @@ export function valuesToEntry(v: SetValues | undefined): DraftEntry {
 
 export function hasValues(v: SetValues): boolean {
   return v.load != null || v.reps != null || v.seconds != null;
+}
+
+/**
+ * Serie completa = salvabile: ripetizioni (o secondi per 'time') sempre obbligatorie,
+ * carico obbligatorio per kg / band / level.
+ */
+export function isComplete(metric: Metric, v: SetValues): boolean {
+  if (metric === 'time') return v.seconds != null;
+  if (v.reps == null) return false;
+  if (metric === 'kg' || metric === 'band' || metric === 'level') return v.load != null;
+  return true;
 }
 
 /** Id univoci senza crypto.randomUUID (non disponibile su http in Wi-Fi). */

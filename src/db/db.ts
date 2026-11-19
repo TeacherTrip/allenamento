@@ -2,8 +2,8 @@ import Dexie, { type Table } from 'dexie';
 import type { Draft, Session, SetLog, Settings } from './models';
 import { DEFAULT_SETTINGS } from './models';
 import type { Day } from '../program/types';
-import { PROGRAM_VERSION } from '../program/program';
-import { entryToValues, hasValues, newId } from '../logic/values';
+import { EXERCISE_BY_ID, PROGRAM_VERSION } from '../program/program';
+import { entryToValues, hasValues, isComplete, newId } from '../logic/values';
 
 interface SettingRow {
   key: keyof Settings;
@@ -57,18 +57,26 @@ export async function deleteDraft(day: Day): Promise<void> {
 }
 
 /**
- * Salva la seduta: solo le serie confermate (presenti nella bozza) con almeno un valore.
+ * Salva la seduta: solo le serie confermate (presenti nella bozza) e COMPLETE
+ * (ripetizioni/secondi presenti, carico dove serve). `durationSec` solo se il cronometro era partito.
  * Restituisce il numero di serie salvate (0 = niente salvato).
  */
-export async function saveSessionFromDraft(draft: Draft, phase1: boolean, maxSets: Record<string, number>): Promise<number> {
+export async function saveSessionFromDraft(
+  draft: Draft,
+  phase1: boolean,
+  maxSets: Record<string, number>,
+  durationSec?: number,
+): Promise<number> {
   const sessionId = newId();
   const logs: SetLog[] = [];
   for (const [exerciseId, arr] of Object.entries(draft.sets)) {
+    const ex = EXERCISE_BY_ID[exerciseId];
+    if (!ex) continue;
     const limit = maxSets[exerciseId] ?? arr.length;
     arr.slice(0, limit).forEach((entry, setIndex) => {
-      if (!entry) return;
+      if (!entry || entry.pending) return; // non confermata
       const v = entryToValues(entry);
-      if (!hasValues(v)) return;
+      if (!isComplete(ex.metric, v)) return;
       logs.push({ id: newId(), sessionId, exerciseId, setIndex, confirmed: true, ...v });
     });
   }
@@ -84,6 +92,7 @@ export async function saveSessionFromDraft(draft: Draft, phase1: boolean, maxSet
       notes: draft.notes.trim(),
       programVersion: PROGRAM_VERSION,
       ...(hasCircuit ? { circuit: draft.circuit } : {}),
+      ...(durationSec != null ? { durationSec } : {}),
     });
     await db.setLogs.bulkAdd(logs);
     await db.drafts.delete(draft.day);

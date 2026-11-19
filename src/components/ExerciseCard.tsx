@@ -12,14 +12,17 @@ interface Props {
   hint: string | null;
   lastText: string | null;
   onSetChange: (index: number, entry: DraftEntry | null) => void;
+  /** Serie confermata con ✓ (per il recupero automatico). */
+  onSetCheck: (index: number) => void;
+  onRest: () => void;
 }
 
-export function ExerciseCard({ ex, count, prefill, entries, hint, lastText, onSetChange }: Props) {
+export function ExerciseCard({ ex, count, prefill, entries, hint, lastText, onSetChange, onSetCheck, onRest }: Props) {
   const ssPos = ex.superset ? (ex.superset.endsWith('a') ? 'ssA' : 'ssB') : '';
   const partner = supersetPartner(ex);
 
   return (
-    <section className={`ex ${ssPos}`}>
+    <section className={`ex ${ssPos}`} data-ex={ex.id}>
       <div className="exh">
         {ex.superset && <span className="tag">{ex.superset}</span>}
         <h3>{ex.name}</h3>
@@ -44,9 +47,18 @@ export function ExerciseCard({ ex, count, prefill, entries, hint, lastText, onSe
           prefill={prefill[i]}
           entry={entries[i]}
           onChange={(e) => onSetChange(i, e)}
+          onCheck={() => onSetCheck(i)}
         />
       ))}
-      {partner && <div className="next">↓ Passa subito a {partner.superset}, recupero dopo la coppia</div>}
+      {partner ? (
+        <div className="next">↓ Passa subito a {partner.superset}, recupero dopo la coppia</div>
+      ) : (
+        ex.restSec > 0 && (
+          <button className="rest" onClick={onRest}>
+            Avvia recupero {ex.restSec}s
+          </button>
+        )
+      )}
     </section>
   );
 }

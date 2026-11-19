@@ -11,16 +11,24 @@ interface Props {
   /** null/undefined = non confermata (mostra la precompilazione). */
   entry: DraftEntry | null | undefined;
   onChange: (entry: DraftEntry | null) => void;
+  /** Chiamata solo quando la serie viene confermata col tasto ✓ (non scrivendo). */
+  onCheck?: () => void;
 }
 
 /** Una serie: campi della metrica + tasto ✓. Grigio = precompilato, pieno = confermato. */
-export function SetRow({ ex, index, prefill, entry, onChange }: Props) {
-  const confirmed = entry != null;
-  const shown: DraftEntry = confirmed ? entry : valuesToEntry(prefill);
-  const hasAny = Object.values(shown).some((x) => x != null && x !== '');
+export function SetRow({ ex, index, prefill, entry, onChange, onCheck }: Props) {
+  const confirmed = entry != null && !entry.pending;
+  const shown: DraftEntry = entry ? { load: entry.load, reps: entry.reps, seconds: entry.seconds } : valuesToEntry(prefill);
+  const hasAny = [shown.load, shown.reps, shown.seconds].some((x) => x != null && x !== '');
 
+  // scrivere = confermare
   const edit = (field: DraftField, value: string) => onChange({ ...shown, [field]: value });
-  const toggle = () => onChange(confirmed ? null : shown);
+  // ✓: conferma; se già confermata, toglie la conferma MA tiene i valori (tornano grigi)
+  const toggle = () => {
+    if (confirmed) return onChange({ ...shown, pending: true });
+    onChange(shown);
+    onCheck?.();
+  };
   const cls = confirmed ? 'confirmed' : 'prefilled';
   const repsLabel = ex.unilateral ? 'reps /lato' : 'reps';
 

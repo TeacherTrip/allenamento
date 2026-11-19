@@ -14,7 +14,10 @@ if command -v gitleaks >/dev/null 2>&1; then
     fail=1
   fi
 else
-  echo "BLOCCATO: gitleaks non e' installato (winget install --id Gitleaks.Gitleaks -e)."
+  echo "BLOCCATO: gitleaks non trovato, quindi il controllo dei segreti non puo' essere eseguito."
+  echo "  - Se non e' installato: winget install --id Gitleaks.Gitleaks -e"
+  echo "  - Se e' installato: chiudi e riapri il terminale (o VS Code / Claude Code),"
+  echo "    cosi' legge il PATH aggiornato. Controllo: gitleaks version"
   fail=1
 fi
 

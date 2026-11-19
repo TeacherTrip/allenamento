@@ -1,3 +1,5 @@
+import type { SimpleItem } from './types';
+
 export interface CardioProtocol {
   label: string;
   rounds: number;
@@ -12,11 +14,11 @@ export const CARDIO_PROTOCOLS: CardioProtocol[] = [
   { label: 'Sett. 7+', rounds: 10, workSec: 40, restSec: 20 },
 ];
 
-export const CARDIO_EXERCISES = [
-  'Shadow boxing',
-  'Step-out jack',
-  'Marcia ginocchia alte',
-  'Mountain climber lento (mani sul divano)',
+export const CARDIO_EXERCISES: SimpleItem[] = [
+  { id: 'cx-shadow', image: 'cx-shadow', name: 'Shadow boxing' },
+  { id: 'cx-stepout', image: 'cx-stepout', name: 'Step-out jack' },
+  { id: 'cx-knees', image: 'cx-knees', name: 'Marcia ginocchia alte' },
+  { id: 'cx-climber', image: 'cx-climber', name: 'Mountain climber lento (mani sul divano)' },
 ];
 
 export const CARDIO_INTENSITY = 'Affannato ma riesci a dire una frase breve.';

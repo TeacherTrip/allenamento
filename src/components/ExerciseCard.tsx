@@ -3,6 +3,7 @@ import { supersetPartner } from '../program/program';
 import type { Exercise } from '../program/types';
 import { fmtRange } from '../logic/format';
 import { SetRow } from './SetRow';
+import { Thumb } from './Thumb';
 
 interface Props {
   ex: Exercise;
@@ -39,15 +40,19 @@ export function ExerciseCard(p: Props) {
 
   return (
     <section className={`ex ${ssPos}`} data-ex={ex.id}>
-      <div className="exh">
-        {ex.superset && <span className="tag">{ex.superset}</span>}
-        <h3>{ex.name}</h3>
+      <div className="exhead">
+        <Thumb image={ex.image} alt={ex.name} />
+        <div className="exhead-text">
+          <div className="exh">
+            {ex.superset && <span className="tag">{ex.superset}</span>}
+            <h3>{ex.name}</h3>
+          </div>
+          <div className="meta">
+            {ex.equipment} · {count} × {fmtRange(ex)}
+            {ex.restSec > 0 && ` · rec. ${ex.restSec}s`}
+          </div>
+        </div>
       </div>
-      <div className="meta">
-        {ex.equipment} · {count} × {fmtRange(ex)}
-        {ex.restSec > 0 && ` · rec. ${ex.restSec}s`}
-      </div>
-      {ex.image && <img className="eximg" src={ex.image} alt={ex.name} loading="lazy" />}
       <details className="note">
         <summary>Esecuzione</summary>
         {ex.notes}

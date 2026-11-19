@@ -47,6 +47,6 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 - Prove: 35 Vitest + 57 Playwright, verdi su localhost e su `E2E_BASE_URL=http://192.168.1.10:5173/allenamento/`.
 - Repo `TeacherTrip/allenamento` collegato e **privato** (diventa pubblico in Fase 6, con conferma).
 - Da provare sul telefono (Xiaomi, `adb reverse tcp:5173 tcp:5173`, `npx vite --host`): recupero a schermo acceso e bloccato, Sx/Dx, "+ Serie". Vibrazione solo con "Vibrazione tattile" attiva (limite HyperOS).
-- Cartella `immagini-originali/` dell'utente: non versionata, da decidere (escluderla con `.gitignore`?).
+- Immagini esercizi: originali in `immagini-originali/` (esclusa da Git); `npm run immagini` crea i WebP in `public/esercizi/<id>.webp`. Percorso sempre con `imageUrl()` (BASE_URL).
 - Prossimo passo: esito prova telefono → **Fase 5** (timer circuito, grafici Chart.js).
 - Nota: se `gitleaks` non viene trovato dall'hook, aggiungere al PATH la cartella WinGet di Gitleaks o riavviare il terminale.

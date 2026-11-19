@@ -133,7 +133,31 @@ nav.tabbar button.on { background: var(--ac); color: var(--ac-tx); }
 .exh h3 { margin: 0; font-size: 17px; }
 .tag { background: var(--ac2); color: #fff; font-size: 12px; font-weight: 700; border-radius: 6px; padding: 1px 6px; }
 .meta { color: var(--mut); font-size: 13.5px; margin: 3px 0 6px; }
-.eximg { display: block; max-width: 100%; border-radius: 8px; margin: 6px 0; }
+.exhead { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.exhead-text { min-width: 0; flex: 1; }
+.exhead .meta { margin-bottom: 0; }
+
+/* Miniature: le immagini hanno lo sfondo bianco → "cartoncino" chiaro con bordo,
+   così in tema scuro sembrano una foto incorniciata e non un riquadro rotto. */
+.thumb {
+  flex: none; padding: 2px; border: 1px solid var(--line); border-radius: 10px;
+  background: #fff; line-height: 0; cursor: zoom-in;
+}
+.thumb img { display: block; height: 64px; width: auto; aspect-ratio: 1200 / 896; border-radius: 8px; object-fit: contain; }
+.thumb-sm img { height: 44px; border-radius: 6px; }
+.thumb-sm { border-radius: 8px; }
+
+.items { list-style: none; margin: 4px 0 0; padding: 0; }
+.items li { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+
+/* Immagine a tutto schermo: sotto al "Via!" del recupero (z-index 30), sopra a tutto il resto. */
+.viewer {
+  position: fixed; inset: 0; z-index: 25; background: rgba(0, 0, 0, .92);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  padding: 12px; cursor: zoom-out;
+}
+.viewer img { max-width: 100%; max-height: calc(100% - 40px); object-fit: contain; border-radius: 10px; background: #fff; }
+.viewer-hint { color: #ddd; font-size: 14px; text-align: center; }
 details.note { font-size: 13.5px; margin: 4px 0 6px; }
 details.note summary { color: var(--mut); cursor: pointer; }
 .side { font-size: 13px; color: var(--ac2); font-weight: 600; margin: 2px 0; }

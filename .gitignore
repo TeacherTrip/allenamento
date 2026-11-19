@@ -20,3 +20,5 @@ LEGGIMI-SETUP.md
 # log e impostazioni locali di Claude Code
 *.log
 .claude/settings.local.json
+# immagini originali (Google Flow): non versionate, si pubblicano solo i .webp ottimizzati
+immagini-originali/

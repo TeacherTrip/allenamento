@@ -10,6 +10,9 @@ import { entryToValues, hasValues, isComplete } from '../logic/values';
 import { unlockAudio } from '../hooks/sound';
 import { wakeLockSupported } from '../hooks/useWakeLock';
 import { ExerciseCard } from '../components/ExerciseCard';
+import { Thumb } from '../components/Thumb';
+import { CARDIO_EXERCISES } from '../program/cardio';
+import type { SimpleItem } from '../program/types';
 
 interface Props {
   day: Day;
@@ -248,7 +251,7 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
       </label>
       <div className="box">
         <b>Riscaldamento (5-6 min)</b>
-        {WARMUP}
+        <ItemList items={WARMUP} testId="warmup" />
       </div>
       <p className="legend">
         <span className="dot prefilled" /> precompilato dall'ultima volta · <span className="dot confirmed" /> confermato
@@ -287,7 +290,9 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
 
       {day === 'C' && (
         <div className="box">
-          <b>Circuito cardio</b>Il timer del circuito arriva nella Fase 5.
+          <b>Circuito cardio</b>
+          <ItemList items={CARDIO_EXERCISES} testId="circuit" />
+          <div className="sub">Il timer del circuito arriva nella Fase 5.</div>
         </div>
       )}
 
@@ -307,5 +312,19 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
         Svuota i campi
       </button>
     </>
+  );
+}
+
+/** Elenco di riscaldamento o circuito, con la miniatura accanto a ogni voce. */
+function ItemList({ items, testId }: { items: SimpleItem[]; testId: string }) {
+  return (
+    <ul className="items" data-testid={testId}>
+      {items.map((it) => (
+        <li key={it.id} data-item={it.id}>
+          <Thumb image={it.image} alt={it.name} size="sm" />
+          <span>{it.name}</span>
+        </li>
+      ))}
+    </ul>
   );
 }

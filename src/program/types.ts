@@ -46,7 +46,10 @@ export interface Exercise {
   muscles: { primary: Muscle[]; secondary: Muscle[] };
   equipment: string;
   notes: string;
-  /** Immagine di riferimento (futura). */
+  /**
+   * Immagine di riferimento: nome del file in public/esercizi/ senza estensione (es. 'gsq').
+   * Il percorso completo si ottiene con imageUrl().
+   */
   image?: string;
   /** Esercizio tolto dalla scheda: non compare nelle sedute, lo storico resta. */
   retired?: boolean;
@@ -56,4 +59,12 @@ export interface DayPlan {
   day: Day;
   title: string;
   subtitle: string;
+}
+
+/** Voce del riscaldamento o del circuito cardio. */
+export interface SimpleItem {
+  id: string;
+  name: string;
+  /** Come Exercise.image. */
+  image?: string;
 }

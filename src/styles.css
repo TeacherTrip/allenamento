@@ -279,3 +279,23 @@ ul { margin: 4px 0; padding-left: 18px; }
 @media (orientation: landscape) and (max-height: 500px) {
   .co-time { font-size: 48px; }
 }
+
+/* ---------- grafici ---------- */
+.select { width: 100%; margin: 8px 0; padding: 12px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--card2); color: var(--tx); font-size: 16px; }
+.chart { position: relative; width: 100%; margin-top: 8px; }
+.chartbox .sub { margin-top: 2px; }
+.summary .sub { margin-bottom: 6px; }
+.sum-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 4px 0; }
+.sum-label { flex: 1 1 100%; color: var(--mut); font-size: 13px; }
+.sum-values { font-size: 17px; }
+.sum-delta { margin-left: auto; font-weight: 700; font-size: 14px; color: var(--mut); }
+.sum-delta.t1 { color: var(--ac); }
+.sum-delta.t-1 { color: var(--warn); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 4px; }
+.chips button { padding: 7px 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); color: var(--mut); font-size: 13px; font-weight: 600; }
+.chips button.on { background: var(--ac2); border-color: var(--ac2); color: #fff; }
+.datatable { margin-top: 8px; font-size: 13px; }
+.datatable summary { color: var(--mut); cursor: pointer; }
+.datatable table { width: 100%; border-collapse: collapse; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.datatable th, .datatable td { text-align: right; padding: 3px 6px; border-bottom: 1px solid var(--line); }
+.datatable th:first-child, .datatable td:first-child { text-align: left; }

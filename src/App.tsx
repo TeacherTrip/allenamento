@@ -6,6 +6,7 @@ import { useWakeLock } from './hooks/useWakeLock';
 import { SessionScreen } from './screens/SessionScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
 import { InfoScreen } from './screens/InfoScreen';
+import { ChartsScreen } from './screens/ChartsScreen';
 import { RestBar, restRemaining, type RestState } from './components/RestBar';
 import { fmtElapsed } from './logic/format';
 import type { Day } from './program/types';
@@ -106,7 +107,7 @@ export function App() {
   let body;
   if (!history || !settings) body = <p className="sub">Caricamento…</p>;
   else if (tab === 'H') body = <HistoryScreen sessions={history.sessions} logs={history.logs} toast={toast} />;
-  else if (tab === 'G') body = <div className="box"><b>Grafici</b>In arrivo nella Fase 5.</div>;
+  else if (tab === 'G') body = <ChartsScreen sessions={history.sessions} logs={history.logs} />;
   else if (tab === 'I')
     body = <InfoScreen sessions={history.sessions} logs={history.logs} settings={settings} persist={persist} toast={toast} />;
   else

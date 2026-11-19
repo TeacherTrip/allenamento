@@ -55,6 +55,12 @@ test('precache: tutte le immagini degli esercizi, nessun doppione', async ({ req
     expect(urls, f).toContain(f);
 });
 
+test('Info mostra la versione (in locale: "sviluppo locale")', async ({ page }) => {
+  await page.goto(PWA);
+  await page.locator('nav.tabbar button', { hasText: /^Info$/ }).click();
+  await expect(page.getByTestId('app-version')).toHaveText('TeacherGym · sviluppo locale');
+});
+
 test('nessun avviso di aggiornamento al primo avvio', async ({ page }) => {
   await page.goto(PWA);
   await page.evaluate(() => navigator.serviceWorker.ready);

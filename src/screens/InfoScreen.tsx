@@ -23,6 +23,13 @@ const PERSIST_TEXT: Record<PersistState, string> = {
     '⚠️ Archiviazione persistente non disponibile qui (normale durante i test in Wi-Fi via http). Sull’app installata verrà richiesta di nuovo.',
 };
 
+/** Versione: numero di pubblicazione e commit, scritti da GitHub Actions al momento della build. */
+function appVersion(): string {
+  const n = import.meta.env.VITE_BUILD_NUMBER;
+  const sha = import.meta.env.VITE_COMMIT;
+  return n && sha ? `versione ${n} (${sha.slice(0, 7)})` : 'sviluppo locale';
+}
+
 export function InfoScreen({ sessions, logs, settings, persist, toast }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [usage, setUsage] = useState<string>('');
@@ -167,6 +174,10 @@ export function InfoScreen({ sessions, logs, settings, persist, toast }: Props) 
         <b>Push-up: scala degli appoggi</b>
         {Object.entries(PUSHUP_LEVELS).map(([k, v]) => `${k} ${v}`).join(' → ')}. Passi al livello successivo quando fai 3 × 12 a RIR 2.
       </div>
+
+      <p className="muted small" data-testid="app-version">
+        TeacherGym · {appVersion()}
+      </p>
     </>
   );
 }

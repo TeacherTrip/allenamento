@@ -30,6 +30,10 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+        env:
+          # versione mostrata in Info: cambia a ogni pubblicazione, così l'app segnala l'aggiornamento
+          VITE_BUILD_NUMBER: ${{ github.run_number }}
+          VITE_COMMIT: ${{ github.sha }}
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:

@@ -41,6 +41,12 @@ export async function checkSet(page: Page, id: string, i: number) {
   }
 }
 
+/** Scrive i valori e preme ✓: scrivere da solo NON conferma (decisione del 19/11/2026). */
+export async function logSet(page: Page, id: string, i: number, v: { kg?: number; reps?: number; sec?: number }) {
+  await typeSet(page, id, i, v);
+  await checkSet(page, id, i);
+}
+
 /** Toglie la conferma (i valori restano). */
 export async function uncheckSet(page: Page, id: string, i: number) {
   await row(page, id, i).getByRole('button', { name: 'Annulla conferma' }).click();

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   autoDialogs, card, checkSet, expectToast, fakes, goTab, installFakes, openApp, openHistory, row, saveSession,
-  setVisibility, typeSet, uncheckSet, via,
+  logSet, setVisibility, typeSet, via,
 } from './helpers';
 
 // Prove nate dalla diagnosi sul telefono (telefono Android, Chrome 157), 2026-11-19.
@@ -46,7 +46,6 @@ test('A3 vibrazione e audio che lanciano errori NON impediscono "Via!"', async (
   await openApp(page);
   await row(page, 'gsq', 0).locator('input[placeholder="kg"]').fill('14');
   await typeSet(page, 'gsq', 0, { reps: 10 });
-  await uncheckSet(page, 'gsq', 0);
   await checkSet(page, 'gsq', 0); // il tocco crea l'AudioContext
   await page.clock.runFor(91_000);
   await expect(via(page)).toContainText('Via!');
@@ -120,7 +119,6 @@ test('C1 esercizi con lati separati: due tasti [Sx] [Dx] affiancati su OGNI seri
 test('C2 [Dx] è attivo solo dopo [Sx]', async ({ page }) => {
   await openApp(page, 'B');
   await typeSet(page, 'bss', 0, { kg: 10, reps: 10 });
-  await uncheckSet(page, 'bss', 0);
   const r = row(page, 'bss', 0);
   await expect(r.getByRole('button', { name: 'Conferma lato destro' })).toBeDisabled();
   await r.getByRole('button', { name: 'Conferma lato sinistro' }).click();
@@ -143,7 +141,6 @@ test('P4 dead bug e curl alternato: un solo ✓, "reps per lato", recupero subit
   // dead bug S1: un tocco → recupero (non è l'ultima serie della seduta)
   await goTab(page, 'A');
   await typeSet(page, 'db', 0, { reps: 8 });
-  await uncheckSet(page, 'db', 0);
   await row(page, 'db', 0).getByRole('button', { name: 'Conferma serie' }).click();
   await expect(page.locator('.restbar')).toContainText('Dead bug');
 });
@@ -168,14 +165,14 @@ test('S1 "+ Serie": riga grigia con i valori dell’ultima serie, eliminabile se
 test('S2 "+ Serie": salvata solo se confermata e segnata "extra" nello storico', async ({ page }) => {
   const msgs = autoDialogs(page);
   await openApp(page);
-  await typeSet(page, 'gsq', 0, { kg: 14, reps: 10 });
-  await typeSet(page, 'gsq', 1, { kg: 14, reps: 10 });
+  await logSet(page, 'gsq', 0, { kg: 14, reps: 10 });
+  await logSet(page, 'gsq', 1, { kg: 14, reps: 10 });
   await card(page, 'gsq').getByRole('button', { name: '+ Serie' }).click(); // S3 confermata
-  await typeSet(page, 'gsq', 2, { reps: 8 });
+  await logSet(page, 'gsq', 2, { reps: 8 });
   await expect(row(page, 'gsq', 2).getByRole('button', { name: `Elimina S3` })).toHaveCount(0); // confermata: non eliminabile
   await card(page, 'gsq').getByRole('button', { name: '+ Serie' }).click(); // S4 non confermata
   await saveSession(page);
-  expect(msgs.some((m) => /1 serie precompilate non confermate/.test(m))).toBe(true);
+  expect(msgs.some((m) => /1 serie non confermate \(senza ✓\)/.test(m))).toBe(true);
   await openHistory(page);
   await expect(page.locator('.hist .it', { hasText: 'Goblet squat' })).toHaveText(
     'Goblet squat: 14 kg × 10 · 14 kg × 10 · 14 kg × 8 (extra)',
@@ -186,10 +183,10 @@ test('S3 "+ Serie" NON conta per "↑ Aumenta carico"', async ({ page }) => {
   autoDialogs(page);
   await openApp(page);
   // previste al massimo (12, 12), extra a 6: il suggerimento deve comparire comunque
-  await typeSet(page, 'gsq', 0, { kg: 14, reps: 12 });
-  await typeSet(page, 'gsq', 1, { kg: 14, reps: 12 });
+  await logSet(page, 'gsq', 0, { kg: 14, reps: 12 });
+  await logSet(page, 'gsq', 1, { kg: 14, reps: 12 });
   await card(page, 'gsq').getByRole('button', { name: '+ Serie' }).click();
-  await typeSet(page, 'gsq', 2, { reps: 6 });
+  await logSet(page, 'gsq', 2, { reps: 6 });
   await saveSession(page);
   await expect(card(page, 'gsq').locator('.hint')).toContainText('Aumenta carico o variante');
   // e la precompilazione resta sulle serie previste (niente terza riga)
@@ -201,7 +198,6 @@ test('S4 "+ Serie" e regola dell’ultima serie: il timer non parte solo sull’
   // Seduta A: l'ultimo esercizio è dead bug (S2 con Settimane 1-2). Aggiungo una S3 extra.
   await card(page, 'db').getByRole('button', { name: '+ Serie' }).click();
   await typeSet(page, 'db', 1, { reps: 8 });
-  await uncheckSet(page, 'db', 1);
   await checkSet(page, 'db', 1); // S2 non è più l'ultima → timer
   await expect(page.locator('.restbar')).toContainText('Dead bug');
   await page.locator('.restbar').getByRole('button', { name: 'Stop' }).click();

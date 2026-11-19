@@ -32,9 +32,14 @@ export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, o
   const hasAny = [shown.load, shown.reps, shown.seconds].some((x) => x != null && x !== '');
   const sides = !!ex.confirmSides;
 
-  // scrivere = confermare (ma a metà tra sinistro e destro si resta in attesa del destro)
+  // scrivere NON conferma: conferma solo il tasto ✓ (che fa partire il recupero).
+  // Una serie già confermata resta confermata se si corregge un valore.
   const edit = (field: DraftField, value: string) =>
-    onChange(leftDone ? { ...shown, [field]: value, pending: true, leftDone: true } : { ...shown, [field]: value });
+    onChange(
+      confirmed
+        ? { ...shown, [field]: value }
+        : { ...shown, [field]: value, pending: true, ...(leftDone ? { leftDone: true } : {}) },
+    );
 
   const unconfirm = () => onChange({ ...shown, pending: true }); // toglie la conferma, tiene i valori
   const confirm = () => {

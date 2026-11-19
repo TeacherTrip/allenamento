@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   autoDialogs, card, checkSet, expectToast, fakes, goTab, installFakes, openApp, openHistory, row, saveSession,
-  setVisibility, typeSet, uncheckSet, via,
+  logSet, setVisibility, typeSet, via,
 } from './helpers';
 
 // Prove dei punti 1-6 (revisione del 2026-11-19).
@@ -122,7 +122,7 @@ test('W02 wake lock non disponibile: nessun errore, riga in Info', async ({ page
   await openApp(page);
   await page.getByRole('button', { name: '▶ Inizia allenamento' }).click();
   await setVisibility(page, 'visible');
-  await typeSet(page, 'gsq', 0, { kg: 14, reps: 10 });
+  await logSet(page, 'gsq', 0, { kg: 14, reps: 10 });
   await saveSession(page);
   await expectToast(page, /Seduta salvata/);
   await goTab(page, 'Info');
@@ -147,7 +147,6 @@ test('A02 AudioContext creato/ripreso al tocco su ✓', async ({ page }) => {
   await openApp(page);
   await typeSet(page, 'gsq', 0, { kg: 14, reps: 10 });
   expect((await fakes(page)).audio.created).toBe(0); // scrivere non basta
-  await uncheckSet(page, 'gsq', 0);
   await checkSet(page, 'gsq', 0);
   const f = await fakes(page);
   expect(f.audio.created).toBe(1);
@@ -160,7 +159,6 @@ test('U01 per lato: Sx (nessun timer) → Dx (timer); a metà la serie non è co
   await openApp(page, 'B');
   const r = row(page, 'bss', 0);
   await typeSet(page, 'bss', 0, { kg: 10, reps: 10 });
-  await uncheckSet(page, 'bss', 0);
   await r.getByRole('button', { name: 'Conferma lato sinistro' }).click();
   await expectToast(page, '→ Lato destro, senza pausa');
   await expect(r).toHaveClass(/left-done/);
@@ -174,12 +172,11 @@ test('U01 per lato: Sx (nessun timer) → Dx (timer); a metà la serie non è co
 test('U02 per lato: se salvo con solo il lato sinistro fatto, la serie NON viene salvata', async ({ page }) => {
   const msgs = autoDialogs(page);
   await openApp(page, 'C');
-  await typeSet(page, 'slrdl', 0, { kg: 10, reps: 8 }); // S1 completa
+  await logSet(page, 'slrdl', 0, { kg: 10, reps: 8 }); // S1 completa
   await typeSet(page, 'slrdl', 1, { kg: 10, reps: 8 });
-  await uncheckSet(page, 'slrdl', 1);
   await row(page, 'slrdl', 1).getByRole('button', { name: 'Conferma lato sinistro' }).click();
   await saveSession(page);
-  expect(msgs.some((m) => /1 serie precompilate non confermate/.test(m))).toBe(true);
+  expect(msgs.some((m) => /1 serie non confermate \(senza ✓\)/.test(m))).toBe(true);
   await openHistory(page);
   await expect(page.locator('.hist details').first().locator('.it', { hasText: 'Stacco rumeno' })).toHaveText(
     'Stacco rumeno a una gamba: 10 kg × 8 /lato',
@@ -192,7 +189,7 @@ test('SP01 side plank: registra i secondi per lato, non le ripetizioni', async (
   autoDialogs(page);
   await openApp(page, 'B');
   await expect(card(page, 'sp').locator('input[placeholder^="reps"]')).toHaveCount(0);
-  await typeSet(page, 'sp', 0, { sec: 35 });
+  await logSet(page, 'sp', 0, { sec: 35 });
   await saveSession(page);
   await openHistory(page);
   await expect(page.locator('.hist details').first()).toContainText('Side plank: 35 s /lato');

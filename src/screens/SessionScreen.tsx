@@ -208,7 +208,7 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
     }
     const dur = started ? durationSec(started) : undefined;
     const lines: string[] = [];
-    if (pending) lines.push(`${pending} serie precompilate non confermate NON verranno salvate.`);
+    if (pending) lines.push(`${pending} serie non confermate (senza ✓) NON verranno salvate.`);
     if (incomplete) lines.push(`${incomplete} serie senza ripetizioni (o secondi) NON verranno salvate.`);
     if (dur != null || lines.length) {
       const head = dur != null ? `Terminare l'allenamento? Durata: ${fmtDuration(dur)}` : 'Salvo la seduta?';
@@ -305,7 +305,7 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
         <ItemList items={WARMUP} testId="warmup" />
       </div>
       <p className="legend">
-        <span className="dot prefilled" /> precompilato dall'ultima volta · <span className="dot confirmed" /> confermato
+        <span className="dot prefilled" /> da confermare (precompilato o scritto) · <span className="dot confirmed" /> confermato con ✓
       </p>
 
       {rows.map((r) => {

@@ -43,11 +43,11 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 - `/chiudi` (`.claude/commands/chiudi.md`): chiusura sessione (stato, diario in `docs/storia.md`, punti aperti in `docs/aperti.md`, controlli, commit, push).
 
 ## Stato per ripartire
-- **Fase 7 in corso.** Fase 6 chiusa: app **pubblicata il 19/11/2026** su `https://teachertrip.github.io/allenamento/` (versione 3 installata sul telefono, nessun dato importato). PWA: aggiornamento solo a richiesta, mai durante allenamento/recupero/circuito (provato sul telefono); versione in fondo a Info.
-- GitHub: repo **pubblico**, secret scanning + push protection, Issues/Projects/Wiki spenti, `main` protetto. Workflow `pubblica.yml`: push su main → `npm test` + build → Pages. **Conferma dell'utente prima di ogni modifica su GitHub** (push compresi, tranne /chiudi).
-- Prove: 90 Vitest + 83 Playwright (4 sulla build: manifest, offline, precache, versione), verdi. Precache 39 file, 1,28 MB.
-- Fase 7, checklist §10 in `docs/aperti.md`: fatti dal PC i punti 11-14. **Da provare sul telefono:** punti 1-10, partendo dalla prova 1 (seduta A con 2 serie ✓ + 1 senza ✓ → Termina → riavvio del telefono → Storico).
-- Lista privata di parole: **nessuna voce attiva** → il controllo parole non agisce; la compila l'utente, poi rilanciare il controllo sulla cronologia (stampa solo commit e file).
+- **Fase 7 chiusa il 20/11/2026** (checklist §10 completa). App pubblicata su `https://teachertrip.github.io/allenamento/`, versione d66419b installata e verificata sul telefono; sedute di prova cancellate, debug USB spento. PWA: aggiornamento solo a richiesta, mai durante allenamento/recupero/circuito.
+- Regole dell'app decise il 19/11: la serie si conferma **solo con ✓** (scrivere non conferma) e la ✓ avvia il recupero; "Termina e salva" ferma il recupero.
+- GitHub: repo **pubblico**, secret scanning + push protection, `main` protetto. Workflow `pubblica.yml`: push su main → `npm test` + build → Pages. **Conferma dell'utente prima di ogni modifica su GitHub** (push compresi, tranne /chiudi).
+- Prove: 94 Vitest + 86 Playwright, verdi. Prove sul telefono dal PC: debug USB + CDP con Playwright (i tocchi adb sono bloccati); suono/vibrazione solo a mano dall'utente.
+- Lista privata di parole: **nessuna voce attiva** → la compila l'utente, poi rilanciare il controllo sulla cronologia (stampa solo commit e file).
 - Hook: eccezione esatta solo per `i@izs.me` (package-lock). Modello del telefono mai nei file versionati. Immagini: `npm run immagini`; icone: `npm run icone`.
 - Shell partita prima del PATH aggiornato: per gitleaks/adb/gh ricaricare il PATH utente o riavviare Claude Code.
-- Prossimo passo: prove 1-10 sul telefono; alla fine cancellare le sedute di prova e spegnere il debug USB.
+- Prossimo passo: uso reale dell'app; punti residui in `docs/aperti.md` (lista parole, firewall, notifica di fine recupero, "Vibrazione tattile" facoltativa).

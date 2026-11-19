@@ -129,3 +129,27 @@ Orari presi da `git reflog show origin/main`.
 - Le sedute delle prove sul telefono si cancellano alla fine della Fase 7.
 
 **Commit:** 044f35a, 95107d6, bbcbe5c (+ commit di chiusura sessione).
+
+## 2026-11-19/20 (quinta sessione) — Fase 7 completata
+
+- **Prova 1** fatta dall'utente (seduta A, riavvio del telefono, Storico ok). **Prove 2-8 e 10** fatte dal PC comandando l'app installata sul telefono: debug USB + collegamento di debug di Chrome (CDP) con Playwright, screenshot con adb. I tocchi via adb erano bloccati dal telefono (`INJECT_EVENTS`). Screenshot e copie dei file solo nella cartella temporanea, cancellati a fine sessione.
+  - Effetti del collegamento da tenere presenti: Playwright forza il tema chiaro (risolto con `emulateMedia({ colorScheme: null })`) e dirotta i download verso il PC (risolto con `Browser.setDownloadBehavior: default`); la tastiera aperta sposta i clic (si chiude prima con `blur()`).
+  - Esiti: 2 serie salvate e 1 non confermata scartata (anche nel database); offline con 11/11 immagini, grafico e salvataggio; grafici esercizio e gruppo corretti; export → cancellazione → import identico a prima; import di un backup del prototipo **inventato** con doppione saltato; app in modalità standalone.
+- **Prova 9** fatta dall'utente (il PC non può dare un gesto reale, e senza Chrome blocca suoni e vibrazione): suoni ok a fine recupero, nel conto alla rovescia e al cambio esercizio del circuito; vibrazione assente perché "Vibrazione tattile" è spenta (letto via adb, non modificato).
+- **Bug corretti** (ognuno con una prova automatica):
+  - % del riepilogo grafici calcolata sulla differenza arrotondata (+65% invece di +64%);
+  - "Termina e salva" lasciava acceso il recupero partito dall'ultima ✓ (prove R07-R08);
+  - secondo import dello stesso backup del prototipo: "Importate 0 sedute" + "1 valori non interpretati". Verificato che anche il primo import segnalava lo stesso valore (lettura identica); l'avviso contava anche le sedute saltate. Ora avvisi solo per le sedute aggiunte e "Nessuna seduta nuova: 1 già presente, saltata." (3 test unitari + P20).
+- **Cambio richiesto dall'utente**: scrivere kg/ripetizioni non conferma più la serie; conferma solo il tasto ✓, che avvia il recupero. Una serie già confermata resta confermata se si corregge un valore. Legenda e avviso di fine seduta aggiornati; aggiornata anche la riga 46 di PROMPT.md; 28 prove riscritte (helper `logSet` = scrivi + ✓).
+- Push dopo il controllo delle email (solo noreply); workflow verde; nuova versione verificata sul sito e sul telefono dall'utente.
+- Pulizia: sedute di prova, bozze, backup di prova nei Download e debug USB sistemati dall'utente sul telefono; collegamento di debug e file temporanei rimossi dal PC.
+- Prove: 94 Vitest + 86 Playwright, verdi.
+
+**Decisioni**
+- La serie si conferma solo con ✓ (non scrivendo); la ✓ avvia il recupero.
+- Il recupero si ferma al salvataggio della seduta (continua se il salvataggio viene annullato).
+- Prova 9 sempre a mano dall'utente: un timer avviato via debug falserebbe suono e vibrazione.
+- Nessun backup vero del prototipo da importare: punto chiuso.
+- Le pulizie sul telefono le fa l'utente.
+
+**Commit:** 69ab15a, 7a7f9b4, 1a70ca5, d66419b (+ commit di chiusura sessione).

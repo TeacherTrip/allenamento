@@ -6,7 +6,7 @@ Stato: app **pubblicata il 19/11/2026** su https://teachertrip.github.io/allenam
 - [ ] Stringere il firewall: una sola regola Allow per node.exe (profilo Private, solo TCP 5173). I comandi li esegue l'utente come amministratore.
 
 ## Prossime fasi
-- [ ] Fase 7: verifica finale con la checklist (PROMPT.md §10), test sul telefono uno per uno. **Si riparte dalla prova 9.**
+- [ ] Fase 7: verifica finale con la checklist (PROMPT.md §10), test sul telefono uno per uno. **Checklist §10 completata il 19/11/2026** (resta da pubblicare le correzioni).
   - Prove 2-8 e 10 fatte dal PC comandando l'app sul telefono (debug USB + collegamento di debug di Chrome con Playwright; screenshot con adb, solo nella cartella temporanea).
   - Checklist §10:
     - [x] 1 seduta A: 2 serie con ✓ + 1 senza ✓ → Termina → telefono riavviato: storico con 2 serie (19/11/2026, verificato anche nel database)
@@ -17,7 +17,7 @@ Stato: app **pubblicata il 19/11/2026** su https://teachertrip.github.io/allenam
     - [x] 6 grafico gruppo muscolare: indice normalizzato (100 → 164,1) e serie settimanali corretti
     - [x] 7 export (file nei Download del telefono) → 3 sedute eliminate dallo Storico → import: dati identici a prima, precompilazione tornata
     - [x] 8 import di un backup del prototipo **inventato**: valori convertiti, "non interpretati" nelle note, doppione saltato al secondo import
-    - [ ] 9 timer di recupero e del circuito: suono e vibrazione (serve l'utente: suono e vibrazione non si verificano dal PC)
+    - [x] 9 timer di recupero e del circuito (prova dell'utente sul telefono, 19/11/2026): suono OK a fine recupero (schermo acceso), al conto alla rovescia e al cambio esercizio del circuito. Vibrazione assente perché "Vibrazione tattile" è spenta (`haptic_feedback_enabled = 0`, limite noto: Chrome non vibra). Da riprovare solo se l'utente la riattiva.
     - [x] 10 app installata, a schermo intero (display-mode standalone, nessuna barra di Chrome)
   - Osservazioni dalle prove (da decidere):
     - [x] Dopo "Termina e salva" il timer di recupero restava acceso: ora si ferma al salvataggio (resta se il salvataggio viene annullato). Prove R07-R08.

@@ -221,9 +221,13 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
           lastText={r.lastText}
           onSetChange={(i, e) => setEntry(r.ex.id, i, e)}
           onSetCheck={(i) => onCheck(r.ex, i, r.count)}
-          onRest={() => {
+          onSetLeft={() => {
             unlockAudio();
-            startRest(r.ex.restSec, r.ex.name);
+            toast('→ Lato destro, senza pausa');
+          }}
+          onRest={(sec) => {
+            unlockAudio();
+            startRest(sec, r.ex.name);
           }}
         />
       ))}

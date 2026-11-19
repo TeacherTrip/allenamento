@@ -3,8 +3,18 @@ import { restEndAlert } from '../hooks/sound';
 import { fmtElapsed } from '../logic/format';
 
 export interface RestState {
-  end: number; // timestamp di fine: il conteggio resta giusto anche se il telefono rallenta l'app
+  /** Ora di partenza (Date.now()). Il tempo si calcola sempre come Date.now() - startedAt,
+   *  mai contando i tick: resta giusto anche dopo telefono bloccato / app in background. */
+  startedAt: number;
+  durationMs: number;
   label: string;
+}
+
+/** Se il recupero è finito da più di così quando ce ne accorgiamo (telefono bloccato), niente suono. */
+export const LATE_MS = 3000;
+
+export function restRemaining(rest: RestState, now = Date.now()): number {
+  return rest.durationMs - (now - rest.startedAt);
 }
 
 interface Props {
@@ -19,22 +29,27 @@ export function RestBar({ rest, onPlus, onStop }: Props) {
   const [done, setDone] = useState(false);
   const fired = useRef(false);
 
-  // (ri)parte a ogni nuovo orario di fine (nuovo recupero o +15)
+  // (ri)parte a ogni nuovo recupero o +15; il tick serve solo a ridisegnare
   useEffect(() => {
     fired.current = false;
     setDone(false);
     setNow(Date.now());
     const t = window.setInterval(() => setNow(Date.now()), 250);
-    return () => window.clearInterval(t);
-  }, [rest.end]);
+    const onVisible = () => setNow(Date.now()); // al rientro aggiorna subito
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.clearInterval(t);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [rest.startedAt, rest.durationMs]);
 
-  const remaining = rest.end - now;
+  const remaining = restRemaining(rest, now);
 
-  // fine recupero: suono + vibrazione una sola volta
+  // fine recupero: suono + vibrazione UNA volta; se ce ne accorgiamo in ritardo, solo "Via!"
   useEffect(() => {
     if (remaining > 0 || fired.current) return;
     fired.current = true;
-    restEndAlert();
+    if (-remaining <= LATE_MS) restEndAlert();
     setDone(true);
   }, [remaining]);
 

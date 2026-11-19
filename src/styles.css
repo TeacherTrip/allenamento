@@ -154,6 +154,8 @@ textarea { min-height: 70px; margin-top: 10px; }
   color: var(--pre); font-size: 20px; font-weight: 800;
 }
 .check.on { background: var(--ac); border: 0; color: var(--ac-tx); }
+.check.half { border: 2px solid var(--ac2); color: var(--ac2); font-size: 16px; }
+.setrow .check:not(.on):not(.half) { font-size: 16px; }
 .check:disabled { opacity: .35; }
 
 /* ---------- pulsanti ---------- */

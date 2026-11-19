@@ -11,26 +11,47 @@ interface Props {
   /** null/undefined = non confermata (mostra la precompilazione). */
   entry: DraftEntry | null | undefined;
   onChange: (entry: DraftEntry | null) => void;
-  /** Chiamata solo quando la serie viene confermata col tasto ✓ (non scrivendo). */
+  /** Serie confermata col tasto ✓ (per esercizi per lato: dopo il lato destro). */
   onCheck?: () => void;
+  /** Esercizi per lato: confermato il lato sinistro. */
+  onLeft?: () => void;
 }
 
-/** Una serie: campi della metrica + tasto ✓. Grigio = precompilato, pieno = confermato. */
-export function SetRow({ ex, index, prefill, entry, onChange, onCheck }: Props) {
+/**
+ * Una serie: campi della metrica + tasto di conferma. Grigio = da confermare, pieno = confermato.
+ * Esercizi per lato: il tasto va toccato due volte, "Sx" poi "Dx" (stesse reps per lato).
+ */
+export function SetRow({ ex, index, prefill, entry, onChange, onCheck, onLeft }: Props) {
   const confirmed = entry != null && !entry.pending;
+  const leftDone = !confirmed && !!entry?.leftDone;
   const shown: DraftEntry = entry ? { load: entry.load, reps: entry.reps, seconds: entry.seconds } : valuesToEntry(prefill);
   const hasAny = [shown.load, shown.reps, shown.seconds].some((x) => x != null && x !== '');
 
-  // scrivere = confermare
-  const edit = (field: DraftField, value: string) => onChange({ ...shown, [field]: value });
-  // ✓: conferma; se già confermata, toglie la conferma MA tiene i valori (tornano grigi)
+  // scrivere = confermare (ma a metà tra sinistro e destro si resta in attesa del destro)
+  const edit = (field: DraftField, value: string) =>
+    onChange(leftDone ? { ...shown, [field]: value, pending: true, leftDone: true } : { ...shown, [field]: value });
+
   const toggle = () => {
-    if (confirmed) return onChange({ ...shown, pending: true });
+    if (confirmed) return onChange({ ...shown, pending: true }); // toglie la conferma, tiene i valori
+    if (ex.unilateral && !leftDone) {
+      onChange({ ...shown, pending: true, leftDone: true });
+      onLeft?.();
+      return;
+    }
     onChange(shown);
     onCheck?.();
   };
+
   const cls = confirmed ? 'confirmed' : 'prefilled';
   const repsLabel = ex.unilateral ? 'reps /lato' : 'reps';
+  const checkText = confirmed ? '✓' : ex.unilateral ? (leftDone ? 'Dx' : 'Sx') : '✓';
+  const checkLabel = confirmed
+    ? 'Annulla conferma'
+    : ex.unilateral
+      ? leftDone
+        ? 'Conferma lato destro'
+        : 'Conferma lato sinistro'
+      : 'Conferma serie';
 
   const numInput = (field: DraftField, placeholder: string, decimal = false) => (
     <input
@@ -62,7 +83,7 @@ export function SetRow({ ex, index, prefill, entry, onChange, onCheck }: Props) 
   };
 
   return (
-    <div className={`setrow ${cls}`}>
+    <div className={`setrow ${cls} ${leftDone ? 'left-done' : ''}`}>
       <span className="setn">S{index + 1}</span>
       <div className="setfields">
         {ex.metric === 'band' && chips(bandOptions(ex.bandDirection ?? 'resistance'))}
@@ -75,12 +96,12 @@ export function SetRow({ ex, index, prefill, entry, onChange, onCheck }: Props) 
       </div>
       <button
         type="button"
-        className={`check ${confirmed ? 'on' : ''}`}
+        className={`check ${confirmed ? 'on' : ''} ${leftDone ? 'half' : ''}`}
         onClick={toggle}
         disabled={!confirmed && !hasAny}
-        aria-label={confirmed ? 'Annulla conferma' : 'Conferma serie'}
+        aria-label={checkLabel}
       >
-        ✓
+        {checkText}
       </button>
     </div>
   );

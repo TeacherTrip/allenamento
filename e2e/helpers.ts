@@ -29,6 +29,76 @@ export async function typeSet(page: Page, id: string, i: number, v: { kg?: numbe
   if (v.sec != null) await r.locator('input[placeholder^="sec"]').fill(String(v.sec));
 }
 
+/** Conferma col tasto (per gli esercizi per lato: Sx poi Dx). */
+export async function checkSet(page: Page, id: string, i: number) {
+  const b = row(page, id, i).locator('.check');
+  await b.click();
+  if ((await b.textContent())?.trim() === 'Dx') await b.click();
+}
+
+/** Toglie la conferma (i valori restano). */
+export async function uncheckSet(page: Page, id: string, i: number) {
+  await row(page, id, i).locator('.check.on').click();
+}
+
+/**
+ * Sostituisce AudioContext, vibrazione e (opzionale) Wake Lock con versioni finte che contano le chiamate.
+ * wakeLock: 'fake' = API presente; 'none' = API assente (come su http).
+ */
+export async function installFakes(page: Page, wakeLock: 'fake' | 'none' = 'fake') {
+  await page.addInitScript((wl) => {
+    const w = window as unknown as Record<string, unknown>;
+    const audio = { created: 0, resumed: 0, osc: 0 };
+    const vib = { calls: 0 };
+    const wlState = { requests: 0, locks: [] as { released: boolean }[] };
+    w.__audio = audio;
+    w.__vib = vib;
+    w.__wl = wlState;
+    class FakeAC {
+      state = 'suspended';
+      currentTime = 0;
+      destination = {};
+      constructor() { audio.created++; }
+      resume() { audio.resumed++; this.state = 'running'; return Promise.resolve(); }
+      createOscillator() { audio.osc++; return { frequency: { value: 0 }, connect() {}, start() {}, stop() {} }; }
+      createGain() { return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect() {} }; }
+    }
+    w.AudioContext = FakeAC;
+    Object.defineProperty(Navigator.prototype, 'vibrate', { value: () => { vib.calls++; return true; }, configurable: true });
+    if (wl === 'none') {
+      delete (Navigator.prototype as unknown as Record<string, unknown>).wakeLock;
+    } else {
+      const fake = {
+        request: async () => {
+          wlState.requests++;
+          const l = { released: false, release: async () => { l.released = true; } };
+          wlState.locks.push(l);
+          return l;
+        },
+      };
+      Object.defineProperty(Navigator.prototype, 'wakeLock', { get: () => fake, configurable: true });
+    }
+  }, wakeLock);
+}
+
+export const fakes = (page: Page) =>
+  page.evaluate(() => {
+    const w = window as unknown as Record<string, { [k: string]: number }>;
+    return { audio: w.__audio, vib: w.__vib.calls, wl: w.__wl.requests as number };
+  });
+
+/** Simula app in background (schermo bloccato: il browser rilascia il wake lock) e ritorno. */
+export async function setVisibility(page: Page, state: 'hidden' | 'visible') {
+  await page.evaluate((s) => {
+    Object.defineProperty(document, 'visibilityState', { value: s, configurable: true });
+    if (s === 'hidden') {
+      const wl = (window as unknown as { __wl?: { locks: { released: boolean }[] } }).__wl;
+      wl?.locks.forEach((l) => (l.released = true));
+    }
+    document.dispatchEvent(new Event('visibilitychange'));
+  }, state);
+}
+
 export async function chip(page: Page, id: string, i: number, label: string) {
   await row(page, id, i).getByRole('button', { name: label, exact: true }).click();
 }

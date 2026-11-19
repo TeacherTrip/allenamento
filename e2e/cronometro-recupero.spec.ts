@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { autoDialogs, card, chip, expectToast, goTab, openApp, openHistory, patchDraft, row, saveSession, typeSet } from './helpers';
+import {
+  autoDialogs, card, checkSet, chip, expectToast, goTab, openApp, openHistory, patchDraft, row, saveSession, typeSet, uncheckSet,
+} from './helpers';
 
 // ---------- Cronometro della seduta ----------
 
@@ -108,23 +110,29 @@ test('R02 superset: ✓ su 2a → avviso "Passa a 2b" senza timer; ✓ su 2b →
   await row(page, 'pu', 0).locator('.check').click();
   await expectToast(page, '→ Passa a 2b');
   await expect(page.locator('.restbar')).toHaveCount(0);
+  // 2b è per lato: dopo Sx niente timer, dopo Dx sì
   await typeSet(page, 'row', 0, { kg: 14, reps: 10 });
-  await row(page, 'row', 0).locator('.check').click();
-  await row(page, 'row', 0).locator('.check').click();
+  await uncheckSet(page, 'row', 0);
+  await row(page, 'row', 0).getByRole('button', { name: 'Conferma lato sinistro' }).click();
+  await expectToast(page, 'Lato destro');
+  await expect(page.locator('.restbar')).toHaveCount(0);
+  await row(page, 'row', 0).getByRole('button', { name: 'Conferma lato destro' }).click();
   await expect(page.locator('.restbar')).toContainText('Rematore a un braccio');
 });
 
 test('R03 ultima serie dell’ultimo esercizio: niente timer', async ({ page }) => {
   await openApp(page);
   // Seduta A, ultimo esercizio = dead bug; con Settimane 1-2 l'ultima serie è la S2
+  // (dead bug è per lato: Sx poi Dx)
   await typeSet(page, 'db', 1, { reps: 8 });
-  await row(page, 'db', 1).locator('.check').click();
-  await row(page, 'db', 1).locator('.check').click();
+  await uncheckSet(page, 'db', 1);
+  await checkSet(page, 'db', 1);
+  await expect(row(page, 'db', 1)).toHaveClass(/confirmed/);
   await expect(page.locator('.restbar')).toHaveCount(0);
   // la S1 dello stesso esercizio invece sì
   await typeSet(page, 'db', 0, { reps: 8 });
-  await row(page, 'db', 0).locator('.check').click();
-  await row(page, 'db', 0).locator('.check').click();
+  await uncheckSet(page, 'db', 0);
+  await checkSet(page, 'db', 0);
   await expect(page.locator('.restbar')).toContainText('Dead bug');
 });
 

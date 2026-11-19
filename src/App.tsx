@@ -6,7 +6,7 @@ import { useWakeLock } from './hooks/useWakeLock';
 import { SessionScreen } from './screens/SessionScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
 import { InfoScreen } from './screens/InfoScreen';
-import { RestBar, type RestState } from './components/RestBar';
+import { RestBar, restRemaining, type RestState } from './components/RestBar';
 import { fmtElapsed } from './logic/format';
 import type { Day } from './program/types';
 
@@ -29,12 +29,25 @@ function readTab(): Tab {
   return 'A';
 }
 
-/** Cronometro della seduta, sempre visibile in alto. */
+function readRest(): RestState | null {
+  try {
+    const r = JSON.parse(sessionStorage.getItem('tg.rest') ?? 'null');
+    if (r && typeof r.startedAt === 'number' && typeof r.durationMs === 'number') return r;
+  } catch { /* ignora */ }
+  return null;
+}
+
+/** Cronometro della seduta, sempre visibile in alto: Date.now() - orario di inizio salvato. */
 function Stopwatch({ since }: { since: string }) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
-    const t = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(t);
+    const tick = () => setNow(Date.now());
+    const t = window.setInterval(tick, 1000); // serve solo a ridisegnare
+    document.addEventListener('visibilitychange', tick);
+    return () => {
+      window.clearInterval(t);
+      document.removeEventListener('visibilitychange', tick);
+    };
   }, []);
   return <>{fmtElapsed(now - Date.parse(since))}</>;
 }
@@ -43,7 +56,7 @@ export function App() {
   const [tab, setTab] = useState<Tab>(readTab);
   const [persist, setPersist] = useState<PersistState | null>(null);
   const [toastMsg, setToastMsg] = useState('');
-  const [rest, setRest] = useState<RestState | null>(null);
+  const [rest, setRest] = useState<RestState | null>(readRest);
   const toastTimer = useRef<number>(undefined);
   const history = useHistory();
   const settings = useSettings();
@@ -62,9 +75,27 @@ export function App() {
     toastTimer.current = window.setTimeout(() => setToastMsg(''), 2200);
   }, []);
 
-  const startRest = useCallback((sec: number, label: string) => setRest({ end: Date.now() + sec * 1000, label }), []);
+  const startRest = useCallback(
+    (sec: number, label: string) => setRest({ startedAt: Date.now(), durationMs: sec * 1000, label }),
+    [],
+  );
   const stopRest = useCallback(() => setRest(null), []);
-  const plusRest = useCallback(() => setRest((r) => (r ? { ...r, end: Math.max(r.end, Date.now()) + 15000 } : r)), []);
+  // +15: se già scaduto riparte da 15 s, altrimenti allunga
+  const plusRest = useCallback(
+    () =>
+      setRest((r) =>
+        !r ? r : restRemaining(r) <= 0 ? { ...r, startedAt: Date.now(), durationMs: 15000 } : { ...r, durationMs: r.durationMs + 15000 },
+      ),
+    [],
+  );
+
+  // il recupero sopravvive anche a un ricaricamento della pagina (Chrome può scaricarla col telefono bloccato)
+  useEffect(() => {
+    try {
+      if (rest) sessionStorage.setItem('tg.rest', JSON.stringify(rest));
+      else sessionStorage.removeItem('tg.rest');
+    } catch { /* ignora */ }
+  }, [rest]);
 
   const go = (t: Tab) => {
     setTab(t);

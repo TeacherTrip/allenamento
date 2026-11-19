@@ -14,12 +14,21 @@ interface Props {
   onSetChange: (index: number, entry: DraftEntry | null) => void;
   /** Serie confermata con ✓ (per il recupero automatico). */
   onSetCheck: (index: number) => void;
-  onRest: () => void;
+  /** Esercizi per lato: lato sinistro confermato. */
+  onSetLeft: () => void;
+  onRest: (sec: number) => void;
 }
 
-export function ExerciseCard({ ex, count, prefill, entries, hint, lastText, onSetChange, onSetCheck, onRest }: Props) {
+/** Recupero del pulsante manuale: quello dell'esercizio; per il primo di un superset, quello della coppia. */
+export function manualRestSec(ex: Exercise): number {
+  return ex.restSec || supersetPartner(ex)?.restSec || 60;
+}
+
+export function ExerciseCard(p: Props) {
+  const { ex, count, prefill, entries, hint, lastText } = p;
   const ssPos = ex.superset ? (ex.superset.endsWith('a') ? 'ssA' : 'ssB') : '';
   const partner = supersetPartner(ex);
+  const restSec = manualRestSec(ex);
 
   return (
     <section className={`ex ${ssPos}`} data-ex={ex.id}>
@@ -36,7 +45,7 @@ export function ExerciseCard({ ex, count, prefill, entries, hint, lastText, onSe
         <summary>Esecuzione</summary>
         {ex.notes}
       </details>
-      {ex.unilateral && <div className="side">↔ Parti dal lato sinistro</div>}
+      {ex.unilateral && <div className="side">↔ Parti dal lato sinistro: tocca Sx, poi Dx senza pausa</div>}
       {lastText && <div className="last">Ultima volta: {lastText}</div>}
       {hint && <div className="hint">↑ {hint}</div>}
       {Array.from({ length: count }, (_, i) => (
@@ -46,19 +55,16 @@ export function ExerciseCard({ ex, count, prefill, entries, hint, lastText, onSe
           index={i}
           prefill={prefill[i]}
           entry={entries[i]}
-          onChange={(e) => onSetChange(i, e)}
-          onCheck={() => onSetCheck(i)}
+          onChange={(e) => p.onSetChange(i, e)}
+          onCheck={() => p.onSetCheck(i)}
+          onLeft={p.onSetLeft}
         />
       ))}
-      {partner ? (
-        <div className="next">↓ Passa subito a {partner.superset}, recupero dopo la coppia</div>
-      ) : (
-        ex.restSec > 0 && (
-          <button className="rest" onClick={onRest}>
-            Avvia recupero {ex.restSec}s
-          </button>
-        )
-      )}
+      {partner && <div className="next">↓ Passa subito a {partner.superset}, recupero dopo la coppia</div>}
+      {/* pulsante manuale: sempre presente, con o senza recupero automatico */}
+      <button className="rest" onClick={() => p.onRest(restSec)}>
+        Avvia recupero {restSec}s
+      </button>
     </section>
   );
 }

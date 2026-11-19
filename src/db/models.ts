@@ -40,6 +40,8 @@ export type DraftField = 'load' | 'reps' | 'seconds';
 export type DraftEntry = Partial<Record<DraftField, string>> & {
   /** true = valori tenuti ma NON confermati (conferma tolta con ✓): grigi, non salvati. */
   pending?: boolean;
+  /** Esercizi per lato: lato sinistro fatto, manca il destro (la serie non è ancora confermata). */
+  leftDone?: boolean;
 };
 
 /** Seduta in corso. Una serie presente qui (senza `pending`) è "confermata"; se manca è "precompilata". */

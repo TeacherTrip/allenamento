@@ -170,11 +170,11 @@ test('P16 dead bug e side plank: nessun campo kg', async ({ page }) => {
   await expect(card(page, 'sp').locator('input[placeholder^="sec"]')).toHaveCount(2);
 });
 
-test('P17 superset 2a/2b: recupero solo dopo 2b', async ({ page }) => {
+test('P17 superset 2a/2b: su 2a indicazione "passa a 2b"; pulsante manuale su entrambi (tempo della coppia)', async ({ page }) => {
   await openApp(page);
-  await expect(card(page, 'pu').getByRole('button', { name: /Avvia recupero/ })).toHaveCount(0);
   await expect(card(page, 'pu')).toContainText('Passa subito a 2b');
-  await expect(card(page, 'row').getByRole('button', { name: /Avvia recupero/ })).toHaveCount(1);
+  await expect(card(page, 'pu').getByRole('button', { name: 'Avvia recupero 75s' })).toHaveCount(1);
+  await expect(card(page, 'row').getByRole('button', { name: 'Avvia recupero 75s' })).toHaveCount(1);
 });
 
 test('P18 export → elimino tutto → import: torna tutto, compresa la precompilazione', async ({ page }) => {

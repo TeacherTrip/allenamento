@@ -5,6 +5,7 @@ import { backupFileName, buildBackup, detectFormat, parseBackup } from '../logic
 import { convertPrototype } from '../logic/importPrototype';
 import { fmtDate } from '../logic/format';
 import { PUSHUP_LEVELS } from '../program/program';
+import { wakeLockSupported } from '../hooks/useWakeLock';
 
 interface Props {
   sessions: Session[];
@@ -85,6 +86,11 @@ export function InfoScreen({ sessions, logs, settings, persist, toast }: Props) 
         />
         Recupero automatico (parte quando confermi una serie con ✓)
       </label>
+      <div className="box wakelock-info">
+        {wakeLockSupported()
+          ? 'Schermo sempre acceso: supportato (attivo durante l’allenamento).'
+          : 'Schermo sempre acceso: non supportato.'}
+      </div>
 
       <h2>Dati e backup</h2>
       <div className="box">

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { difficultyStep, e1rm, isHarder, setScore } from '../src/logic/difficulty';
+import { bestScore, difficultyStep, e1rm, isHarder, setScore } from '../src/logic/difficulty';
 import { EXERCISE_BY_ID } from '../src/program/program';
 
 const pull = EXERCISE_BY_ID.pull; // assistance
@@ -46,6 +46,19 @@ describe('direzione RESISTANCE (lat pulldown): elastico più pesante = più diff
   it('a parità di reps, più resistenza = punteggio più alto', () => {
     expect(setScore(lpd, { load: 50, reps: 12 })).toBeGreaterThan(setScore(lpd, { load: 20, reps: 12 }));
     expect(setScore(lpd, { load: 20, reps: 12 })).toBeCloseTo(12 * 1.15, 5);
+  });
+});
+
+describe('side plank (metric time)', () => {
+  const sp = EXERCISE_BY_ID.sp;
+  it('è a tempo e per lato', () => {
+    expect(sp.metric).toBe('time');
+    expect(sp.unilateral).toBe(true);
+  });
+  it('l’indice usa i secondi, non le ripetizioni', () => {
+    expect(setScore(sp, { seconds: 35 })).toBe(35);
+    expect(setScore(sp, { reps: 35 })).toBe(0);
+    expect(bestScore(sp, [{ seconds: 30 }, { seconds: 40 }])).toBe(40);
   });
 });
 

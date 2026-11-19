@@ -1,11 +1,7 @@
 # Punti aperti
 
-## Da provare (utente, sul telefono) — tutto ok il 2026-11-19
-- [x] Recupero a schermo acceso: "Via!" centrato per 4 s + 4 bip.
-- [x] Recupero a schermo bloccato: allo sblocco "Via!" visibile per 4 s, senza suono.
-- [x] Tasti [Sx] [Dx] (bulgarian, rematore, stacco a una gamba, military press, side plank).
-- [x] "+ Serie": aggiunta, eliminazione, "(extra)" nello Storico.
-- [x] Immagini: miniature, tutto schermo, chiusura con tap e con Indietro, circuito (2026-11-19).
+## Da provare (utente, sul telefono)
+- Niente in sospeso (prove del 2026-11-19 superate).
 
 ## Da decidere
 - [ ] Stringere il firewall: una sola regola Allow per node.exe (profilo Private, solo TCP 5173). I comandi li esegue l'utente come amministratore.
@@ -18,5 +14,6 @@
 - [ ] Fase 7: verifica finale con checklist.
 
 ## A fine lavori sul telefono
-- [ ] Spegnere "Debug USB", revocare le autorizzazioni di debug USB ("Consenti sempre da questo computer") e spegnere "Rimani attivo" nelle Opzioni sviluppatore.
+- [ ] (Si può fare già ora, Fase 4 chiusa; da riattivare per le prove della Fase 5.) Spegnere "Debug USB", revocare le autorizzazioni di debug USB ("Consenti sempre da questo computer") e spegnere "Rimani attivo" nelle Opzioni sviluppatore.
 - [ ] Facoltativo: riattivare o lasciare spenta "Vibrazione tattile".
+- [ ] Cancellare dallo Storico eventuali sedute salvate durante le prove, prima dei grafici della Fase 5.

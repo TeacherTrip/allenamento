@@ -43,10 +43,10 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 - `/chiudi` (`.claude/commands/chiudi.md`): chiusura sessione (stato, diario in `docs/storia.md`, punti aperti in `docs/aperti.md`, controlli, commit, push).
 
 ## Stato per ripartire
-- Fasi 0-3 completate (piano in `docs/piano.md`). **Fase 4 (MVP) quasi chiusa**: sedute A/B/C, storico, backup/import, cronometro, recupero automatico, "Via!" centrato + 4 bip, [Sx][Dx], "+ Serie". Ultimo commit funzionale `80aa5e2`.
-- Prove: 35 Vitest + 57 Playwright, verdi su localhost e su `E2E_BASE_URL=http://192.168.1.10:5173/allenamento/`.
+- Fasi 0-4 completate (piano in `docs/piano.md`): MVP con sedute A/B/C, storico, backup/import, cronometro, recupero, [Sx][Dx], "+ Serie", immagini degli esercizi. Ultimo commit funzionale `7e2dd83`.
+- Prove: 67 Vitest + 63 Playwright, verdi su localhost. Prove sul telefono (Xiaomi, `adb reverse tcp:5173 tcp:5173`) tutte superate il 2026-11-19.
+- Immagini: originali in `immagini-originali/` (esclusa da Git); `npm run immagini` (sharp) crea i WebP in `public/esercizi/<id>.webp`; percorso sempre con `imageUrl()` (BASE_URL).
 - Repo `TeacherTrip/allenamento` collegato e **privato** (diventa pubblico in Fase 6, con conferma).
-- Prove sul telefono (Xiaomi, `adb reverse tcp:5173 tcp:5173`) **superate il 2026-11-19**: recupero a schermo acceso e bloccato, Sx/Dx, "+ Serie", immagini. Vibrazione solo con "Vibrazione tattile" attiva (limite HyperOS).
-- Immagini esercizi: originali in `immagini-originali/` (esclusa da Git); `npm run immagini` crea i WebP in `public/esercizi/<id>.webp`. Percorso sempre con `imageUrl()` (BASE_URL).
+- Da provare sul telefono: niente in sospeso. Vibrazione solo con "Vibrazione tattile" attiva (limite HyperOS).
 - Prossimo passo: **Fase 5** (timer circuito con immagine grande dell'esercizio in corso, grafici Chart.js).
-- Nota: se `gitleaks` non viene trovato dall'hook, aggiungere al PATH la cartella WinGet di Gitleaks o riavviare il terminale.
+- Nota: se l'hook non trova `gitleaks` o la shell non trova `adb`, sono nelle cartelle WinGet (`Gitleaks.Gitleaks_…`, `Google.PlatformTools_…\platform-tools`): aggiungerle al PATH o riavviare il terminale.

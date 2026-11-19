@@ -7,7 +7,7 @@ Stato: app **pubblicata il 19/11/2026** su https://teachertrip.github.io/allenam
 
 ## Prossime fasi
 - [ ] Fase 7: verifica finale con la checklist (PROMPT.md §10), test sul telefono uno per uno. Comprende:
-  - [ ] avviso "Nuova versione disponibile" alla pubblicazione successiva: "Aggiorna" funziona; durante un allenamento (o recupero/circuito) il pulsante non compare;
+  - [x] avviso "Nuova versione disponibile" (19/11/2026, telefono, versioni 2 e 3): "Aggiorna" funziona; con allenamento avviato compare l'avviso senza pulsante, dopo averlo terminato si aggiorna;
   - [ ] app installata aperta senza rete (modalità aereo): si apre con immagini e grafici.
 - [ ] Valutare la notifica di fine recupero (vibra anche a telefono bloccato).
 

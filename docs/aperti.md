@@ -8,7 +8,7 @@
 - [ ] Stringere il firewall: una sola regola Allow per node.exe (profilo Private, solo TCP 5173). I comandi li esegue l'utente come amministratore.
 
 ## Prossime fasi
-- [x] Fase 5: timer del circuito (immagine grande, commit 1aa0679) e grafici Chart.js (commit 6a3cf8e). Manca solo la prova sul telefono, poi push.
+- [ ] Fase 5: codice completato (commit 1aa0679, 6a3cf8e, 6ab96ff, 76ee1b3). Manca la prova sul telefono, poi push (nessun push prima della conferma dell'utente).
 - [ ] Fase 6: PWA (vite-plugin-pwa, icona), protezioni del repo (branch protection), repo pubblico con conferma, GitHub Actions + Pages. Valutare la notifica di fine recupero (vibra anche a telefono bloccato).
   - [ ] Prima della pubblicazione: export delle sedute registrate su localhost → import su teachertrip.github.io/allenamento.
   - [ ] Pacchetto JS ~181 KB compressi (Chart.js compreso): valutare il caricamento della schermata Grafici solo quando serve.
@@ -16,6 +16,6 @@
 - [ ] Fase 7: verifica finale con checklist.
 
 ## A fine lavori sul telefono
-- [ ] (Si può fare già ora, Fase 4 chiusa; da riattivare per le prove della Fase 5.) Spegnere "Debug USB", revocare le autorizzazioni di debug USB ("Consenti sempre da questo computer") e spegnere "Rimani attivo" nelle Opzioni sviluppatore.
+- [ ] (Dopo le prove della Fase 5.) Spegnere "Debug USB", revocare le autorizzazioni di debug USB ("Consenti sempre da questo computer") e spegnere "Rimani attivo" nelle Opzioni sviluppatore.
 - [ ] Facoltativo: riattivare o lasciare spenta "Vibrazione tattile".
-- [ ] Cancellare dallo Storico eventuali sedute salvate durante le prove, prima dei grafici della Fase 5.
+- [ ] Cancellare dallo Storico le sedute salvate durante le prove (anche quelle col circuito), così i grafici partono da dati veri.

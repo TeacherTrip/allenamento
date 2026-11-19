@@ -50,3 +50,28 @@
 - Prova Vitest con `import.meta.glob` invece di `node:fs`, per non installare `@types/node`.
 
 **Commit:** 7e2dd83, 1555f6e (+ commit di chiusura sessione).
+
+## 2026-11-19 (terza sessione) — Fase 5
+
+- **Timer del circuito** (seduta C), a tutto schermo:
+  - scelta del protocollo (Sett. 1-2 / 3-4 / 5-6 / 7+), ricordata;
+  - 5 s di preparazione, lavoro/pausa, rotazione dei 4 esercizi con immagine grande (in pausa: il prossimo);
+  - bip 3-2-1 a fine fase, suoni e vibrazione diversi per lavoro, pausa e fine;
+  - Pausa/Riprendi, Interrompi con conferma, tasto Indietro gestito;
+  - tempo calcolato dagli orari salvati nella bozza: sopravvive a ricaricamento e telefono bloccato;
+  - round completati registrati nella seduta e nello storico.
+- **Grafici** (Chart.js, installato nel progetto):
+  - per esercizio: Partenza → Attuale con differenza e %; kg = e1RM + carico della serie migliore; elastici/livelli = gradino (orientato secondo la direzione) + ripetizioni totali in due grafici separati; corpo libero/tempo = totali;
+  - per gruppo muscolare: serie della settimana, indice di progressione (100 = prima seduta), serie settimanali delle ultime 8 settimane;
+  - tabella dei valori sotto ogni grafico; colori controllati con il validatore (chiaro e scuro); screenshot verificati.
+- Hook pre-commit: già bloccava se gitleaks manca (provato in Git Bash e PowerShell); messaggio reso più chiaro. Prova con `test-backup.json`: bloccato.
+- Avvisi: in Info "dati legati all'indirizzo dell'app" (esportare e importare il backup); nel circuito "non bloccare il telefono".
+- Prove: 90 Vitest + 78 Playwright, tutte verdi.
+
+**Decisioni**
+- Circuito a tutto schermo, avvisi sonori completi, indipendente dal cronometro della seduta.
+- Mai due scale sullo stesso grafico: livello e ripetizioni in grafici separati.
+- gitleaks e adb sono già nel PATH utente: nessuna modifica al sistema; percorso esplicito nell'hook scartato (conterrebbe il nome della cartella utente).
+- Push rimandato a dopo la prova sul telefono (richiesta dell'utente).
+
+**Commit:** 1aa0679, 6a3cf8e, 29a0d1b, 6ab96ff, 76ee1b3 (+ commit di chiusura sessione).

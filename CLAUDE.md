@@ -44,10 +44,12 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 
 ## Stato per ripartire
 - Fase 5 scritta (piano in `docs/piano.md`): timer del circuito a tutto schermo (immagine grande, bip 3-2-1, pausa, round registrati) e grafici Chart.js (per esercizio e per gruppo muscolare). Ultimo commit funzionale `76ee1b3`.
-- Prove: 90 Vitest + 78 Playwright, verdi su localhost. Build ok (JS ~181 KB compressi).
-- Fase 5 **provata sul telefono dall'utente (tutto ok) e pubblicata con push** il 2026-11-19 (`a8fd679`).
+- Prove: 90 Vitest + 81 Playwright (3 sulla versione costruita: manifest, offline), verdi. Build ok (JS iniziale ~118 KB compressi + Grafici ~64 KB a parte).
+- Fase 5 provata sul telefono e pubblicata (2026-11-19).
+- **Fase 6 chiusa** (2026-11-19): app online su `https://teachertrip.github.io/allenamento/`, installata sul telefono (nessun dato da importare). PWA con vite-plugin-pwa (aggiornamento solo a richiesta, mai durante allenamento/recupero/circuito), icone generate da `npm run icone`, Grafici caricati a parte. Workflow `.github/workflows/pubblica.yml`: a ogni push su main → `npm test` + build → Pages (Playwright gira solo sul PC).
+- GitHub: repo **pubblico**; secret scanning + push protection attivi; Issues/Projects/Wiki spenti; `main` protetto (niente force push né cancellazione, anche per l'admin). L'utente vuole **conferma prima di ogni modifica su GitHub**.
+- Hook pre-commit: eccezione esatta (`-x -F`) solo per `i@izs.me` (email pubblica in package-lock). Nuove eccezioni solo con l'utente.
 - Telefono (Xiaomi): `adb reverse tcp:5173 tcp:5173`. Se la shell non trova `adb`, ricaricare il PATH utente nella sessione.
 - Immagini: originali in `immagini-originali/` (esclusa da Git); `npm run immagini` crea `public/esercizi/<id>.webp`; percorso sempre con `imageUrl()`.
-- Repo `TeacherTrip/allenamento` collegato e **privato** (diventa pubblico in Fase 6, con conferma).
-- Prossimo passo: **Fase 6** (PWA, Actions, Pages).
+- Prossimo passo: **Fase 7** (checklist finale sul telefono, vedi `docs/aperti.md`).
 - gitleaks e adb sono già nel PATH utente: se la shell non li trova, riavviare il terminale / Claude Code (la sessione è partita prima).

@@ -92,7 +92,8 @@ export function fmtDelta(first: number, last: number, unit: string): { text: str
   if (d === 0) return { text: '=', trend: 0 };
   const sign = d > 0 ? '+' : '−';
   const u = unit ? ` ${unit}` : '';
-  const pct = first > 0 ? ` (${sign}${fmtNum(Math.round(Math.abs(d / first) * 100))}%)` : '';
+  // percentuale sulla differenza vera, non su quella arrotondata (6,5 → 10,67: +64%, non +65%)
+  const pct = first > 0 ? ` (${sign}${fmtNum(Math.round(Math.abs((last - first) / first) * 100))}%)` : '';
   return { text: `${sign}${fmtNum(Math.abs(d))}${u}${pct}`, trend: d > 0 ? 1 : -1 };
 }
 

@@ -109,6 +109,11 @@ describe('fmtDelta', () => {
     expect(fmtDelta(10, 9, '')).toEqual({ text: '−1 (−10%)', trend: -1 });
     expect(fmtDelta(0, 5, '')).toEqual({ text: '+5', trend: 1 });
   });
+
+  it('percentuale calcolata sulla differenza vera, non arrotondata (bug trovato sul telefono)', () => {
+    // e1RM 5×9 = 6,5 → 8×10 = 10,67: +4,17 kg = +64,1%
+    expect(fmtDelta(6.5, 8 * (1 + 10 / 30), 'kg')).toEqual({ text: '+4,2 kg (+64%)', trend: 1 });
+  });
 });
 
 describe('indice di progressione', () => {

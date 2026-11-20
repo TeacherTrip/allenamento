@@ -45,14 +45,14 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 - `/chiudi` (`.claude/commands/chiudi.md`): chiusura sessione (stato, diario in `docs/storia.md`, punti aperti in `docs/aperti.md`, controlli, commit, push).
 
 ## Stato per ripartire
-- **Fase 4-bis IN CORSO sul ramo `fase-4bis`** (dettagli sotto e in `docs/piano-4bis.md`): passi 1-5 e 7 fatti (cambio di piano del 20/11: niente editor, primo avvio in una schermata, «Separa i lati»; passo 7: testi di Info per modello, catalogo neutro); prova sul telefono via USB fatta il 20/11, difetti D1-D4 corretti (418ba3e). `main` e il sito restano alla Fase 7 (d66419b, sul telefono); merge in `main` solo al passo 10, con conferma esplicita.
-- Regole dell'app: la serie si conferma **solo con ✓**, la ✓ avvia il recupero; "Termina e salva" ferma il recupero. PWA: aggiornamento solo a richiesta. Avvisi brevi in basso sopra la barra, chiudibili; «App pronta» dopo il primo avvio.
-- GitHub: repo **pubblico**, `main` protetto, Pages solo da `main`. **Conferma dell'utente prima di ogni modifica su GitHub** (push del ramo `fase-4bis` autorizzato; /chiudi = push del ramo).
-- Prove: 215 Vitest + 125 Playwright, verdi (due passate); `npm run prova-usb` (6 prove sul telefono via USB, solo a mano) verde il 20/11. Prova a secco sui dati reali rinviata (storico del telefono vuoto): obbligatoria al rilascio.
-- Da provare a mano (utente): niente di obbligatorio ora. Al passo 10, col telefono scollegato: schermo acceso durante il circuito e modalità aereo (`docs/rilascio-4bis.md`). L'app installata non si tocca fino al passo 10.
-- Lista privata di parole: **nessuna voce attiva** (la compila l'utente). Hook: eccezione esatta solo per `i@izs.me`. Per gitleaks/adb/gh ricaricare il PATH o riavviare Claude Code.
-- **Prossimo passo: passo 8** (storico e grafici: raggruppamento per scheda, polpacci, esercizi fuori scheda), **solo con l'OK dell'utente**. Testi di Info per modello in `src/catalog/infoTexts.ts` (testi approvati in `docs/piano-4bis.md`). `fake-indexeddb`: NON si installa.
-- **PROMEMORIA nuova sessione:** leggere `CLAUDE.md`, `docs/aperti.md` e `docs/piano-4bis.md`; confermare ramo, ultimo commit, prove e prossimo passo; **non scrivere codice del passo 8 finché l'utente non approva**.
+- **Fase 4-bis IN CORSO sul ramo `fase-4bis`** (`docs/piano-4bis.md`): passi 1-5 e 7 fatti (passo 7: testi di Info per modello in `src/catalog/infoTexts.ts`, catalogo neutro, forme neutre). `main` e il sito restano alla Fase 7 (d66419b); merge in `main` solo al passo 10, con conferma esplicita.
+- Regole dell'app: serie confermata **solo con ✓** (avvia il recupero); "Termina e salva" ferma il recupero. PWA: aggiornamento solo a richiesta. Avvisi brevi in basso, chiudibili.
+- GitHub: repo **pubblico**, `main` protetto, Pages solo da `main`. **Conferma dell'utente prima di ogni modifica su GitHub** (push di `fase-4bis` autorizzato; /chiudi = push del ramo).
+- Prove: 216 Vitest + 126 Playwright, verdi (due passate). `npm run prova-usb` solo a mano. Prova a secco sui dati reali obbligatoria al rilascio. Backup v2 col Modello 2 verificato (BK01).
+- Da provare a mano (utente): niente ora. Al passo 10, telefono scollegato: schermo acceso nel circuito e modalità aereo (`docs/rilascio-4bis.md`). L'app installata non si tocca fino al passo 10.
+- Lista privata di parole: **nessuna voce attiva** (la compila l'utente). Hook: eccezione esatta solo per `i@izs.me`. Per gitleaks/adb/gh ricaricare il PATH. `fake-indexeddb`: NON si installa.
+- **Prossimo passo: passo 8** (storico e grafici). Proposta già mostrata all'utente (tabella in `docs/aperti.md`, passo 8): **in attesa del suo OK**, nessun codice scritto.
+- **PROMEMORIA nuova sessione:** leggere `CLAUDE.md`, `docs/aperti.md`, `docs/piano-4bis.md`; confermare ramo, ultimo commit, prove e prossimo passo; **non scrivere codice del passo 8 senza OK**.
 ## Fase 4-bis + Modello 2 — IN CORSO (piano approvato il 20/11/2026)
 - Piano completo: **`docs/piano-4bis.md`** (fonte di verità della fase). Rilascio: **`docs/rilascio-4bis.md`** (checklist).
 - Secondo telefono Android con un'altra scheda; niente profili/account, ogni dispositivo ha i suoi dati.

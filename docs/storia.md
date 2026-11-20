@@ -202,3 +202,19 @@ Orari presi da `git reflog show origin/main`.
 - Il passo 7 parte solo con l'OK dell'utente.
 
 **Commit:** 3c722d5, 52cd544, dc7a7b9, 24e44ab, ab55e2c, 418ba3e, 026dac0 (+ commit di chiusura sessione).
+
+## 2026-11-20 (pomeriggio e sera) — Fase 4-bis: passo 7 e preparazione del passo 8 (ramo `fase-4bis`)
+- **Prima del passo 7**: ramo pulito, prove della migrazione e del primo avvio ripristinate; `.gitattributes` (LF) già presente, nessun file con CRLF nel repository; prova instabile CI01 annotata nei punti aperti.
+- **Passo 7**: contenuto del Modello 2 confrontato voce per voce con il piano (nessuna differenza). Descrizioni e sottotitoli delle schede del Modello 2 (solo durata, nessun giorno). Info dipendente dal modello (`src/catalog/infoTexts.ts`): «Settimana tipo» con «Esempio», «Ogni giorno», «Regole», scala dei push-up; il Modello 1 resta invariato; senza modello salvato si usano i testi del Modello 1.
+- **Testi rivisti con la regola sulla salute**: sostituiti dall'utente i testi con parti del corpo legate a dolore e sintomi (giorni «no», sera, Dolore, Stop, «Se ci si sente poco bene», note di rdl e ht generiche, tolto «Evitare nella prima ora dopo il risveglio» dalla nota del rdl).
+- **Catalogo neutro**: parti legate al Modello 1 spostate nelle note delle voci del Modello 1 con testo identico (pu, pull, ht, lpd); tolto «fascia» dalla nota del clamshell (nota della voce «Fascia sopra le ginocchia» nella D); attrezzo di ht «Manubrio». Forme neutre: «Sdraiati sulla schiena», «Arnold press (da seduti)», «Respiro affannoso, ma riesci a dire una frase breve.». Riscaldamento: «2 hang alla barra da 15-20 s (anche con i piedi appoggiati, se serve)».
+- **Backup v2**: include già il modello scelto; aggiunte le prove (Vitest + BK01: telefono vuoto → import → Modello 2 con i testi di Info).
+- **Passo 8**: analisi di Storico e Grafici e proposta mostrata all'utente (dettagli in `docs/aperti.md`); trovati difetti nel menu dei Grafici e nel conteggio per gruppo col Modello 2. Nessun codice scritto.
+- Prove: da 202 + 122 a **216 Vitest + 126 Playwright**, due passate verdi; build riuscita; gitleaks pulito.
+
+**Decisioni**
+- Testi del Modello 2 per Info e note approvati dall'utente (in `docs/piano-4bis.md`); regola salute applicata anche ai testi dell'app.
+- Ordine delle note: catalogo, poi «Nota della scheda: …».
+- Il passo 8 parte solo con l'OK dell'utente; l'idea dei Grafici caricati all'apertura resta in `docs/aperti.md`.
+
+**Commit:** 1e8bcc4, 5c1a06b, eb5abc6, d42b81c (+ commit di chiusura sessione).

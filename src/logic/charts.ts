@@ -6,7 +6,10 @@ import { bestScore, difficultyStep, e1rm, setScore } from './difficulty';
 import { fmtNum } from './values';
 
 /** Gruppi muscolari, nell'ordine dei grafici. */
-export const MUSCLES: Muscle[] = ['quadricipiti', 'femorali', 'glutei', 'petto', 'schiena', 'spalle', 'bicipiti', 'tricipiti', 'core'];
+export const MUSCLES: Muscle[] = ['quadricipiti', 'femorali', 'glutei', 'petto', 'schiena', 'spalle', 'bicipiti', 'tricipiti', 'core', 'polpacci'];
+
+/** Esercizi che contano per gruppi muscolari (serie settimanali, indici): la mobilità no. */
+const countsForMuscles = (ex: Exercise) => ex.kind !== 'mobility';
 
 /** Una seduta in cui l'esercizio è stato fatto, con le sue serie. */
 export interface ExerciseSession {
@@ -29,13 +32,16 @@ export function exerciseSessions(exerciseId: string, sessions: Session[], logs: 
     .map((session) => ({ session, sets: byId.get(session.id)!.sort((a, b) => a.setIndex - b.setIndex) }));
 }
 
-/** Serie migliore (punteggio più alto: per `kg` l'e1RM). */
+/**
+ * Serie migliore (punteggio più alto: per `kg` l'e1RM).
+ * A pari punteggio vince quella con più ripetizioni (serve per le serie a 0 kg, che hanno e1RM 0).
+ */
 export function bestSet(ex: Exercise, sets: SetValues[]): SetValues | undefined {
   let best: SetValues | undefined;
   let max = -1;
   for (const s of sets) {
     const sc = setScore(ex, s);
-    if (sc > max) {
+    if (sc > max || (sc === max && (s.reps ?? 0) > (best?.reps ?? 0))) {
       max = sc;
       best = s;
     }
@@ -117,7 +123,8 @@ export function exerciseCharts(ex: Exercise, sessions: Session[], logs: SetLog[]
 
   if (ex.metric === 'kg') {
     const best = rows.map((r) => bestSet(ex, r.sets));
-    const est = best.map((b) => (b?.load != null && b.reps != null ? round1(e1rm(b.load, b.reps)) : null));
+    // e1RM solo con carico > 0: a 0 kg (corpo libero) non ha senso → buco nel grafico
+    const est = best.map((b) => (b?.load != null && b.load > 0 && b.reps != null ? round1(e1rm(b.load, b.reps)) : null));
     const load = best.map((b) => b?.load ?? null);
     charts.push({
       title: 'Serie migliore',
@@ -128,6 +135,12 @@ export function exerciseCharts(ex: Exercise, sessions: Session[], logs: SetLog[]
       ],
     });
     summary.push(numericRow('e1RM', est, 'kg'), numericRow('Carico', load, 'kg'));
+    // con sedute a 0 kg conta anche quante ripetizioni si fanno
+    if (rows.some((r) => r.sets.some((s) => s.load === 0))) {
+      const reps = rows.map((r) => sum(r.sets.map((s) => s.reps)));
+      charts.push({ title: `Ripetizioni totali${side}`, unit: 'reps', series: [{ label: 'Ripetizioni totali', values: reps }] });
+      summary.push(numericRow('Ripetizioni totali', reps, ''));
+    }
   } else if (ex.metric === 'band' || ex.metric === 'level') {
     const steps = stepLabels(ex);
     // gradino più difficile usato nella seduta
@@ -196,7 +209,7 @@ export function exerciseIndex(ex: Exercise, sessions: Session[], logs: SetLog[])
 export function groupIndex(group: Muscle, sessions: Session[], logs: SetLog[], exercises: Exercise[] = EXERCISES): IndexPoint[] {
   const events: (IndexPoint & { ex: string })[] = [];
   for (const ex of exercises) {
-    if (!ex.muscles.primary.includes(group)) continue;
+    if (!countsForMuscles(ex) || !ex.muscles.primary.includes(group)) continue;
     for (const p of exerciseIndex(ex, sessions, logs)) events.push({ ...p, ex: ex.id });
   }
   events.sort((a, b) => a.date.localeCompare(b.date));
@@ -235,7 +248,7 @@ export function weeklySets(sessions: Session[], logs: SetLog[], exercises: Exerc
   for (const l of logs) {
     const ex = exById.get(l.exerciseId);
     const w = week.get(l.sessionId);
-    if (!ex || !w) continue;
+    if (!ex || !w || !countsForMuscles(ex)) continue;
     const c = out.get(w) ?? zero();
     for (const m of ex.muscles.primary) c[m] += 1;
     for (const m of ex.muscles.secondary) c[m] += 0.5;

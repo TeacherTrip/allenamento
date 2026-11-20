@@ -48,9 +48,21 @@ export function resolveProgram(program: Program): Exercise[] {
     if (badges[i]) ex.superset = badges[i];
     if (c.bandDirection) ex.bandDirection = c.bandDirection;
     if (c.confirmSides) ex.confirmSides = c.confirmSides;
+    if (c.kind) ex.kind = c.kind;
     if (c.image) ex.image = c.image;
     return ex;
   });
+}
+
+/** Esercizio del catalogo "risolto" con i suoi valori suggeriti, fuori da ogni scheda (storico, grafici, prove). */
+export function catalogExercise(id: string): Exercise {
+  const c = CATALOG_BY_ID[id];
+  if (!c) throw new Error(`Esercizio non in catalogo: ${id}`);
+  const [ex] = resolveProgram({
+    id: '', order: 0, name: '', warmup: false, circuit: 'no',
+    items: [{ key: id, exerciseId: id, sets: c.defaults.sets, repRange: c.defaults.repRange, restSec: c.defaults.restSec }],
+  });
+  return ex;
 }
 
 const MODEL_1 = TEMPLATE_BY_ID.m1.programs;

@@ -111,6 +111,8 @@ export interface Exercise {
    * Assente per gli esercizi a lati alternati (es. dead bug, curl alternato): un solo ✓.
    */
   confirmSides?: boolean;
+  /** Come CatalogExercise.kind. */
+  kind?: 'mobility';
   muscles: { primary: Muscle[]; secondary: Muscle[] };
   equipment: string;
   notes: string;

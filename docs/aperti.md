@@ -9,7 +9,7 @@ Stato: app **pubblicata** su https://teachertrip.github.io/allenamento/ e instal
 ## Fase 4-bis + Modello 2 (piano approvato il 20/11/2026, ramo `fase-4bis`)
 Piano: `docs/piano-4bis.md`. Rilascio: `docs/rilascio-4bis.md`.
 - [x] Passo 1: catalogo + Modello 1 nel codice (app invariata)
-- [ ] Passo 2: logica pura (superset con serie diverse, recupero "–", 0 kg, mobilità, polpacci, valore di partenza)
+- [x] Passo 2: logica pura (superset con serie diverse, recupero "–", 0 kg, mobilità, polpacci, valore di partenza)
 - [ ] Passo 3: database v2 + migrazione + schermata d'errore + backup v2 (prova di migrazione con confronto prima/dopo)
 - [ ] Passo 4: seduta guidata dalle schede del database
 - [ ] Passo 5: primo avvio + Info + Ricarica un modello

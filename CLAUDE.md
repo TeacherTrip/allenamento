@@ -58,7 +58,8 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 - Catalogo esercizi + modelli nel codice; schede (1-4) in IndexedDB; primo avvio una sola volta; impostazioni in Info; migrazione Dexie v2 senza perdite (installazione esistente = Modello 1, nessun primo avvio).
 - **Ramo `fase-4bis`**: tutto lo sviluppo lì. Il push del ramo NON pubblica (workflow solo su `main` + ambiente Pages limitato a `main`). **Merge in `main` solo al passo 10, dopo conferma esplicita.** `/chiudi` in questa fase: commit + push del ramo, mai di `main`.
 - Bozze: tabella `drafts` invariata, la chiave `day` contiene l'id della scheda (Modello 1 = `A`/`B`/`C`). Anche `Session.day` contiene l'id della scheda.
+- Id `A`/`B`/`C` assegnati **solo dalla migrazione**; ogni scheda creata dopo ha un id generato univoco (`newId()`), anche se si chiama «A».
 - Carico `kg` = **per manubrio** (come l'import del prototipo: «2 x 10» → 10).
 - **Prima di ogni commit**: controllare che `CLAUDE.md`, `docs/` e codice non contengano riferimenti a condizioni di salute (dolori/fastidi localizzati, patologie, infortuni). Ammesse solo indicazioni tecniche generiche da manuale.
-- Note del Modello 2 da riscrivere in forma generica: **aspettare l'approvazione dell'utente** prima di scriverle nel codice (vedi `docs/aperti.md`).
+- Note del Modello 2: testi definitivi approvati il 20/11 (in `docs/piano-4bis.md`). `gb.jpg` è ancora una copia di `wu-bridge.jpg`: l'utente la sostituirà.
 - Prove all'inizio della fase: 94 Vitest + 86 Playwright.

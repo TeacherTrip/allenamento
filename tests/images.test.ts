@@ -12,7 +12,7 @@ const files = new Set(
  * Immagini dei nuovi esercizi non ancora fornite: finché mancano l'app mostra il segnaposto.
  * Quando un file arriva in public/esercizi/, togliere il suo id da qui (la prova lo segnala).
  */
-const IN_ARRIVO = ['ss', 'bdog', 'hfs', 'cr', 'cls'];
+const IN_ARRIVO: string[] = [];
 
 // Ogni voce del catalogo, del riscaldamento e del circuito ha la sua immagine in public/esercizi/.
 const all = [
@@ -31,7 +31,7 @@ describe('immagini degli esercizi', () => {
     expect(files.has(`${image}.webp`)).toBe(true);
   });
 
-  it.each(IN_ARRIVO)('%s: immagine ancora in arrivo (se il file esiste, togliere il suo id da IN_ARRIVO)', (id) => {
+  it.skipIf(IN_ARRIVO.length === 0).each(IN_ARRIVO)('%s: immagine ancora in arrivo (se il file esiste, togliere il suo id da IN_ARRIVO)', (id) => {
     const image = all.find((x) => x.id === id)?.image;
     expect(image).toBe(id);
     expect(files.has(`${id}.webp`)).toBe(false);

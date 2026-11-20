@@ -130,8 +130,7 @@ export const CATALOG: CatalogExercise[] = [
 
   // ---------- esercizi aggiunti con la Fase 4-bis ----------
   {
-    // immagine provvisoria: quella del ponte del riscaldamento (senza manubrio)
-    id: 'gb', image: 'wu-bridge', name: 'Ponte glutei', metric: 'kg', unilateral: false, equipment: 'Manubrio + asciugamano',
+    id: 'gb', image: 'gb', name: 'Ponte glutei', metric: 'kg', unilateral: false, equipment: 'Manubrio + asciugamano',
     muscles: { primary: ['glutei'], secondary: ['femorali'] },
     notes: 'Supini, piedi a terra vicini ai glutei. Manubrio appoggiato sul bacino con un asciugamano. Spingi con i talloni e contrai i glutei in alto. Si può fare anche a 0 kg.',
     defaults: { sets: 2, repRange: [12, 15], restSec: 75 },

@@ -16,7 +16,7 @@ Obiettivo: l'app va anche su un secondo telefono Android con un'altra scheda. Ni
 - `Program { id, order, name (max 6 caratteri), subtitle?, notes?, notesPosition, warmup, circuit: 'no'|'yes'|'optional', items }`
 - `ProgramItem { key, exerciseId, sets, repRange, restSec: number|null, supersetNext, startValue?, equipment?, notes? }`
 - Lo stesso esercizio non può comparire due volte nella stessa scheda.
-- Gli id delle schede del Modello 1 sono `A`, `B`, `C`.
+- **Id delle schede**: `A`, `B`, `C` li assegna **solo la migrazione** delle schede esistenti. Ogni scheda creata dopo (primo avvio, Ricarica un modello, Modello 2, schede vuote, «+ Scheda») riceve un id univoco generato, mai riusato, anche se si chiama «A». Così le sedute vecchie (`day = 'A'`) non finiscono mai, nello storico o nei grafici, insieme a una scheda diversa con lo stesso nome. Lo storico raggruppa per id della scheda e mostra `programName`. (`crypto.randomUUID` non esiste su http in Wi-Fi: si usa `newId()` del progetto, che è univoco allo stesso modo.)
 
 **Sedute**: il campo `day` resta (stesso indice) e contiene l'**id della scheda** (`A`/`B`/`C` per tutte le sedute di oggi). Si aggiungono `programName` (copia del nome) e `plan` (copia delle voci previste al salvataggio).
 
@@ -65,7 +65,7 @@ Obiettivo: l'app va anche su un secondo telefono Android con un'altra scheda. Ni
    - avviso con la versione `blocked`.
    - Vitest per l'import dei backup v1, v2 e del prototipo.
 4. **Seduta dalle schede del database** (barra dinamica, copia delle voci, lato, note, superset, scheda vuota, prova a 360 px).
-5. **Primo avvio + Info + Ricarica un modello**.
+5. **Primo avvio + Info + Ricarica un modello**. Prova: migrazione → Ricarica Modello 2 → le sedute vecchie restano raggruppate sotto il loro `programName` e non si mescolano con le nuove (anche con una nuova scheda chiamata «A»).
 6. **Editor delle schede**.
 7. **Modello 2** (contenuto + prove).
 8. **Storico e grafici** (raggruppamento per scheda, polpacci, esercizi fuori scheda).
@@ -76,20 +76,20 @@ Obiettivo: l'app va anche su un secondo telefono Android con un'altra scheda. Ni
 `CLAUDE.md`, `docs/` e il codice non devono contenere riferimenti a condizioni di salute: niente dolori o fastidi localizzati, patologie, infortuni. Restano ammesse le indicazioni tecniche generiche da manuale (es. «schiena neutra», «se un esercizio fa male, fermati»).
 
 ## Modello 2 — contenuto
-Formato: id · serie × ripetizioni · recupero · superset · partenza · attrezzo della voce · note. Le note marcate ⏳ aspettano la riscrittura approvata dall'utente (vedi `docs/aperti.md`).
+Formato: id · serie × ripetizioni · recupero · superset · partenza · attrezzo della voce · note. Note riscritte in forma generica e approvate dall'utente il 20/11/2026.
 
 Scheda A
 - gsq · 3 × 10-12 · – · A1 · 6 kg · Kettlebell · Costole giù, schiena non inarcata; scendere fino a toccare il divano.
 - cr · 2 × 15-20 · 90 s · A1 · corpo libero · – · Mano a un mobile per l'equilibrio; salita e discesa lente, 1 s di tenuta in alto. Progressione: a 2 × 20 pulite su un gradino (talloni sotto il livello del gradino), poi un manubrio in mano.
 - row · 3 × 10-12 /lato · – · A2 · 6 kg · Manubrio · Mano libera sul divano, schiena piatta.
 - pu · 3 × 8-12 · 75 s · A2 · livello 1 · – · Corpo dritto, glutei contratti. A 3 × 12 pulite si scende di un livello.
-- gb · 2 × 12-15 · 75 s · – · 6 kg · Manubrio · ⏳
+- gb · 2 × 12-15 · 75 s · – · 6 kg · Manubrio · Manubrio sul bacino con un asciugamano; prima retroversione del bacino, poi salire; si devono sentire i glutei, non la schiena.
 - db · 3 × 6-8 /lato · – · A3 · – · – · Lombare appoggiata al materassino; se si stacca, accorciare il movimento.
 - pa · 3 × 12-15 · 60 s · A3 · elastico 10 · – · Spalle basse, collo rilassato.
 - hfs · 2 × 30-40 s /lato · – · – · – · – · In ginocchio su una gamba; gluteo contratto e bacino in retroversione, senza inarcarsi.
 
 Scheda B
-- rdl · 3 × 10-12 · 90 s · – · 6 kg · Manubri · ⏳
+- rdl · 3 × 10-12 · 90 s · – · 6 kg · Manubri · Schiena neutra, manubri vicini alle gambe; scendere finché il bacino va indietro. Se compare dolore, fermarsi e ripetere solo il gesto senza carico. Evitare nella prima ora dopo il risveglio.
 - lpd · 3 × 12-15 · – · B1 · elastico 10 · – · Da seduti o in ginocchio; gomiti verso i fianchi, spalle lontane dalle orecchie. Elastico 20 se facile.
 - fp · 3 × 10-12 · 75 s · B1 · 6 kg · Manubri · Ginocchia piegate, piedi a terra.
 - ss · 3 × 8-10 /lato · – · B2 · 0 kg · – · Discesa verticale, appoggio a un mobile se serve. Progressione: 2 × 2 kg in mano dopo 3 × 10 per lato.
@@ -99,7 +99,7 @@ Scheda B
 - hfs · 2 × 30-40 s /lato · – · – · – · – · (come scheda A, per esteso)
 
 Scheda C
-- ht · 3 × 10-12 · – · C1 · 8 kg · Manubrio · ⏳
+- ht · 3 × 10-12 · – · C1 · 8 kg · Manubrio · Scapole sulla seduta del divano, mento verso il petto, bacino in retroversione in alto. Se compare dolore, passare al ponte glutei (gb).
 - cr · 2 × 15-20 · 90 s · C1 · corpo libero · – · (come scheda A)
 - row · 3 × 10-12 /lato · – · C2 · 6 kg · Manubrio · (come scheda A)
 - pu · 3 × 8-12 · 75 s · C2 · livello 1 · – · (come scheda A)
@@ -108,7 +108,7 @@ Scheda C
 - sp · 2 × 15-20 s /lato · 60 s · C3 · – · – · (come scheda B)
 - hfs · 2 × 30-40 s /lato · – · – · – · – · (come scheda A)
 
-Scheda D — leggera (~25 min). Note della scheda: ⏳. Recupero 45 s, nessun superset, niente circuito.
+Scheda D — leggera (~25 min). Note della scheda (in fondo): «Più 10-15 min di camminata o circuito leggero. Alla fine 5 min di defaticamento sdraiati, gambe appoggiate al muro.» Recupero 45 s, nessun superset, niente circuito.
 - gb · 2 × 12 · 45 s · 0 kg · 0 o 6 kg.
 - cls · 2 × 12 /lato · 45 s
 - db · 2 × 6 /lato · 45 s
@@ -121,7 +121,7 @@ Riscaldamento: in tutte le schede del Modello 2, uguale a quello di oggi. Circui
 ## Esercizi nuovi
 | id | nome | metrica | unilaterale | primari | secondari | immagine |
 |---|---|---|---|---|---|---|
-| gb | Ponte glutei | kg (0 ammesso) | no | glutei | femorali | per ora `wu-bridge`; poi `immagini-originali/gb.jpg` |
+| gb | Ponte glutei | kg (0 ammesso) | no | glutei | femorali | `immagini-originali/gb.jpg` (oggi è ancora una copia di `wu-bridge.jpg`: da sostituire con la foto col manubrio, senza toccare il codice) |
 | ss | Split squat statico | kg (0 ammesso) | sì | quadricipiti, glutei | femorali | `immagini-originali/ss.jpg` |
 | bdog | Bird dog | bodyweight | sì (alternati) | core | glutei, schiena | `immagini-originali/bdog.jpg` |
 | hfs | Allungamento flessori dell'anca | time, mobilità | sì | quadricipiti | – | `immagini-originali/hfs.jpg` |

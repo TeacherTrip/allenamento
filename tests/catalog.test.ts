@@ -71,8 +71,8 @@ describe('catalogo', () => {
     expect(CATALOG.filter((e) => e.kind === 'mobility').map((e) => e.id)).toEqual(['hfs']);
   });
 
-  it('il ponte glutei per ora usa l\'immagine del riscaldamento', () => {
-    expect(CATALOG_BY_ID.gb.image).toBe('wu-bridge');
+  it('il ponte glutei ha la sua immagine (gb), non quella del riscaldamento', () => {
+    expect(CATALOG_BY_ID.gb.image).toBe('gb');
   });
 });
 

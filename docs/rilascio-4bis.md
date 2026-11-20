@@ -36,9 +36,15 @@ La migrazione del database sul telefono **non si può annullare**: l'unica rete 
 - [ ] **Grafici**: e1RM, carico, ripetizioni e serie settimanali uguali a prima (confronto con screenshot presi PRIMA dell'aggiornamento).
 - [ ] Una seduta di prova salvata e poi cancellata dallo Storico.
 
+## Controlli a mano sulla versione pubblicata, col telefono SCOLLEGATO dal PC
+Col cavo USB e il debug attivi non sono affidabili: col debug collegato Chrome tiene acceso lo schermo comunque,
+il telefono in carica resta acceso, e il cavo lascia il PC raggiungibile anche in modalità aereo (prova USB del 20/11).
+- [ ] **Schermo acceso durante il circuito**: avviare il timer del circuito e non toccare il telefono per più del tempo di spegnimento dello schermo (Impostazioni → Display): lo schermo deve restare acceso fino alla fine o a «Interrompi».
+- [ ] **Modalità aereo**: attivarla, chiudere l'app e riaprirla dall'icona: si apre, con immagini, schede, Storico e Grafici; una seduta si salva. Poi disattivare la modalità aereo.
+
 ## Secondo telefono
 - [ ] Aprire `https://teachertrip.github.io/allenamento/` in Chrome → installare l'app.
-- [ ] Primo avvio: nome → Modello 2 → lato di partenza.
+- [ ] Primo avvio (una sola schermata): scegliere **Modello 2** → «Inizia».
 - [ ] Controllare le schede A-D, le immagini (o i segnaposto) e il recupero.
 - [ ] Spiegare il backup manuale (Info → Esporta backup, promemoria ogni 6 sedute).
 

@@ -46,14 +46,14 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 - `/chiudi` (`.claude/commands/chiudi.md`): chiusura sessione (stato, diario in `docs/storia.md`, punti aperti in `docs/aperti.md`, controlli, commit, push).
 
 ## Stato per ripartire
-- **Fase 4-bis IN CORSO sul ramo `fase-4bis`** (`docs/piano-4bis.md`): passi 1-5 e 7-9 fatti (passo 9: prova delle immagini `e2e/immagini-modelli.spec.ts`; passo 7: testi di Info per modello in `src/catalog/infoTexts.ts`, catalogo neutro, forme neutre; passo 8: Storico per scheda in `src/logic/history.ts`, Grafici per scheda + «Altri esercizi con dati», frasi 0 kg, gruppi solo se allenati, conteggio su `CATALOG_EXERCISES`). `main` e il sito restano alla Fase 7 (d66419b); merge in `main` solo al passo 10, con conferma esplicita.
+- **Fase 4-bis IN CORSO sul ramo `fase-4bis`** (`docs/piano-4bis.md`): passi 1-5 e 7-9 fatti (passo 8: Storico per scheda in `src/logic/history.ts`, Grafici per scheda + «Altri esercizi con dati», frasi 0 kg, gruppi solo se allenati, conteggio su `CATALOG_EXERCISES`; passo 9: `e2e/immagini-modelli.spec.ts`). `main` e il sito restano alla Fase 7 (codice d66419b, `main` a 01f7f1f); merge in `main` solo al passo 10, con conferma esplicita.
 - Regole dell'app: serie confermata **solo con ✓** (avvia il recupero); "Termina e salva" ferma il recupero. PWA: aggiornamento solo a richiesta. Avvisi brevi in basso, chiudibili.
 - GitHub: repo **pubblico**, `main` protetto, Pages solo da `main`. **Conferma dell'utente prima di ogni modifica su GitHub** (push di `fase-4bis` autorizzato; /chiudi = push del ramo).
-- Prove: 230 Vitest + 133 Playwright, verdi (due passate). `npm run prova-usb` solo a mano. Prova a secco sui dati reali obbligatoria al rilascio. Backup v2 col Modello 2 verificato (BK01).
-- Da provare a mano (utente): niente ora. Al passo 10, telefono scollegato: schermo acceso nel circuito e modalità aereo (`docs/rilascio-4bis.md`). L'app installata non si tocca fino al passo 10.
+- Prove: 230 Vitest + 133 Playwright, verdi (due passate). `npm run prova-usb` solo a mano. Prova a secco sui dati reali obbligatoria al rilascio.
+- Da provare a mano (utente): al via del passo 10, **backup dal telefono** (Info → Esporta backup) + screenshot dei Grafici, file in `dati-locali/`; poi controlli del piano di rilascio (telefono scollegato: schermo acceso nel circuito, modalità aereo).
 - Lista privata di parole: **nessuna voce attiva** (la compila l'utente). Hook: eccezione esatta solo per `i@izs.me`. Per gitleaks/adb/gh ricaricare il PATH. `fake-indexeddb`: NON si installa.
-- **Prossimo passo: passo 10** (rilascio, `docs/rilascio-4bis.md`): piano di rilascio mostrato all'utente; **parte solo con il suo OK**.
-- **PROMEMORIA nuova sessione:** leggere `CLAUDE.md`, `docs/aperti.md`, `docs/piano-4bis.md`; confermare ramo, ultimo commit, prove e prossimo passo; **non iniziare il passo 10 senza OK**.
+- **Prossimo passo: passo 10** (rilascio). Piano in 14 punti mostrato il 20/11 (sintesi in `docs/aperti.md`, checklist `docs/rilascio-4bis.md`): **parte solo con l'OK dell'utente**; da chiarire cosa intende per «chiusura della Fase 7» (già chiusa il 20/11).
+- **PROMEMORIA nuova sessione:** leggere `CLAUDE.md`, `docs/aperti.md`, `docs/piano-4bis.md`, `docs/rilascio-4bis.md`; confermare ramo, ultimo commit, prove e prossimo passo; **non iniziare il passo 10 senza OK**.
 ## Fase 4-bis + Modello 2 — IN CORSO (piano approvato il 20/11/2026)
 - Piano completo: **`docs/piano-4bis.md`** (fonte di verità della fase). Rilascio: **`docs/rilascio-4bis.md`** (checklist).
 - Secondo telefono Android con un'altra scheda; niente profili/account, ogni dispositivo ha i suoi dati.

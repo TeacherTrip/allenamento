@@ -218,3 +218,19 @@ Orari presi da `git reflog show origin/main`.
 - Il passo 8 parte solo con l'OK dell'utente; l'idea dei Grafici caricati all'apertura resta in `docs/aperti.md`.
 
 **Commit:** 1e8bcc4, 5c1a06b, eb5abc6, d42b81c (+ commit di chiusura sessione).
+
+## 2026-11-20 (notte) — Fase 4-bis: passi 8 e 9, piano di rilascio (ramo `fase-4bis`)
+- **Passo 8** (approvato con una modifica alle etichette dello Storico): Storico raggruppato per id della scheda, prima le schede attuali («Scheda A · n sedute»), poi quelle che non ci sono più («Scheda A — fino al gg/mm/aaaa», «dal … al …» se nome e data coincidono); menu dei Grafici per scheda attuale + «Altri esercizi con dati» (col Modello 2 la D non ha una voce propria: approvato); esercizi kg sempre a 0 kg → solo «Ripetizioni totali» con frase, sedute miste con nota in legenda, frase sotto l'indice; gruppi muscolari visibili solo se allenati; serie settimanali e indici su tutto il catalogo (`CATALOG_EXERCISES`). `nb()` tiene insieme «fino al» + data e «n sedute».
+- **Difetto trovato guardando le schermate**: il grafico a barre orizzontale scartava etichette con pochi gruppi (Femorali, Polpacci). Corretto; prova ST05 che legge le etichette disegnate (`data-ticks` del canvas), verificata sul codice vecchio (falliva: «Quadricipiti|Glutei»).
+- **Fine riga**: lo script Python della sessione aveva salvato 8 file con CRLF; riportati a LF prima del commit. Nuova regola in `CLAUDE.md`: gli script salvano con LF.
+- **Passo 9**: `e2e/immagini-modelli.spec.ts` (IM01 file in `public/`, IM02 caricamento nel browser) per gli esercizi dei due modelli, le immagini dei modelli, riscaldamento e circuito; verificata togliendo per un momento `gb.webp` (falliscono e dicono quale file manca; file rimesso identico).
+- **Passo 10**: piano di rilascio in 14 punti mostrato all'utente (sintesi in `docs/aperti.md`). Nessuna azione su `main`.
+- Sessione interrotta una volta per il limite di utilizzo (passo 8 scritto ma non committato), ripresa senza perdite.
+- Prove: da 216 + 126 a **230 Vitest + 133 Playwright**, due passate verdi; build riuscita; gitleaks pulito.
+
+**Decisioni**
+- Etichette dello Storico per le schede che non ci sono più: «fino al» con la data dell'ultima seduta; «dal … al …» solo se nome e data coincidono.
+- Frasi per le sedute a 0 kg, «Altri esercizi con dati» e menu senza voce D approvati.
+- Il passo 10 parte solo con l'OK dell'utente; il primo passo è il backup dal telefono.
+
+**Commit:** e4289b8, 7e051bc, 974fdc4, 217d8f4 (+ commit di chiusura sessione).

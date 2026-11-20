@@ -13,6 +13,16 @@ Piano: `docs/piano-4bis.md`. Rilascio: `docs/rilascio-4bis.md`.
 - [x] Passo 3: database v2 + migrazione + schermata d'errore + backup v2 (prova di migrazione con confronto prima/dopo)
 - [x] Passo 4: seduta guidata dalle schede del database
 - [ ] Passo 5: primo avvio + Info + Ricarica un modello, con le schede dei modelli illustrate (`immagini-originali/modelli/` → `public/modelli/*.webp`, in precache, testi neutri; prova con `naturalWidth > 0` e scelta del Modello 2; anteprima all'utente prima del commit)
+  - **Aggiunte del 20/11 (da fare nel passo 5):**
+  1. Togliere la soluzione provvisoria (`ensurePrograms()`): un'installazione nuova NON riceve più il Modello 1 automatico, compare il primo avvio. Prove: profilo pulito → primo avvio visibile → nessuna scheda creata finché non si preme «Inizia»; database v1 migrato → nessun primo avvio (M1 resta verde).
+  2. Settimane 1-2:
+     - su un'installazione nuova restano attive di serie; nel primo avvio una riga lo spiega: «Le prime 2 settimane: 2 serie per esercizio. Si cambia in Info.»;
+     - `phase1Since` = data della prima seduta salvata, non del primo avvio;
+     - 14 giorni dopo `phase1Since`, se sono ancora attive, nella seduta compare l'avviso «Settimane 1-2 attive da 2 settimane. Disattivarle?» con «Sì» (le spegne) e «Non ancora» (riappare dopo 7 giorni). Mai spegnimento automatico;
+     - prove Vitest per la logica dell'avviso (date finte) + una prova Playwright per «Sì».
+  3. Ricarica un modello: schede nuove sempre con id generati; bloccata se c'è un allenamento avviato; dopo la ricarica lo storico resta raggruppato sotto i nomi vecchi (prova già prevista).
+  4. Immagini dei modelli: conversione a 800 px; anteprima e pesi mostrati all'utente prima del commit.
+  5. Alla fine del passo 5, prima del 6: istruzioni per provare l'app sul telefono in Wi-Fi con il server locale (indirizzo, comando, cosa controllare), confermando che quell'indirizzo è diverso da quello dell'app installata, quindi i suoi dati non vengono toccati.
 - [ ] Passo 6: editor delle schede (+ prova con un nome di 6 lettere larghe, es. «MMMMMM», nella barra a 360 px)
 - [ ] Passo 7: Modello 2
 - [ ] Passo 8: storico e grafici (togliere «Polpacci» dai grafici quando nessuna scheda lo allena: oggi barra a 0 per il Modello 1)

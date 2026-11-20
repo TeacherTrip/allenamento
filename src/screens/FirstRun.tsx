@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { completeFirstRun } from '../db/db';
 import { ModelCards } from '../components/ModelCards';
+import { nb } from '../logic/format';
 import type { TemplateId } from '../program/types';
 
 export const PHASE1_FIRST_RUN_TEXT =
@@ -36,7 +37,7 @@ export function FirstRun() {
       <p className="sub">Tocca un modello. Si può cambiare in seguito da Info.</p>
       <ModelCards selected={templateId} onChoose={setTemplateId} />
       <div className="box" data-testid="firstrun-phase1">
-        {PHASE1_FIRST_RUN_TEXT}
+        {nb(PHASE1_FIRST_RUN_TEXT)}
       </div>
       {error && <div className="warnbox">Non riuscito: {error}</div>}
       <button className="primary big" onClick={onStart} disabled={!templateId || busy}>

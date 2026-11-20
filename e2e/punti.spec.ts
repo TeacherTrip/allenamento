@@ -181,7 +181,7 @@ test('U02 per lato: se salvo con solo il lato sinistro fatto, la serie NON viene
   expect(msgs.some((m) => /1 serie non confermate \(senza ✓\)/.test(m))).toBe(true);
   await openHistory(page);
   await expect(page.locator('.hist details').first().locator('.it', { hasText: 'Stacco rumeno' })).toHaveText(
-    'Stacco rumeno a una gamba: 10 kg × 8 /lato',
+    'Stacco rumeno a una gamba: 10 kg × 8 per lato',
   );
 });
 
@@ -190,9 +190,9 @@ test('U02 per lato: se salvo con solo il lato sinistro fatto, la serie NON viene
 test('SP01 side plank: registra i secondi per lato, non le ripetizioni', async ({ page }) => {
   autoDialogs(page);
   await openApp(page, 'B');
-  await expect(card(page, 'sp').locator('input[placeholder^="reps"]')).toHaveCount(0);
+  await expect(card(page, 'sp').locator('input[data-field="reps"]')).toHaveCount(0);
   await logSet(page, 'sp', 0, { sec: 35 });
   await saveSession(page);
   await openHistory(page);
-  await expect(page.locator('.hist details').first()).toContainText('Side plank: 35 s /lato');
+  await expect(page.locator('.hist details').first()).toContainText('Side plank: 35 s per lato');
 });

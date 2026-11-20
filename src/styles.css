@@ -76,6 +76,7 @@ main.with-rest { padding-bottom: calc(170px + env(safe-area-inset-bottom)); }
   display: flex; align-items: center; gap: 10px;
   background: var(--card2); border-top: 1px solid var(--line);
   padding: 10px 14px;
+  height: 64px; box-sizing: border-box; /* altezza fissa: l'avviso breve si appoggia sopra (.toast.above-rest) */
 }
 .restbar .t { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; min-width: 92px; }
 .restbar .l { flex: 1; min-width: 0; color: var(--mut); font-size: 13px; }
@@ -199,15 +200,15 @@ textarea { min-height: 70px; margin-top: 10px; }
 .chip.on.confirmed { background: var(--ac2); border-color: var(--ac2); color: #fff; }
 
 .check {
-  width: 48px; height: 44px; border-radius: 10px;
+  width: 48px; height: 48px; border-radius: 10px; /* area da toccare ≥ 48 × 48 px (Android) */
   border: 1.5px dashed var(--pre); background: transparent;
   color: var(--pre); font-size: 20px; font-weight: 800;
 }
 .check.on { background: var(--ac); border: 0; color: var(--ac-tx); }
 .check.half { border: 0; background: var(--ac2); color: #fff; }
-.setrow.two-sides { grid-template-columns: 30px 1fr 96px; }
+.setrow.two-sides { grid-template-columns: 30px 1fr 100px; }
 .sides { display: flex; gap: 4px; }
-.check.side-btn { width: 46px; font-size: 15px; }
+.check.side-btn { width: 48px; font-size: 15px; }
 .extra-tag { display: block; font-size: 10px; font-weight: 700; color: var(--ac2); text-transform: uppercase; }
 .add-set { margin-top: 6px; width: 100%; padding: 9px; border: 1px dashed var(--line); border-radius: 10px; background: transparent; color: var(--mut); font-weight: 650; font-size: 14px; }
 .inputs .x { flex: 0 0 40px; height: auto; }
@@ -245,11 +246,21 @@ ul { margin: 4px 0; padding-left: 18px; }
 /* avviso di nuova versione (in cima al contenuto, non copre nulla) */
 .update { background: var(--card2); border: 1px solid var(--ac); border-radius: var(--r); padding: 10px 12px; margin: 0 0 12px; font-size: 14px; }
 
+/* Avviso breve: in basso, subito sopra la barra di navigazione (o sopra quella del recupero).
+   Spazio riservato in fondo alla pagina (main.with-toast): non copre mai titoli o tasti in alto. Un tocco lo chiude. */
 .toast {
-  position: fixed; left: 50%; top: calc(56px + env(safe-area-inset-top)); transform: translateX(-50%);
-  background: var(--ac); color: var(--ac-tx); font-weight: 700;
-  padding: 10px 16px; border-radius: 10px; z-index: 20; max-width: 90vw; text-align: center;
+  position: fixed; left: 12px; right: 12px; z-index: 12;
+  bottom: calc(62px + 8px + env(safe-area-inset-bottom));
+  max-width: 616px; margin: 0 auto; min-height: 48px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: var(--ac); color: var(--ac-tx); font-weight: 700; font-size: 15px; font-family: inherit;
+  padding: 10px 14px; border: 0; border-radius: 12px; text-align: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
 }
+.toast.above-rest { bottom: calc(62px + 64px + 8px + env(safe-area-inset-bottom)); }
+.toast::after { content: '✕'; opacity: .8; font-size: 14px; } /* segno di chiusura: solo grafico, fuori dal testo */
+main.with-toast { padding-bottom: calc(96px + 72px + env(safe-area-inset-bottom)); }
+main.with-rest.with-toast { padding-bottom: calc(170px + 72px + env(safe-area-inset-bottom)); }
 
 /* ---------- circuito cardio ---------- */
 .seg { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 4px; }

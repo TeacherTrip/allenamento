@@ -4,9 +4,9 @@ import type { Exercise } from '../program/types';
 import type { SetValues } from '../db/models';
 import { fmtNum } from './values';
 
-/** "14 kg × 10 /lato", "elastico 20 × 12", "L2 Schienale divano × 9", "30 s". */
+/** "14 kg × 10 per lato", "elastico 20 × 12", "L2 Schienale divano × 9", "30 s", "12 reps per lato". */
 export function formatSet(ex: Exercise, v: SetValues): string {
-  const side = ex.unilateral ? ' /lato' : '';
+  const side = ex.unilateral ? ' per lato' : '';
   const reps = v.reps != null ? `${v.reps}${side}` : '?';
   switch (ex.metric) {
     case 'kg':
@@ -16,7 +16,7 @@ export function formatSet(ex: Exercise, v: SetValues): string {
     case 'level':
       return `${v.load != null ? `L${v.load} ${PUSHUP_LEVELS[v.load] ?? ''}`.trim() : 'L?'} × ${reps}`;
     case 'bodyweight':
-      return `${reps} reps`;
+      return `${v.reps ?? '?'} reps${side}`;
     case 'time':
       return `${v.seconds ?? '?'} s${side}`;
   }
@@ -50,4 +50,21 @@ export function fmtRange(ex: Exercise): string {
   const [a, b] = ex.repRange;
   const r = a === b ? `${a}` : `${a}-${b}`;
   return `${r}${ex.metric === 'time' ? ' s' : ''}${ex.unilateral ? ' per lato' : ''}`;
+}
+
+/** Spazio non separabile: il browser non va a capo in quel punto. */
+export const NBSP = '\u00a0';
+
+/**
+ * Testo da mostrare senza a capo sbagliati: numero + unità ("14 kg", "30 s", "7 esercizi", "2 serie"),
+ * "· 7", "2 × 10", "RIR 3" e "✓" con le parole vicine restano insieme. Usata solo per mostrare: i dati e le funzioni di formato restano con spazi normali.
+ */
+export function nb(text: string): string {
+  return text
+    .replace(/(\d) (?=(?:kg|s|min|h|esercizi|esercizio|serie|reps|rip\.|ripetizioni|round|settimane)(?![\p{L}]))/gu, `$1${NBSP}`)
+    .replace(/RIR (?=\d)/g, `RIR${NBSP}`)
+    .replace(/ × /g, `${NBSP}×${NBSP}`)
+    .replace(/· (?=\d)/g, `·${NBSP}`)
+    .replace(/ ✓/g, `${NBSP}✓`)
+    .replace(/✓ (?=\p{L})/gu, `✓${NBSP}`);
 }

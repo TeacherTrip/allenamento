@@ -22,8 +22,7 @@ test('manifest: nome, indirizzi e icone raggiungibili', async ({ request }) => {
 
 test('senza rete: l\'app si apre, con immagini e grafici', async ({ page, context }) => {
   await page.goto(PWA);
-  await expect(page.locator('.toast')).toContainText('funziona anche senza rete');
-  await page.evaluate(() => navigator.serviceWorker.ready);
+  await page.evaluate(() => navigator.serviceWorker.ready); // l'avviso «App pronta» compare dopo il primo avvio (prova A01)
   await page.reload(); // dalla seconda apertura la pagina è gestita dal service worker
   await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
 

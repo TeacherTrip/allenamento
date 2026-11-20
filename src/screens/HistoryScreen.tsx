@@ -3,7 +3,7 @@ import { deleteSession, updateSession } from '../db/db';
 import type { Session, SetLog } from '../db/models';
 import { EXERCISES, exerciseById } from '../program/program';
 import { CATALOG } from '../catalog/exercises';
-import { fmtDate, fmtDuration, formatSet } from '../logic/format';
+import { fmtDate, fmtDuration, formatSet, nb } from '../logic/format';
 import { fmtNum, parseNum } from '../logic/values';
 
 interface Props {
@@ -63,19 +63,19 @@ export function HistoryScreen({ sessions, logs, toast }: Props) {
               <summary>
                 {fmtDate(s.date)} · Seduta {sessionLabel(s)}{' '}
                 <span className="muted">
-                  · {sLogs.length} serie{s.durationSec != null && ` · ${fmtDuration(s.durationSec)}`}
+                  {nb(`· ${sLogs.length} serie${s.durationSec != null ? ` · ${fmtDuration(s.durationSec)}` : ''}`)}
                 </span>
               </summary>
               {s.durationSec != null && (
                 <div className="it">
-                  <b>Durata</b>: {fmtDuration(s.durationSec)}
+                  <b>Durata</b>: {nb(fmtDuration(s.durationSec))}
                 </div>
               )}
               {groupByExercise(s, sLogs).map(([id, arr]) => {
                 const ex = exerciseById(id);
                 return (
                   <div className="it" key={id}>
-                    <b>{ex?.name ?? id}</b>: {ex ? arr.map((l) => formatSet(ex, l) + (l.extra ? ' (extra)' : '')).join(' · ') : ''}
+                    <b>{ex?.name ?? id}</b>: {ex ? nb(arr.map((l) => formatSet(ex, l) + (l.extra ? ' (extra)' : '')).join(' · ')) : ''}
                   </div>
                 );
               })}

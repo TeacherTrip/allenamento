@@ -19,7 +19,7 @@ import type { Program, TemplateId } from '../program/types';
 import type { Session, SetLog, Settings } from '../db/models';
 import { backupFileName, buildBackup, detectFormat, parseBackup } from '../logic/backup';
 import { convertPrototype, protoImportMessage } from '../logic/importPrototype';
-import { fmtDate } from '../logic/format';
+import { fmtDate, nb } from '../logic/format';
 import { PUSHUP_LEVELS } from '../program/program';
 import { wakeLockSupported } from '../hooks/useWakeLock';
 
@@ -144,7 +144,7 @@ export function InfoScreen({ sessions, logs, settings, programs, persist, toast 
           }}
         />
         <span>
-          Settimane 1-2: massimo 2 serie, RIR 3
+          {nb('Settimane 1-2: massimo 2 serie, RIR 3')}
           <span className="muted small block" data-testid="phase1-since">
             {!phase1
               ? 'Disattivate'
@@ -163,7 +163,7 @@ export function InfoScreen({ sessions, logs, settings, programs, persist, toast 
             void setSetting('autoRest', e.target.checked);
           }}
         />
-        Recupero automatico (parte quando confermi una serie con ✓)
+        {nb('Recupero automatico (parte quando confermi una serie con ✓)')}
       </label>
       <label className="toggle">
         <input
@@ -182,9 +182,11 @@ export function InfoScreen({ sessions, logs, settings, programs, persist, toast 
         <span>
           Separa i lati
           <span className="muted small block">
-            {sides
-              ? 'Esercizi a un arto: un tasto per lato, dal lato di partenza.'
-              : 'Esercizi a un arto: un solo ✓ per serie, ripetizioni e kg per lato.'}
+            {nb(
+              sides
+                ? 'Esercizi a un arto: un tasto per lato, dal lato di partenza.'
+                : 'Esercizi a un arto: un solo ✓ per serie, ripetizioni e kg per lato.',
+            )}
           </span>
         </span>
       </label>
@@ -316,18 +318,18 @@ export function InfoScreen({ sessions, logs, settings, programs, persist, toast 
       <div className="box">
         <b>Regole</b>
         <ul>
-          <li><strong>RIR 2</strong> (Reps In Reserve): chiudi la serie quando ne avresti ancora 2.</li>
-          <li><strong>Settimane 1-2</strong>: 2 serie, RIR 3 (interruttore qui sopra, in Impostazioni).</li>
+          <li><strong>{nb('RIR 2')}</strong> (Reps In Reserve): chiudi la serie quando ne avresti ancora 2.</li>
+          <li><strong>Settimane 1-2</strong>: {nb('2 serie, RIR 3 (interruttore qui sopra, in Impostazioni).')}</li>
           <li><strong>Doppia progressione</strong>: quando arrivi al massimo del range su tutte le serie, aumenta il carico o passa alla variante più difficile.</li>
           <li><strong>Esercizi a un arto</strong>: ripetizioni e kg per lato, stesse reps con l’altro lato.</li>
           <li><strong>Superset</strong> (stessa lettera, es. 2a/2b): esercizi di seguito, recupero solo dopo la coppia.</li>
-          <li><strong>Gambe senza carico extra</strong> (quando 14 kg diventa leggero): discesa in 4-5 s, pausa 2 s in basso, 1,5 reps.</li>
+          <li><strong>Gambe senza carico extra</strong> {nb('(quando 14 kg diventa leggero): discesa in 4-5 s, pausa 2 s in basso, 1,5 reps.')}</li>
           <li><strong>Dolore articolare</strong> (non fatica muscolare): fermati e cambia esercizio.</li>
         </ul>
       </div>
       <div className="box">
         <b>Push-up: scala degli appoggi</b>
-        {Object.entries(PUSHUP_LEVELS).map(([k, v]) => `${k} ${v}`).join(' → ')}. Passi al livello successivo quando fai 3 × 12 a RIR 2.
+        {Object.entries(PUSHUP_LEVELS).map(([k, v]) => `${k} ${v}`).join(' → ')}. {nb('Passi al livello successivo quando fai 3 × 12 a RIR 2.')}
       </div>
 
       <p className="muted small" data-testid="app-version">

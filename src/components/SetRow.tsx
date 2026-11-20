@@ -62,16 +62,18 @@ export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, o
   };
 
   const cls = confirmed ? 'confirmed' : 'prefilled';
-  const repsLabel = ex.unilateral ? 'reps /lato' : 'reps';
+  const perSide = ex.unilateral ? ' per lato' : '';
 
-  const numInput = (field: DraftField, placeholder: string, decimal = false) => (
+  // segnaposto CORTO (mai tagliato a 360 px, anche con [Sx] [Dx]); il nome completo è nell'aria-label
+  const numInput = (field: DraftField, placeholder: string, name: string, decimal = false) => (
     <input
       className={`num ${cls}`}
       inputMode={decimal ? 'decimal' : 'numeric'}
       placeholder={placeholder}
+      data-field={field}
       value={shown[field] ?? ''}
       onChange={(e) => edit(field, e.target.value)}
-      aria-label={`${label} ${placeholder}`}
+      aria-label={`${label} ${name}`}
     />
   );
 
@@ -142,8 +144,10 @@ export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, o
         {ex.metric === 'level' &&
           chips(Object.entries(PUSHUP_LEVELS).map(([k, v]) => ({ value: Number(k), label: `${k} ${v}` })))}
         <div className="inputs">
-          {ex.metric === 'kg' && numInput('load', 'kg', true)}
-          {ex.metric === 'time' ? numInput('seconds', ex.unilateral ? 'sec /lato' : 'sec') : numInput('reps', repsLabel)}
+          {ex.metric === 'kg' && numInput('load', 'kg', `kg${perSide}`, true)}
+          {ex.metric === 'time'
+            ? numInput('seconds', 'sec', `secondi${perSide}`)
+            : numInput('reps', 'rip.', `ripetizioni${perSide}`)}
           {onRemove && !confirmed && (
             <button type="button" className="x" onClick={onRemove} aria-label={`Elimina ${label}`}>
               ✕

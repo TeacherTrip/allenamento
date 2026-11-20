@@ -55,8 +55,8 @@ describe('sedute miste (lati uniti e separati) sullo stesso esercizio', () => {
 
   it('storico: valori per lato in entrambe le sedute', () => {
     const text = (sid: string) => logs.filter((l) => l.sessionId === sid).map((l) => formatSet(row, l));
-    expect(text('s1')).toEqual(['14 kg × 10 /lato', '14 kg × 9 /lato']);
-    expect(text('s2')).toEqual(['16 kg × 8 /lato', '16 kg × 8 /lato']);
+    expect(text('s1')).toEqual(['14 kg × 10 per lato', '14 kg × 9 per lato']);
+    expect(text('s2')).toEqual(['16 kg × 8 per lato', '16 kg × 8 per lato']);
     expect(lastSessionSets('row', sessions, logs).map((l) => [l.load, l.reps])).toEqual([
       [16, 8],
       [16, 8],

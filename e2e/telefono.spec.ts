@@ -138,7 +138,7 @@ test('P4 dead bug e curl alternato: un solo ✓, "reps per lato", recupero subit
     const c = card(page, id);
     await expect(c.locator('.sides')).toHaveCount(0);
     await expect(c.getByRole('button', { name: 'Conferma serie' }).first()).toHaveText('✓');
-    await expect(c.locator('input[placeholder="reps /lato"]').first()).toBeVisible();
+    await expect(c.locator('input[data-field="reps"]').first()).toHaveAttribute('aria-label', /ripetizioni per lato$/);
     await expect(c).toContainText('lati alternati');
   }
   // dead bug S1: un tocco → recupero (non è l'ultima serie della seduta)
@@ -160,7 +160,7 @@ test('S1 "+ Serie": riga grigia con i valori dell’ultima serie, eliminabile se
   await expect(x).toHaveClass(/prefilled/);
   await expect(x.locator('.setn')).toContainText('S3');
   await expect(x.locator('input[placeholder="kg"]')).toHaveValue('12');
-  await expect(x.locator('input[placeholder^="reps"]')).toHaveValue('9');
+  await expect(x.locator('input[data-field="reps"]')).toHaveValue('9');
   await x.getByRole('button', { name: 'Elimina S3' }).click();
   await expect(card(page, 'gsq').locator('.setrow')).toHaveCount(2);
 });

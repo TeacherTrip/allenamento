@@ -7,7 +7,7 @@ import type { Day, Exercise, Program } from '../program/types';
 import { lastSessionSets, prefillWithStart } from '../logic/prefill';
 import { afterCheck, blockOf, manualRest, type FlowItem } from '../logic/superset';
 import { progressionHint } from '../logic/progression';
-import { durationSec, fmtDuration, formatSet } from '../logic/format';
+import { durationSec, fmtDuration, formatSet, nb, NBSP } from '../logic/format';
 import { entryToValues, hasValues, isComplete } from '../logic/values';
 import { unlockAudio } from '../hooks/sound';
 import { wakeLockSupported } from '../hooks/useWakeLock';
@@ -97,9 +97,9 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
         const planned = last.filter((l) => !l.extra);
         const lastDate = last.length ? sessions.find((s) => s.id === last[0].sessionId)?.date : undefined;
         const lastText = last.length
-          ? `${new Date(lastDate!).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' })} · ${last
+          ? nb(`${new Date(lastDate!).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' })} · ${last
               .map((l) => formatSet(ex, l) + (l.extra ? ' (extra)' : ''))
-              .join(' · ')}`
+              .join(' · ')}`)
           : null;
         // senza storico: valore di partenza della voce (in grigio, da confermare)
         const prefill = prefillWithStart(planned, count, ex.metric, ex.startValue);
@@ -338,7 +338,7 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
       ) : (
         phase1 && (
           <p className="sub" data-testid="phase1-line">
-            Settimane 1-2 attive{settings.phase1Since ? ` dal ${ddmm(settings.phase1Since)}` : ''}: massimo 2 serie, RIR 3
+            {nb(`Settimane 1-2 attive${settings.phase1Since ? ` dal ${ddmm(settings.phase1Since)}` : ''}: massimo 2 serie, RIR 3`)}
           </p>
         )
       )}
@@ -349,7 +349,7 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
         </div>
       )}
       <p className="legend">
-        <span className="dot prefilled" /> da confermare (precompilato o scritto) · <span className="dot confirmed" /> confermato con ✓
+        <span className="dot prefilled" /> da confermare (precompilato o scritto) · <span className="dot confirmed" /> {`confermato con${NBSP}✓`}
       </p>
 
       {rows.map((r, idx) => {
@@ -408,7 +408,7 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
               >
                 {p.label}
                 <br />
-                {p.rounds}× {p.workSec}/{p.restSec} s
+                {nb(`${p.rounds}× ${p.workSec}/${p.restSec} s`)}
               </button>
             ))}
           </div>

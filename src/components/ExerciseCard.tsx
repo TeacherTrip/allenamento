@@ -1,6 +1,6 @@
 import type { DraftEntry, SetValues } from '../db/models';
 import type { Exercise } from '../program/types';
-import { fmtRange } from '../logic/format';
+import { fmtRange, nb } from '../logic/format';
 import { SetRow, type Side } from './SetRow';
 import { Thumb } from './Thumb';
 
@@ -54,8 +54,8 @@ export function ExerciseCard(p: Props) {
             <h3>{ex.name}</h3>
           </div>
           <div className="meta">
-            {ex.equipment} · {count} × {fmtRange(ex)}
-            {ex.restSec != null && ex.restSec > 0 && ` · rec. ${ex.restSec}s`}
+            {nb(`${ex.equipment} · ${count} × ${fmtRange(ex)}`)}
+            {ex.restSec != null && ex.restSec > 0 && nb(` · rec. ${ex.restSec}s`)}
           </div>
         </div>
       </div>

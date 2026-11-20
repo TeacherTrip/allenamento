@@ -1,4 +1,5 @@
 import { TEMPLATES } from '../catalog/templates';
+import { NBSP } from '../logic/format';
 import type { TemplateId } from '../program/types';
 
 /** Indirizzo di un'immagine in public/ (BASE_URL = '/allenamento/' su GitHub Pages, mai un '/' fisso). */
@@ -26,7 +27,9 @@ export function ModelCards({ onChoose, selected }: { onChoose: (id: TemplateId) 
             {t.programs.map((p) => (
               <li key={p.id}>
                 Scheda {p.name}
-                {p.description ? ` — ${p.description}` : ''} · {p.items.length === 0 ? 'nessun esercizio' : `${p.items.length} esercizi`}
+                {p.description ? ` — ${p.description}` : ''}
+                {/* «· 7 esercizi» non si spezza (spazi non separabili) */}
+                {`${NBSP}·${NBSP}${p.items.length === 0 ? `nessun${NBSP}esercizio` : `${p.items.length}${NBSP}esercizi`}`}
               </li>
             ))}
           </ul>

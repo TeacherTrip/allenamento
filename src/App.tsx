@@ -81,6 +81,21 @@ export function App() {
     window.clearTimeout(toastTimer.current);
     toastTimer.current = window.setTimeout(() => setToastMsg(''), ms);
   }, []);
+  const closeToast = useCallback(() => {
+    window.clearTimeout(toastTimer.current);
+    setToastMsg('');
+  }, []);
+
+  // Primo avvio: nessun avviso sopra le schede dei modelli. Quello del service worker («App pronta…»)
+  // si tiene da parte e compare dopo «Inizia».
+  const firstRun = !!settings && !!programs && programs.length === 0 && !settings.onboarded;
+  const [deferred, setDeferred] = useState<{ msg: string; ms?: number } | null>(null);
+  const deferToast = useCallback((msg: string, ms?: number) => setDeferred({ msg, ms }), []);
+  useEffect(() => {
+    if (firstRun || !deferred) return;
+    toast(deferred.msg, deferred.ms);
+    setDeferred(null);
+  }, [firstRun, deferred, toast]);
 
   const startRest = useCallback(
     (sec: number, label: string) => setRest({ startedAt: Date.now(), durationMs: sec * 1000, label }),
@@ -122,15 +137,12 @@ export function App() {
   // Finché impostazioni e schede non sono lette non si mostra niente (né barra né primo avvio): nessuno sfarfallio.
   if (!settings || !programs) return <p className="sub">Caricamento…</p>;
   // Il service worker si registra in UpdateBanner: serve anche qui, così l'app è pronta offline già dal primo avvio.
-  if (programs.length === 0 && !settings.onboarded)
+  if (firstRun)
     return (
-      <>
-        <main className="firstrun">
-          <UpdateBanner busy={false} toast={toast} />
-          <FirstRun />
-        </main>
-        {toastMsg && <div className="toast">{toastMsg}</div>}
-      </>
+      <main className="firstrun">
+        <UpdateBanner busy={false} toast={deferToast} />
+        <FirstRun />
+      </main>
     );
 
   let body;
@@ -172,7 +184,7 @@ export function App() {
           </button>
         )}
       </header>
-      <main className={rest ? 'with-rest' : ''}>
+      <main className={[rest ? 'with-rest' : '', toastMsg ? 'with-toast' : ''].join(' ').trim() || undefined}>
         <UpdateBanner busy={!!active || !!rest || !!circuitRunning} toast={toast} />
         {body}
       </main>
@@ -184,7 +196,14 @@ export function App() {
           </button>
         ))}
       </nav>
-      {toastMsg && <div className="toast">{toastMsg}</div>}
+      {toastMsg && (
+        // sopra la barra in basso (e sopra quella del recupero), con spazio riservato in fondo alla pagina: non copre titoli né tasti
+        <div role="status">
+          <button type="button" className={`toast${rest ? ' above-rest' : ''}`} onClick={closeToast} aria-label={`${toastMsg}. Tocca per chiudere`}>
+            {toastMsg}
+          </button>
+        </div>
+      )}
     </>
   );
 }

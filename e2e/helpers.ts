@@ -40,8 +40,8 @@ export const row = (page: Page, id: string, i: number) => card(page, id).locator
 export async function typeSet(page: Page, id: string, i: number, v: { kg?: number; reps?: number; sec?: number }) {
   const r = row(page, id, i);
   if (v.kg != null) await r.locator('input[placeholder="kg"]').fill(String(v.kg));
-  if (v.reps != null) await r.locator('input[placeholder^="reps"]').fill(String(v.reps));
-  if (v.sec != null) await r.locator('input[placeholder^="sec"]').fill(String(v.sec));
+  if (v.reps != null) await r.locator('input[data-field="reps"]').fill(String(v.reps));
+  if (v.sec != null) await r.locator('input[data-field="seconds"]').fill(String(v.sec));
 }
 
 /** Conferma col tasto (per gli esercizi con lati separati: [Sx] poi [Dx]). */

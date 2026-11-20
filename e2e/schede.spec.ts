@@ -105,18 +105,18 @@ test('D04 valore di partenza: precompila in grigio solo senza storico (0 kg comp
   await expect(kg('gb', 0)).toHaveValue('0');
   await expect(kg('gb', 1)).toHaveValue('0');
   await expect(kg('gb', 0)).toHaveClass(/prefilled/);
-  await expect(row(page, 'gb', 0).locator('input[placeholder^="reps"]')).toHaveValue('');
+  await expect(row(page, 'gb', 0).locator('input[data-field="reps"]')).toHaveValue('');
   await expect(kg('rdl', 1)).toHaveValue('6'); // "Settimane 1-2" attivo (predefinito): 2 serie
   await expect(row(page, 'pa', 0).getByRole('button', { name: '10', exact: true })).toHaveClass(/on prefilled/);
   await expect(row(page, 'pu', 0).getByRole('button', { name: '1 Piano cucina' })).toHaveClass(/on prefilled/);
-  await expect(row(page, 'sp', 0).locator('input[placeholder^="sec"]')).toHaveValue('15');
+  await expect(row(page, 'sp', 0).locator('input[data-field="seconds"]')).toHaveValue('15');
 
   // a 0 kg la serie si salva; la volta dopo vince lo storico
   await logSet(page, 'gb', 0, { kg: 0, reps: 14 });
   await saveSession(page);
   await expectToast(page, 'Seduta salvata');
   await expect(kg('gb', 0)).toHaveValue('0');
-  await expect(row(page, 'gb', 0).locator('input[placeholder^="reps"]')).toHaveValue('14');
+  await expect(row(page, 'gb', 0).locator('input[data-field="reps"]')).toHaveValue('14');
   await expect(card(page, 'gb').locator('.last')).toContainText('0 kg × 14');
 });
 
@@ -221,7 +221,7 @@ test('D09 esercizi nuovi del catalogo nella seduta: immagine, unilaterale per la
   await expectToast(page, 'Seduta salvata');
   await openHistory(page);
   const h = page.locator('.hist details').first();
-  await expect(h).toContainText('Split squat statico: 0 kg × 8 /lato');
-  await expect(h).toContainText('Clamshell con fascia: 12 /lato reps');
+  await expect(h).toContainText('Split squat statico: 0 kg × 8 per lato');
+  await expect(h).toContainText('Clamshell con fascia: 12 reps per lato');
   await expect(h).toContainText('Calf raise in piedi: 15 reps');
 });

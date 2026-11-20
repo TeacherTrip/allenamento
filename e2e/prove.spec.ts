@@ -41,7 +41,7 @@ test('P03 la bozza sopravvive al ricaricamento', async ({ page }) => {
   await page.locator('textarea').fill('nota di prova');
   await page.reload();
   await expect(row(page, 'gsq', 0).locator('input[placeholder="kg"]')).toHaveValue('14');
-  await expect(row(page, 'gsq', 0).locator('input[placeholder^="reps"]')).toHaveValue('10');
+  await expect(row(page, 'gsq', 0).locator('input[data-field="reps"]')).toHaveValue('10');
   await expect(page.locator('textarea')).toHaveValue('nota di prova');
 });
 
@@ -57,8 +57,8 @@ test('P04-P05 salvo; riaprendo la seduta i valori sono precompilati in grigio', 
   const r0 = row(page, 'gsq', 0);
   await expect(r0).toHaveClass(/prefilled/);
   await expect(r0.locator('input[placeholder="kg"]')).toHaveValue('14');
-  await expect(r0.locator('input[placeholder^="reps"]')).toHaveValue('10');
-  await expect(row(page, 'gsq', 1).locator('input[placeholder^="reps"]')).toHaveValue('9');
+  await expect(r0.locator('input[data-field="reps"]')).toHaveValue('10');
+  await expect(row(page, 'gsq', 1).locator('input[data-field="reps"]')).toHaveValue('9');
   await expect(card(page, 'gsq').locator('.last')).toContainText('Ultima volta');
 });
 
@@ -152,7 +152,7 @@ test('P13 da 2 a 3 serie: la terza è precompilata con la seconda', async ({ pag
   const r2 = row(page, 'gsq', 2);
   await expect(r2).toHaveClass(/prefilled/);
   await expect(r2.locator('input[placeholder="kg"]')).toHaveValue('12');
-  await expect(r2.locator('input[placeholder^="reps"]')).toHaveValue('9');
+  await expect(r2.locator('input[data-field="reps"]')).toHaveValue('9');
 });
 
 test('P14 lat pulldown (resistenza) al massimo con elastico 20 → elastico più pesante', async ({ page }) => {
@@ -181,10 +181,10 @@ test('P15 trazioni (assistenza) al massimo con elastico 30 → elastico più leg
 test('P16 dead bug e side plank: nessun campo kg', async ({ page }) => {
   await openApp(page);
   await expect(card(page, 'db').locator('input[placeholder="kg"]')).toHaveCount(0);
-  await expect(card(page, 'db').locator('input[placeholder^="reps"]')).toHaveCount(2);
+  await expect(card(page, 'db').locator('input[data-field="reps"]')).toHaveCount(2);
   await goTab(page, 'B');
   await expect(card(page, 'sp').locator('input[placeholder="kg"]')).toHaveCount(0);
-  await expect(card(page, 'sp').locator('input[placeholder^="sec"]')).toHaveCount(2);
+  await expect(card(page, 'sp').locator('input[data-field="seconds"]')).toHaveCount(2);
 });
 
 test('P17 superset 2a/2b: su 2a indicazione "passa a 2b"; pulsante manuale su entrambi (tempo della coppia)', async ({ page }) => {

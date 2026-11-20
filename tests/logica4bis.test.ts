@@ -5,7 +5,7 @@ import { bestSet, exerciseCharts, exerciseIndex, groupIndex, MUSCLES, weeklySets
 import { prefillWithStart, startValues } from '../src/logic/prefill';
 import { progressionHint } from '../src/logic/progression';
 import { isComplete } from '../src/logic/values';
-import { formatSet } from '../src/logic/format';
+import { formatSet, nb } from '../src/logic/format';
 import { catalogExercise } from '../src/program/program';
 
 // ---------- superset e recupero ----------
@@ -100,7 +100,7 @@ describe('0 kg (ponte glutei, split squat statico)', () => {
   it('una serie a 0 kg è completa e si scrive "0 kg"', () => {
     expect(isComplete('kg', { load: 0, reps: 12 })).toBe(true);
     expect(formatSet(gb, { load: 0, reps: 12 })).toBe('0 kg × 12');
-    expect(formatSet(ss, { load: 0, reps: 8 })).toBe('0 kg × 8 /lato');
+    expect(formatSet(ss, { load: 0, reps: 8 })).toBe('0 kg × 8 per lato');
   });
 
   it('serie migliore a 0 kg: quella con più ripetizioni', () => {
@@ -211,5 +211,20 @@ describe('valore di partenza (ProgramItem.startValue)', () => {
 
   it('senza storico e senza valore: niente', () => {
     expect(prefillWithStart([], 2, 'kg')).toEqual([undefined, undefined]);
+  });
+});
+
+describe('nb(): spazi non separabili solo dove servono (D4)', () => {
+  const N = ' ';
+  it('numero + unità, «· 7 esercizi», «2 × 10», «RIR 3», «con ✓»', () => {
+    expect(nb('cardio · 7 esercizi')).toBe(`cardio ·${N}7${N}esercizi`);
+    expect(nb('Manubrio 14 kg · 2 × 8-12 per lato')).toBe(`Manubrio 14${N}kg ·${N}2${N}×${N}8-12 per lato`);
+    expect(nb('confermato con ✓')).toBe(`confermato con${N}✓`);
+    expect(nb('un solo ✓ per serie')).toBe(`un solo${N}✓${N}per serie`);
+    expect(nb('massimo 2 serie, RIR 3')).toBe(`massimo 2${N}serie, RIR${N}3`);
+    expect(nb('discesa in 4-5 s, 47 min')).toBe(`discesa in 4-5${N}s, 47${N}min`);
+  });
+  it('non tocca le parole che iniziano come un\'unità', () => {
+    expect(nb('2 settimane, 3 serie, 5 secchi')).toBe(`2${N}settimane, 3${N}serie, 5 secchi`);
   });
 });

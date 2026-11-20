@@ -81,7 +81,7 @@ Obiettivo: l'app va anche su un secondo telefono Android con un'altra scheda. Ni
 4. **Seduta dalle schede del database** (barra dinamica, copia delle voci, lato, note, superset, scheda vuota, prova a 360 px).
 5. **Primo avvio + Info + Ricarica un modello** (con le schede dei modelli illustrate). Prova Playwright: profilo pulito → primo avvio → le due immagini sono visibili e caricate (`naturalWidth > 0`) → scelta del Modello 2. Prova: migrazione → Ricarica Modello 2 → le sedute vecchie restano raggruppate sotto il loro `programName` e non si mescolano con le nuove (anche con una nuova scheda chiamata «A»). **Rifatto il 20/11** (cambio di piano): primo avvio in una schermata, via nome e lato, «Separa i lati» in Info, via «Schede vuote».
 6. ~~Editor delle schede~~ **eliminato** il 20/11 (cambio di piano: obiettivo unico = l'app si avvia, fa scegliere Modello 1 o 2 e trova le schede pronte). Spostato in `docs/aperti.md` come idea futura.
-7. **Prove e controllo del contenuto del Modello 2** (il contenuto è stato anticipato al passo 5, strada A del 20/11, con i soli testi approvati) **+ in Info «Settimana tipo» e «Regole» dipendenti dal modello scelto**: per il Modello 2 solo testi già approvati in questo piano; se mancano, fermarsi e chiedere i testi all'utente.
+7. ✅ (20/11, testi qui sopra) **Prove e controllo del contenuto del Modello 2** (il contenuto è stato anticipato al passo 5, strada A del 20/11, con i soli testi approvati) **+ in Info «Settimana tipo» e «Regole» dipendenti dal modello scelto**: per il Modello 2 solo testi già approvati in questo piano; se mancano, fermarsi e chiedere i testi all'utente.
 8. **Storico e grafici** (raggruppamento per scheda, polpacci, esercizi fuori scheda).
 9. **Ridotto il 20/11 a una prova automatica**: ogni esercizio del Modello 1 e del Modello 2 ha un file in `public/esercizi/` e l'immagine si carica nel browser (`naturalWidth > 0`). Se ne manca una: fermarsi e dire quale. (Controllo del 20/11 sui file: 26 esercizi, nessuna immagine mancante.)
 10. **Rilascio**: checklist in `docs/rilascio-4bis.md`; merge in `main` solo dopo conferma esplicita.
@@ -91,6 +91,8 @@ Obiettivo: l'app va anche su un secondo telefono Android con un'altra scheda. Ni
 
 ## Modello 2 — contenuto
 Formato: id · serie × ripetizioni · recupero · superset · partenza · attrezzo della voce · note. Note riscritte in forma generica e approvate dall'utente il 20/11/2026.
+
+Descrizioni e sottotitoli (approvati il 20/11): A «Full body», B «Full body — catena posteriore», C «Full body — glutei e core», D «leggera (~25 min)»; sottotitolo solo con la durata, nessun giorno: A, B, C «~60 min», D «~25 min».
 
 Scheda A
 - gsq · 3 × 10-12 · – · A1 · 6 kg · Kettlebell · Costole giù, schiena non inarcata; scendere fino a toccare il divano.
@@ -103,7 +105,7 @@ Scheda A
 - hfs · 2 × 30-40 s /lato · – · – · – · – · In ginocchio su una gamba; gluteo contratto e bacino in retroversione, senza inarcarsi.
 
 Scheda B
-- rdl · 3 × 10-12 · 90 s · – · 6 kg · Manubri · Schiena neutra, manubri vicini alle gambe; scendere finché il bacino va indietro. Se compare dolore, fermarsi e ripetere solo il gesto senza carico. Evitare nella prima ora dopo il risveglio.
+- rdl · 3 × 10-12 · 90 s · – · 6 kg · Manubri · Schiena neutra, manubri vicini alle gambe; scendere finché il bacino va indietro. Se l'esercizio fa male, fermarsi e ripetere solo il gesto senza carico.
 - lpd · 3 × 12-15 · – · B1 · elastico 10 · – · Da seduti o in ginocchio; gomiti verso i fianchi, spalle lontane dalle orecchie. Elastico 20 se facile.
 - fp · 3 × 10-12 · 75 s · B1 · 6 kg · Manubri · Ginocchia piegate, piedi a terra.
 - ss · 3 × 8-10 /lato · – · B2 · 0 kg · – · Discesa verticale, appoggio a un mobile se serve. Progressione: 2 × 2 kg in mano dopo 3 × 10 per lato.
@@ -113,7 +115,7 @@ Scheda B
 - hfs · 2 × 30-40 s /lato · – · – · – · – · (come scheda A, per esteso)
 
 Scheda C
-- ht · 3 × 10-12 · – · C1 · 8 kg · Manubrio · Scapole sulla seduta del divano, mento verso il petto, bacino in retroversione in alto. Se compare dolore, passare al ponte glutei (gb).
+- ht · 3 × 10-12 · – · C1 · 8 kg · Manubrio · Scapole sulla seduta del divano, mento verso il petto, bacino in retroversione in alto. Se l'esercizio fa male, passare al ponte glutei (gb).
 - cr · 2 × 15-20 · 90 s · C1 · corpo libero · – · (come scheda A)
 - row · 3 × 10-12 /lato · – · C2 · 6 kg · Manubrio · (come scheda A)
 - pu · 3 × 8-12 · 75 s · C2 · livello 1 · – · (come scheda A)
@@ -124,13 +126,56 @@ Scheda C
 
 Scheda D — leggera (~25 min). Note della scheda (in fondo): «Più 10-15 min di camminata o circuito leggero. Alla fine 5 min di defaticamento sdraiati, gambe appoggiate al muro.» Recupero 45 s, nessun superset, niente circuito.
 - gb · 2 × 12 · 45 s · 0 kg · 0 o 6 kg.
-- cls · 2 × 12 /lato · 45 s
+- cls · 2 × 12 /lato · 45 s · nota della voce: Fascia sopra le ginocchia.
 - db · 2 × 6 /lato · 45 s
 - pa · 2 × 15 · 45 s · elastico 10
 - bdog · 2 × 6 /lato · 45 s
 - hfs · 2 × 40 s /lato · –
 
-Riscaldamento: in tutte le schede del Modello 2, uguale a quello di oggi. Circuito: facoltativo in A, B e C, assente in D.
+Riscaldamento: in tutte le schede del Modello 2, uguale a quello del Modello 1. Voce della barra (20/11, uguale nei due modelli): «2 hang alla barra da 15-20 s (anche con i piedi appoggiati, se serve)». Circuito: facoltativo in A, B e C, assente in D.
+
+## Modello 2 — testi di Info (approvati il 20/11/2026, passo 7)
+Nel codice: `src/catalog/infoTexts.ts` (Info sceglie i testi con `settings.templateId`; senza modello quelli del Modello 1, invariati).
+
+**Settimana tipo**, sopra la tabella: «3 sedute a settimana, mai due giorni di fila, nell'ordine A → B → C. Se ne salti una, riprendi dalla successiva. Nei giorni “no” (molta stanchezza o poca energia) la seduta prevista diventa la D.»
+Tabella «Esempio»: Lun A · Mar Camminata · Mer B · Gio Riposo · Ven C · Sab Camminata · Dom Riposo.
+
+**Ogni giorno**:
+- Passi: 6.000-8.000 al giorno.
+- Al mattino: riscaldamento completo di 10 minuti; niente Romanian deadlift appena alzati.
+- Alla sera: dopo una giornata pesante, 10 minuti sdraiati con le gambe appoggiate al muro prima di iniziare; se la stanchezza resta, fare la D.
+- Scarpe da ginnastica con suola piatta e aderente; niente calze sul pavimento liscio (tranne nel leg curl con asciugamano).
+- Per rialzarsi da terra passare da seduti. Bere prima e durante. Se ci si sente poco bene: sedersi e chiudere la serie.
+
+Nel Modello 2 non compaiono «Tra A e B almeno 48 ore», la zona 2 e la camminata veloce.
+
+**Regole**:
+- RIR (ripetizioni di riserva): a fine serie devono restare 2-3 ripetizioni pulite.
+- Settimana 1: 2 serie, RIR 3-4, si cura la tecnica. Settimana 2: 2-3 serie, RIR 3, si aggiustano i carichi. Dalla 3: serie della scheda e progressione.
+- kg: prima si sale di ripetizioni nel range. Quando tutte le serie arrivano al massimo con RIR 2 o più, alla seduta dopo +1-2 kg e si riparte dal minimo.
+- Elastico: stessa regola, 10 → 20 → 30 (combinabili).
+- Push-up: a 3 × 12 pulite si scende di un livello.
+- Side plank: +5 s quando tutte le serie sono pulite; sui piedi da 30 s pulite sulle ginocchia.
+- Split squat: 2 × 2 kg in mano dopo 3 × 10 per lato.
+- Calf raise: a 2 × 20 pulite si passa su un gradino, poi con un manubrio in mano.
+- Clamshell: a 2 × 15 pulite la fascia sale sulle cosce, poi 2 s di tenuta in apertura.
+- Superset: due esercizi alternati, recupero dopo la coppia. Se uno dei due ha una serie in più, l'ultima si fa da sola.
+- Dolore: se un esercizio fa male, si torna alla versione o al carico precedente.
+- Stop: dolore al petto, fiato corto insolito, capogiri o svenimento → fermarsi; se si ripete, sentire il medico.
+
+Nel Modello 2 non compaiono la regola sui lati del Modello 1 né «Gambe senza carico extra (quando 14 kg diventa leggero)».
+
+**Scala dei push-up**: in tutti e due i modelli, stessi livelli 1-5. Modello 1: «Passi al livello successivo quando fai 3 × 12 a RIR 2.» Modello 2: «A 3 × 12 pulite si scende di un livello.»
+
+## Catalogo neutro (20/11/2026, passo 7)
+Nel catalogo solo tecnica valida per chiunque; le parti legate al Modello 1 sono nella nota della voce del Modello 1, con testo identico (mostrate dopo la nota del catalogo come «Nota della scheda: …»):
+- pu: «Scegli l'appoggio che ti tiene in 8-12 reps a RIR 2.»
+- pull: «Rigorose, zero slancio (corridoio stretto). Se non ne completi 3: negative, discesa in 5 s.»
+- ht: «Spingi le ginocchia contro la fascia.» (attrezzo del catalogo: «Manubrio»)
+- lpd: «In ginocchio sotto la barra.»
+- cls: «fascia in stoffa sopra le ginocchia» tolto dal catalogo (nel Modello 2 è nelle note delle voci di B e D).
+
+Forme neutre: «Sdraiati sulla schiena» (lc, gb) al posto di «Supino/Supini», «Arnold press (da seduti)», circuito «Respiro affannoso, ma riesci a dire una frase breve.» al posto di «Affannato ma…».
 
 ## Esercizi nuovi
 | id | nome | metrica | unilaterale | primari | secondari | immagine |

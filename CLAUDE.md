@@ -44,14 +44,13 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 - `/chiudi` (`.claude/commands/chiudi.md`): chiusura sessione (stato, diario in `docs/storia.md`, punti aperti in `docs/aperti.md`, controlli, commit, push).
 
 ## Stato per ripartire
-- **Fase 7 chiusa il 20/11/2026** (checklist §10 completa). App pubblicata su `https://teachertrip.github.io/allenamento/`, versione d66419b installata e verificata sul telefono; sedute di prova cancellate, debug USB spento. PWA: aggiornamento solo a richiesta, mai durante allenamento/recupero/circuito.
-- Regole dell'app decise il 19/11: la serie si conferma **solo con ✓** (scrivere non conferma) e la ✓ avvia il recupero; "Termina e salva" ferma il recupero.
-- GitHub: repo **pubblico**, secret scanning + push protection, `main` protetto. Workflow `pubblica.yml`: push su main → `npm test` + build → Pages. **Conferma dell'utente prima di ogni modifica su GitHub** (push compresi, tranne /chiudi).
-- Prove: 94 Vitest + 86 Playwright, verdi. Prove sul telefono dal PC: debug USB + CDP con Playwright (i tocchi adb sono bloccati); suono/vibrazione solo a mano dall'utente.
-- Lista privata di parole: **nessuna voce attiva** → la compila l'utente, poi rilanciare il controllo sulla cronologia (stampa solo commit e file).
-- Hook: eccezione esatta solo per `i@izs.me` (package-lock). Modello del telefono mai nei file versionati. Immagini: `npm run immagini`; icone: `npm run icone`.
-- Shell partita prima del PATH aggiornato: per gitleaks/adb/gh ricaricare il PATH utente o riavviare Claude Code.
-- Prossimo passo: Fase 4-bis (sotto); punti residui in `docs/aperti.md` (lista parole, firewall, notifica di fine recupero, "Vibrazione tattile" facoltativa).
+- **Fase 4-bis IN CORSO sul ramo `fase-4bis`** (dettagli nella sezione sotto e in `docs/piano-4bis.md`): passi 1-4 fatti e inviati (ultimo commit del passo 4: ccb0a9f). `main` e il sito sono ancora alla Fase 7 (d66419b, sul telefono). Merge in `main` solo al passo 10, con conferma esplicita.
+- Regole dell'app (19/11): la serie si conferma **solo con ✓**, la ✓ avvia il recupero; "Termina e salva" ferma il recupero. PWA: aggiornamento solo a richiesta.
+- GitHub: repo **pubblico**, `main` protetto, Pages solo da `main`. **Conferma dell'utente prima di ogni modifica su GitHub** (push del ramo `fase-4bis` già autorizzato; /chiudi = push del ramo).
+- Prove: 172 Vitest + 100 Playwright, verdi. Prova a secco sui dati reali (`npm run prova-a-secco`) rinviata: storico del telefono vuoto; obbligatoria al rilascio.
+- Da provare sull'utente/telefono: niente finché la Fase 4-bis non viene pubblicata (passo 10, checklist `docs/rilascio-4bis.md`).
+- Lista privata di parole: **nessuna voce attiva** (la compila l'utente). Hook: eccezione esatta solo per `i@izs.me`. Immagini: `npm run immagini`; icone: `npm run icone`. Per gitleaks/adb/gh ricaricare il PATH o riavviare Claude Code.
+- **Prossimo passo: passo 5** (primo avvio con le immagini dei modelli → `public/modelli/*.webp` 800 × 597 con anteprima prima del commit; Info: nome, lato, Settimane 1-2 con data; «Ricarica un modello»; togliere il provvisorio `ensurePrograms()`).
 
 ## Fase 4-bis + Modello 2 — IN CORSO (piano approvato il 20/11/2026)
 - Piano completo: **`docs/piano-4bis.md`** (fonte di verità della fase). Rilascio: **`docs/rilascio-4bis.md`** (checklist).

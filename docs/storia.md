@@ -153,3 +153,22 @@ Orari presi da `git reflog show origin/main`.
 - Le pulizie sul telefono le fa l'utente.
 
 **Commit:** 69ab15a, 7a7f9b4, 1a70ca5, d66419b (+ commit di chiusura sessione).
+
+## 2026-11-20 (pomeriggio) — Fase 4-bis: piano e passi 1-4 (ramo `fase-4bis`)
+- **Nuovo requisito**: l'app va anche su un secondo telefono Android con un'altra scheda (niente profili: ogni dispositivo ha i suoi dati). Catalogo esercizi nel codice, schede componibili in IndexedDB, modelli (Modello 1 = schede di prima, Modello 2, schede vuote), primo avvio, impostazioni in Info. Piano approvato con correzioni → `docs/piano-4bis.md`; checklist di rilascio → `docs/rilascio-4bis.md`.
+- **Ramo `fase-4bis`**: verificato che il push del ramo non pubblica (workflow solo su `main` + ambiente `github-pages` limitato a `main`); workflow non modificato. `/chiudi` in questa fase spinge solo il ramo.
+- **Passo 1**: catalogo (20 esercizi di prima con id invariati + `gb`, `ss`, `bdog`, `hfs`, `cr`, `cls`; gruppo `polpacci`; `hfs` = mobilità) e Modello 1 nel codice. Copia della scheda di prima in `tests/fixtures/scheda-v1.json` e prova campo per campo. Note del catalogo senza lato di partenza. Immagini dei 6 nuovi esercizi (1200 × 896 → WebP); `gb.jpg` era inizialmente una copia identica di `wu-bridge.jpg` (stessa impronta), poi sostituita dall'utente con quella dedicata. Precache: 45 voci, ~1,43 MB.
+- **Passo 2**: logica pura con prove — superset con serie diverse (recupero del blocco dopo il giro), recupero "–", 0 kg (e1RM vuoto, grafico ripetizioni, niente % da 0), mobilità esclusa da serie settimanali e indici, valore di partenza.
+- **Passo 3**: Dexie versione 2 (tabella `programs`). Upgrade che solo aggiunge (schede A/B/C, `programName` e `plan` alle sedute, impostazioni mancanti), idempotente, in un'unica transazione (se fallisce il database resta v1). Schermata d'errore con "Scarica backup grezzo", avvisi "Chiudi le altre schede" / "Ricarica". Backup formato 2 (con le schede; i v1 restano importabili). Prova M1 con confronto PRIMA/DOPO dei valori calcolati, M3 con migrazione forzata a fallire. Prova a secco sui dati reali (`npm run prova-a-secco`, `dati-locali/` esclusa da Git e bloccata dal pre-commit): collaudata con dati inventati; quella reale è rinviata perché lo storico del telefono è vuoto.
+- **Passo 4**: la seduta legge le schede dal database (barra dinamica, copia della scheda in ogni seduta salvata, superset per blocchi, recupero "–", valore di partenza, note della voce e della scheda, lato di partenza, scheda vuota, circuito facoltativo). Trovato e corretto: a 360 px con 4 schede i pulsanti della barra erano 46 × 42 px e "Gambe1" usciva dal bordo → margini più stretti, altezza minima 48 px, carattere 12 px con 7 pulsanti (prova D08).
+- Prove: da 94 Vitest + 86 Playwright a **172 + 100**, tutte verdi.
+
+**Decisioni**
+- Bozze: tabella `drafts` invariata, la chiave `day` contiene l'id della scheda; anche `Session.day`. Id `A`/`B`/`C` solo dalla migrazione, ogni scheda nuova ha un id generato (anche se si chiama «A»).
+- Carico `kg` = per manubrio (verificato nell'import del prototipo).
+- Superset numerati per blocchi; attrezzo con i kg nella voce di scheda (Modello 1 come prima, Modello 2 senza kg); nomi delle schede max 6 caratteri; "Settimane 1-2" in Info con data; circuito facoltativo chiuso.
+- Note del Modello 2 riscritte in forma generica (nessun riferimento a condizioni di salute) e approvate; forme neutre. Prima di ogni commit: controllo dei riferimenti alla salute.
+- Primo avvio (passo 5): schede dei modelli con immagine (`immagini-originali/modelli/` → `public/modelli/*.webp` 800 × 597, in precache), testi neutri.
+- Fino al passo 5 un'installazione nuova riceve il Modello 1 con id generati (provvisorio).
+
+**Commit:** 2578150, e044ac5, da54c68, edd081e, 9e16dfb, 36cfd45, ccb0a9f (+ commit di chiusura sessione).

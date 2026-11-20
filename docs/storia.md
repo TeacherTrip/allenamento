@@ -182,3 +182,23 @@ Orari presi da `git reflog show origin/main`.
 - Se Settimane 1-2 viene riattivato da Info, `phase1Since` diventa la data della prima seduta salvata dopo la riattivazione e il rinvio del «Non ancora» si azzera.
 
 **Commit:** e3caed6 (+ commit di chiusura sessione).
+
+## 2026-11-20 (notte) — Fase 4-bis: passo 5, cambio di piano, prova sul telefono via USB (ramo `fase-4bis`)
+- **Passo 5**: immagini dei modelli (`public/modelli/*.webp`, 800 × 597); primo avvio al posto delle schede automatiche; Modello 2 (A, B, C, D leggera) con i testi approvati; Info con Settimane 1-2 e «Ricarica un modello» (finestra con «Scarica backup» / «Sostituisci» / «Annulla», bloccata con un allenamento avviato, un'unica transazione, storico intatto); avviso «Disattivarle?» dopo 14 giorni; `phase1Since` dalla prima seduta salvata (vuoto senza sedute, anche nella migrazione).
+- **Cambio di piano**: obiettivo unico = l'app si avvia, fa scegliere Modello 1 o 2 e trova le schede pronte. Editor eliminato (idea futura in `docs/aperti.md`); primo avvio in una sola schermata (niente nome, niente lato, niente «Schede vuote»); «Separa i lati» in Info (spento sulle installazioni nuove, acceso dalla migrazione, bloccato con un allenamento avviato, dati invariati); passo 7 allargato a «Settimana tipo» e «Regole» per modello; passo 9 ridotto alla prova delle immagini.
+- **Prova sul telefono via debug USB** (solo `http://localhost:5173/allenamento/`, versione costruita; app installata e sito pubblicato non toccati; nessuna app installata, nessuna impostazione cambiata). Schermo 384 px. Tutto funzionante: primo avvio, immagini, Modello 2, seduta, Storico, Grafici, lati, ricarica, primo avvio offline, Wake Lock concesso durante il circuito e rilasciato dopo «Interrompi». Trovati 4 difetti:
+  - D1: ✓ 48 × 44 e [Sx] [Dx] 46 × 44 px;
+  - D2: segnaposto «reps /lato» tagliato con i lati accesi;
+  - D3: l'avviso «App pronta» copriva titoli e tasti;
+  - D4: righe che andavano a capo male («· 7 / esercizi», «con / ✓»).
+- **Correzioni** D1-D4: tasti 48 × 48; segnaposto «rip.» / «sec» e «per lato» anche nello Storico; avvisi brevi in basso sopra la barra (e sopra quella del recupero), con spazio riservato, chiudibili con un tocco, «App pronta» dopo «Inizia»; spazi non separabili con `nb()`. Nuove prove: `e2e/tasti.spec.ts` (360 e 384 px), `e2e/avviso.spec.ts`, prove di `nb()`.
+- **Prove USB nei commit**: `npm run prova-usb` (`scripts/prova-usb.mjs`, `playwright.usb.config.ts`, `e2e-usb/`), solo a mano, escluse da CI e prove normali; adb dal PATH o da `ADB`; schermate fuori dal progetto.
+- Lezioni dalla prova USB: una scheda aperta via debug resta dietro e non viene disegnata (si apre come un link con `am start`); col debug collegato Chrome tiene acceso lo schermo comunque (il Wake Lock si verifica dalla pagina); togliere l'inoltro USB non basta per l'offline (si ferma il server); `vite preview` senza `--host` ascoltava solo in IPv6.
+- Prove: da 172 + 100 a **202 Vitest + 122 Playwright**, due passate verdi; prova USB 6 su 6. Una sola caduta di CI01 sotto carico, non ripetuta (10 ripetizioni + 2 passate).
+
+**Decisioni**
+- `fake-indexeddb` non si installa; la prova della transazione fallita resta in Playwright.
+- Controlli a mano al passo 10, col telefono scollegato: schermo acceso durante il circuito, modalità aereo (`docs/rilascio-4bis.md`).
+- Il passo 7 parte solo con l'OK dell'utente.
+
+**Commit:** 3c722d5, 52cd544, dc7a7b9, 24e44ab, ab55e2c, 418ba3e, 026dac0 (+ commit di chiusura sessione).

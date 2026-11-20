@@ -1,6 +1,6 @@
 # Punti aperti
 
-Stato: app **pubblicata** su https://teachertrip.github.io/allenamento/ e installata sul telefono (versione con commit d66419b, Fase 7). **Fase 4-bis in corso sul ramo `fase-4bis`** (passi 1-5 fatti, non pubblicati; cambio di piano del 20/11: niente editor). **Fase 7 chiusa il 20/11/2026**: checklist §10 completa (dettagli in `docs/storia.md`). Repository **pubblico**; protezioni GitHub attive (secret scanning + push protection, `main` protetto da force push e cancellazione, Issues/Projects/Wiki spenti).
+Stato: app **pubblicata** su https://teachertrip.github.io/allenamento/ e installata sul telefono (versione con commit d66419b, Fase 7). **Fase 4-bis in corso sul ramo `fase-4bis`** (passi 1-5 fatti e provati sul telefono via USB, non pubblicati; cambio di piano del 20/11: niente editor). **Fase 7 chiusa il 20/11/2026**: checklist §10 completa (dettagli in `docs/storia.md`). Repository **pubblico**; protezioni GitHub attive (secret scanning + push protection, `main` protetto da force push e cancellazione, Issues/Projects/Wiki spenti).
 
 ## Da fare (utente)
 - [ ] Lista privata di parole: risulta senza voci attive (solo vuoti/commenti), quindi il controllo delle parole personali non agisce. La compila l'utente; poi rilanciare il controllo su tutta la cronologia (stampa solo commit e file).
@@ -16,20 +16,20 @@ Piano: `docs/piano-4bis.md`. Rilascio: `docs/rilascio-4bis.md`.
   - primo avvio in **una sola schermata** (modelli con immagini, riga Settimane 1-2, «Inizia»); via nome e lato dal primo avvio, via il nome da Info;
   - **«Separa i lati»** in Info: spento sulle installazioni nuove (un ✓ per serie, «per lato»), acceso dalla migrazione sulle esistenti; lato di partenza visibile solo se acceso; bloccato con un allenamento avviato; dati invariati;
   - via «Schede vuote» e ogni testo che rimandi a un editor.
-  - Prove: 200 Vitest + 115 Playwright (due passate). `fake-indexeddb` **non** si installa (decisione del 20/11): la prova della transazione fallita resta in Playwright (F10).
-  - [ ] **Prova sul telefono in Wi-Fi** (istruzioni sotto), prima del passo 7.
+  - `fake-indexeddb` **non** si installa (decisione del 20/11): la prova della transazione fallita resta in Playwright (F10).
+  - [x] **Prova sul telefono via debug USB** (20/11, `npm run prova-usb`): tutto funzionante; difetti D1-D4 (tasti, segnaposto, avviso, a capo) corretti in 418ba3e. Prove: 202 Vitest + 122 Playwright, due passate verdi.
   - Requisiti del 20/11 già applicati: niente Modello 1 automatico (`ensurePrograms()` tolto); Settimane 1-2 (`phase1Since` dalla prima seduta salvata, avviso dopo 14 giorni con «Sì»/«Non ancora» a 7 giorni, riattivazione che azzera data e rinvio, nessun avviso con data vuota); Ricarica un modello (id generati, bloccata con allenamento avviato, storico separato); immagini dei modelli a 800 px.
 - Passo 6: **eliminato** (cambio di piano del 20/11) → vedi «Idea futura» qui sotto.
 - [ ] Passo 7: prove e controllo del contenuto del Modello 2 (già nel codice) **+ «Settimana tipo» e «Regole» in Info dipendenti dal modello**. Oggi sono scritte per il Modello 1 (giorni A/B/C, RIR 2, 14 kg, scala dei push-up). Per il Modello 2 solo testi già approvati in `docs/piano-4bis.md`: se mancano, fermarsi e chiedere i testi all'utente.
 - [ ] Passo 8: storico e grafici (togliere «Polpacci» dai grafici quando nessuna scheda lo allena: oggi barra a 0 per il Modello 1). Il menu dei grafici raggruppa ancora gli esercizi secondo il Modello 1 scritto nel codice: con il Modello 2 gli esercizi nuovi non ci sono ancora (nessun errore).
 - [ ] Passo 9 (ridotto): prova automatica — ogni esercizio del Modello 1 e del Modello 2 ha un file in `public/esercizi/` e l'immagine si carica nel browser (`naturalWidth > 0`). Se ne manca una: fermarsi e dire quale. Controllo dei file del 20/11: 26 esercizi, nessuna immagine mancante.
-- [ ] Passo 10: rilascio (merge in `main` solo con conferma esplicita)
+- [ ] Passo 10: rilascio (merge in `main` solo con conferma esplicita). Controlli a mano col telefono scollegato: schermo acceso durante il circuito, modalità aereo (`docs/rilascio-4bis.md`).
 - [ ] Prima di aggiornare il telefono attuale: **backup esportato e verificato**, poi prova a secco (`dati-locali/` → `npm run prova-a-secco` → 0 differenze; controlla anche che «Separa i lati» risulti acceso; se lo storico è vuoto basta il backup). Rinviata il 20/11: storico del telefono ancora vuoto.
 
 ## Idea futura: editor delle schede (solo se servirà)
 Tolto dalla Fase 4-bis il 20/11. Era: da 1 a 4 schede (rinomina, aggiungi, elimina); per ogni scheda riscaldamento, circuito, note e posizione; voci con ↑ ↓ ✕, «superset con il successivo», serie, range, recupero, partenza, attrezzo e note; esercizi già presenti disattivati nel catalogo; bloccato per la scheda con un allenamento in corso; prova con un nome di 6 lettere larghe («MMMMMM») nella barra a 360 px. Fino ad allora nessuna schermata, pulsante o testo deve farne capire l'esistenza.
 
-## Prova del passo 5 sul telefono (Wi-Fi, server locale)
+## Prova sul telefono in Wi-Fi (facoltativa: la prova del passo 5 è stata fatta via USB)
 1. Sul PC, nella cartella del progetto: `npm run dev -- --host` (il server si apre anche alla rete di casa).
 2. Sul telefono, in Chrome (stessa rete Wi-Fi): `http://<indirizzo del PC>:5173/allenamento/`. L'indirizzo del PC lo mostra Vite nella riga «Network» (può cambiare da un giorno all'altro).
 3. È un indirizzo **diverso** da quello dell'app installata (`https://teachertrip.github.io/allenamento/`): ogni indirizzo ha i suoi dati, quindi l'app installata e il suo storico **non vengono toccati**. Qui si parte da zero: compare il primo avvio.
@@ -47,6 +47,8 @@ Tolto dalla Fase 4-bis il 20/11. Era: da 1 a 4 schede (rinomina, aggiungi, elimi
 6. Se Windows chiede il permesso del firewall per Node.js: solo reti **private**.
 
 ## Da decidere
+- [ ] Prova CI01 (protocollo del circuito) caduta una volta sola sotto carico il 20/11, non ripetuta: se ricapita, renderla stabile.
+- [ ] `docs/piano-4bis.md` usa ancora «/lato» come abbreviazione nella tabella dei modelli (solo documentazione; l'app dice «per lato»).
 - [ ] Stringere il firewall: una sola regola Allow per node.exe (profilo Private, solo TCP 5173). I comandi li esegue l'utente come amministratore.
 - [ ] Valutare la notifica di fine recupero (vibra/suona anche a telefono bloccato).
 

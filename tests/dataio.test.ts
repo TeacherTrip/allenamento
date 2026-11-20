@@ -4,6 +4,7 @@ import { convertPrototype, parseProtoLoad, protoImportMessage } from '../src/log
 import { DEFAULT_SETTINGS, type Session, type SetLog } from '../src/db/models';
 import { EXERCISE_BY_ID } from '../src/program/program';
 import { model1Programs, upgradeSession } from '../src/db/migrate';
+import { programsFromTemplate } from '../src/db/db';
 
 // Dati INVENTATI per i test.
 const sessions: Session[] = [{ id: 'x1', date: '2026-02-02T09:00:00.000Z', day: 'A', phase1: true, notes: 'prova', programVersion: 1 }];
@@ -19,6 +20,15 @@ describe('backup TeacherGym', () => {
     expect(back.setLogs).toEqual(setLogs);
     expect(back.settings).toEqual(DEFAULT_SETTINGS);
     expect(back.programs).toEqual(model1Programs());
+  });
+
+  it('backup fatto col Modello 2: il modello scelto e le sue schede tornano con l’import', () => {
+    const programs = programsFromTemplate('m2');
+    const settings = { ...DEFAULT_SETTINGS, templateId: 'm2' as const, onboarded: true };
+    const back = parseBackup(JSON.parse(JSON.stringify(buildBackup([], [], settings, programs))));
+    expect(back.settings?.templateId).toBe('m2');
+    expect(back.settings?.onboarded).toBe(true);
+    expect(back.programs).toEqual(programs);
   });
 
   it('rifiuta serie che puntano a sedute inesistenti', () => {

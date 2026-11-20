@@ -47,14 +47,13 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 - `/chiudi` (`.claude/commands/chiudi.md`): chiusura sessione (stato, diario in `docs/storia.md`, punti aperti in `docs/aperti.md`, controlli, commit, push).
 
 ## Stato per ripartire
-- **Fase 4-bis PUBBLICATA il 20/11/2026** (passo 10): merge `--no-ff` di `fase-4bis` in `main` = **6f23f93**, pubblicazione n. 7 su Actions verde; prima del merge `main` era a 01f7f1f (codice d66419b, Fase 7). Ramo `fase-4bis` conservato (non cancellare). Da qui si lavora di nuovo su `main` (o su un ramo nuovo, se la modifica è grande).
-- Regole dell'app: serie confermata **solo con ✓** (avvia il recupero); "Termina e salva" ferma il recupero. PWA: aggiornamento solo a richiesta. Avvisi brevi in basso, chiudibili.
-- GitHub: repo **pubblico**, `main` protetto, Pages solo da `main`. **Conferma dell'utente prima di ogni modifica su GitHub** (push di `fase-4bis` autorizzato; /chiudi = push del ramo).
-- Prove: 230 Vitest + 133 Playwright, verdi; `npm run prova-aggiornamento` 2/2 verde (due passate). `npm run prova-usb` solo a mano.
-- Telefono attuale: storico vuoto, quindi niente backup né prova a secco (sostituite dalla prova di aggiornamento reale). Aggiornare col pulsante «Aggiorna».
-- Lista privata di parole: **nessuna voce attiva** (la compila l'utente). Hook: eccezione esatta solo per `i@izs.me`. Per gitleaks/adb/gh ricaricare il PATH. `fake-indexeddb`: NON si installa.
-- **Ancora da verificare a mano su un telefono vero** (in `docs/aperti.md`): schermo acceso durante il circuito col telefono scollegato; modalità aereo reale. Poi il secondo telefono (Modello 2).
-- **PROMEMORIA nuova sessione:** leggere `CLAUDE.md` e `docs/aperti.md`; confermare ramo, ultimo commit, prove e prossimo passo.
+- **Fase 4-bis pubblicata** (merge 6f23f93; sito = pubblicazione **n. 8, a9c24bc**; ramo `fase-4bis` conservato). `main` NON si tocca fino al rilascio della Fase 5.
+- **Ramo di lavoro: `fase-5-drive`** (Fase 5, salvataggio automatico su Google Drive). Piano PRELIMINARE in `docs/piano-5-drive.md`, **da approvare: nessun codice finché l'utente non approva**.
+- **Regola di /chiudi durante la Fase 5:** commit e push **SOLO** di `fase-5-drive`, **mai** `main` (ogni push su `main` pubblica il sito e fa comparire l'avviso di aggiornamento sui telefoni).
+- Regole dell'app: serie confermata solo con ✓; PWA aggiornata solo a richiesta; avvisi brevi in basso. Repo pubblico, `main` protetto, conferma dell'utente prima di ogni modifica su GitHub.
+- Prove: 230 Vitest + 133 Playwright; `npm run prova-aggiornamento` 2/2; `npm run prova-usb` solo a mano. Per gitleaks/adb/gh ricaricare il PATH. `fake-indexeddb`: NON si installa. Lista privata di parole: nessuna voce attiva.
+- Da provare a mano (utente) su un telefono vero: schermo acceso nel circuito col telefono scollegato; modalità aereo reale; secondo telefono col Modello 2.
+- **PRIMO MESSAGGIO della prossima sessione:** leggere `CLAUDE.md`, `docs/aperti.md` e `docs/piano-5-drive.md`; rispondere ai punti a)-j) con le verifiche fatte (fonti nel piano), ripetere le «Domande per l'utente» e proporre il piano in passi. **Nessun codice finché l'utente non approva.**
 ## Fase 4-bis + Modello 2 — PUBBLICATA il 20/11/2026 (piano approvato lo stesso giorno)
 - Piano completo: **`docs/piano-4bis.md`** (fonte di verità della fase). Rilascio: **`docs/rilascio-4bis.md`** (checklist).
 - Secondo telefono Android con un'altra scheda; niente profili/account, ogni dispositivo ha i suoi dati.

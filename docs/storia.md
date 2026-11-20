@@ -249,3 +249,16 @@ Orari presi da `git reflog show origin/main`.
 - Restano da verificare a mano su un telefono vero: schermo acceso nel circuito col telefono scollegato; modalità aereo reale.
 
 **Commit:** 536024f (prova di aggiornamento), 6f23f93 (merge) (+ commit della documentazione).
+
+## 2026-11-20 (fine serata) — Preparazione della Fase 5 (solo documentazione, ramo `fase-5-drive`)
+- Ramo **`fase-5-drive`** creato da `main` aggiornato (a9c24bc). Nessun commit né push su `main`: il sito resta alla pubblicazione n. 8.
+- **`docs/piano-5-drive.md`**: piano preliminare del salvataggio automatico del backup v2 su Google Drive (cartella nascosta dell'app, permesso `drive.appdata`), punti a)-j) con proposta e livello di sicurezza, fonti ufficiali Google consultate oggi, «Domande per l'utente», suddivisione in 8 passi (il primo è una prova di fattibilità sul telefono).
+- Fatti verificati sulla documentazione: modello a token senza server e senza refresh token; ogni richiesta di token richiede un tocco dell'utente; `drive.appdata` è un permesso non sensibile (nessuna verifica obbligatoria); in modalità Test le autorizzazioni scadono dopo 7 giorni; la modalità Personale vale per un solo account; le revisioni di Drive non sono una garanzia (in genere 30 giorni). Non documentati, da provare: funzionamento nella PWA installata, finestra con `prompt: ''`, nome mostrato nel consenso senza verifica del marchio, spazio occupato dalla cartella nascosta.
+- Regola di `/chiudi` aggiornata per la Fase 5 (push solo di `fase-5-drive`), in `CLAUDE.md` e in `.claude/commands/chiudi.md`.
+- Nel piano il titolo è «Domande per l'utente» e non il nome proprio: repository pubblico, niente nomi reali nei file.
+
+**Decisioni**
+- Nessun codice finché l'utente non approva il piano.
+- Il primo passo della Fase 5 sarà la prova di fattibilità dell'accesso a Google nella PWA installata.
+
+**Commit:** (commit di chiusura sessione sul ramo `fase-5-drive`).

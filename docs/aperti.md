@@ -1,6 +1,8 @@
 # Punti aperti
 
-Stato: app **pubblicata** su https://teachertrip.github.io/allenamento/ con la **Fase 4-bis** (merge 6f23f93 in `main`, pubblicazione n. 7 del 20/11/2026; prima: d66419b, Fase 7). Ramo `fase-4bis` conservato. Il telefono attuale si aggiorna col pulsante «Aggiorna». **Fase 7 chiusa il 20/11/2026**: checklist §10 completa (dettagli in `docs/storia.md`). Repository **pubblico**; protezioni GitHub attive (secret scanning + push protection, `main` protetto da force push e cancellazione, Issues/Projects/Wiki spenti).
+**Prossimo: Fase 5, salvataggio automatico su Google Drive (vedi `docs/piano-5-drive.md`).** Piano preliminare da approvare; ramo `fase-5-drive`; nessun codice prima dell'OK.
+
+Stato: app **pubblicata** su https://teachertrip.github.io/allenamento/ con la **Fase 4-bis** (merge 6f23f93 in `main`, pubblicazione n. 7 del 20/11/2026, poi n. 8 = a9c24bc con la sola documentazione; prima: d66419b, Fase 7). Ramo `fase-4bis` conservato. Il telefono attuale si aggiorna col pulsante «Aggiorna». **Fase 7 chiusa il 20/11/2026**: checklist §10 completa (dettagli in `docs/storia.md`). Repository **pubblico**; protezioni GitHub attive (secret scanning + push protection, `main` protetto da force push e cancellazione, Issues/Projects/Wiki spenti).
 
 ## Da verificare a mano su un telefono vero (non provabili sul PC)
 - [ ] **Schermo acceso durante il circuito col telefono SCOLLEGATO** dal PC: avviare il timer del circuito e non toccare il telefono per più del tempo di spegnimento dello schermo; deve restare acceso fino alla fine o a «Interrompi».
@@ -65,6 +67,10 @@ Tolto dalla Fase 4-bis il 20/11. Era: da 1 a 4 schede (rinomina, aggiungi, elimi
    - Info → «Ricarica un modello»: solo Modello 1 e Modello 2; tre pulsanti; con «Annulla» non cambia niente; con «Sostituisci» la barra torna A, B, C e lo Storico tiene la seduta di prima;
    - con un allenamento avviato, «Ricarica un modello» mostra il blocco con il nome della scheda.
 6. Se Windows chiede il permesso del firewall per Node.js: solo reti **private**.
+
+## Fase 5 — Google Drive (ramo `fase-5-drive`)
+- [ ] Approvare il piano preliminare `docs/piano-5-drive.md` e rispondere alle «Domande per l'utente».
+- [ ] Passo 1 (dopo l'OK): console Google a mano (utente) + prova di fattibilità dell'accesso nella PWA installata sul telefono vero.
 
 ## Da decidere
 - [ ] **Prova instabile CI01** (protocollo del circuito): fallita 1 volta sotto carico il 20/11, poi sempre verde. **Se si ripete, va corretta prima del rilascio** (passo 10).

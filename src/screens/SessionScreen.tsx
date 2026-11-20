@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { db, saveDraft, saveSessionFromDraft, setSetting } from '../db/db';
+import { db, saveDraft, saveSessionFromDraft, setPhase1, setSetting, snoozePhase1 } from '../db/db';
+import { shouldAskPhase1Off } from '../logic/phase1';
 import type { Draft, DraftEntry, Session, SetLog, SetValues, Settings } from '../db/models';
 import { WARMUP, resolveProgram } from '../program/program';
 import type { Day, Exercise, Program } from '../program/types';
@@ -16,6 +17,8 @@ import { CARDIO_EXERCISES, CARDIO_INTENSITY, CARDIO_PROTOCOLS } from '../program
 import { CircuitOverlay } from '../components/CircuitOverlay';
 import { pauseRun, resumeRun } from '../logic/circuit';
 import type { SimpleItem } from '../program/types';
+
+const ddmm = (iso: string) => new Date(iso).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
 
 interface Props {
   /** Scheda di questa seduta (dal database). */
@@ -62,9 +65,11 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
   const startSide = settings.startSide;
   const [draft, setDraft] = useState<Draft | null>(null);
 
-  // interruttore aggiornato subito (senza aspettare il database): niente sfarfallio
-  const [phase1, setPhase1] = useState(settings.phase1);
-  useEffect(() => setPhase1(settings.phase1), [settings.phase1]);
+  // "Settimane 1-2": l'interruttore è in Info; qui la riga e l'avviso «Disattivarle?».
+  // Valore locale aggiornato subito al «Sì» (senza aspettare il database): niente sfarfallio
+  const [phase1, setPhase1Local] = useState(settings.phase1);
+  useEffect(() => setPhase1Local(settings.phase1), [settings.phase1]);
+  const askPhase1Off = phase1 && shouldAskPhase1Off(settings);
 
   // carica la bozza salvata (la seduta in corso sopravvive alla chiusura dell'app)
   useEffect(() => {
@@ -312,17 +317,31 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
           {settings.sessionsSinceBackup} sedute dall'ultimo backup. Vai in <b>Info</b> → Esporta backup.
         </div>
       )}
-      <label className="toggle">
-        <input
-          type="checkbox"
-          checked={phase1}
-          onChange={(e) => {
-            setPhase1(e.target.checked);
-            void setSetting('phase1', e.target.checked);
-          }}
-        />
-        Settimane 1-2: massimo 2 serie, RIR 3
-      </label>
+      {askPhase1Off ? (
+        <div className="warnbox" role="alert" data-testid="phase1-ask">
+          Settimane 1-2 attive da 2 settimane. Disattivarle?
+          <div className="row2">
+            <button
+              className="ghost"
+              onClick={() => {
+                setPhase1Local(false);
+                void setPhase1(false);
+              }}
+            >
+              Sì
+            </button>
+            <button className="ghost" onClick={() => void snoozePhase1()}>
+              Non ancora
+            </button>
+          </div>
+        </div>
+      ) : (
+        phase1 && (
+          <p className="sub" data-testid="phase1-line">
+            Settimane 1-2 attive{settings.phase1Since ? ` dal ${ddmm(settings.phase1Since)}` : ''}: massimo 2 serie, RIR 3
+          </p>
+        )
+      )}
       {program.warmup && (
         <div className="box">
           <b>Riscaldamento (5-6 min)</b>

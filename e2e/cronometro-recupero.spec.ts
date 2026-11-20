@@ -132,7 +132,7 @@ test('R03 ultima serie dell’ultimo esercizio: niente timer', async ({ page }) 
 test('R04 recupero automatico disattivato in Info: ✓ non avvia il timer; il pulsante manuale sì', async ({ page }) => {
   await openApp(page);
   await goTab(page, 'Info');
-  await page.locator('.toggle input').uncheck();
+  await page.getByRole('checkbox', { name: /Recupero automatico/ }).uncheck();
   await goTab(page, 'A');
   await typeSet(page, 'gsq', 0, { kg: 14, reps: 10 });
   await row(page, 'gsq', 0).locator('.check').click();

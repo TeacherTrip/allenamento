@@ -1,5 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
-import { db, markBackupDone, mergeSessions, replaceAllData, setSetting, type PersistState } from '../db/db';
+import { useLiveQuery } from 'dexie-react-hooks';
+import {
+  db,
+  markBackupDone,
+  mergeSessions,
+  reloadTemplate,
+  ReloadBlockedError,
+  replaceAllData,
+  setPhase1,
+  setSetting,
+  type PersistState,
+} from '../db/db';
+import { TEMPLATE_BY_ID } from '../catalog/templates';
+import { ModelCards } from '../components/ModelCards';
+import type { Program, TemplateId } from '../program/types';
 import type { Session, SetLog, Settings } from '../db/models';
 import { backupFileName, buildBackup, detectFormat, parseBackup } from '../logic/backup';
 import { convertPrototype, protoImportMessage } from '../logic/importPrototype';
@@ -11,6 +25,7 @@ interface Props {
   sessions: Session[];
   logs: SetLog[];
   settings: Settings;
+  programs: Program[];
   persist: PersistState | null;
   toast: (msg: string) => void;
 }
@@ -30,11 +45,24 @@ function appVersion(): string {
   return n && sha ? `versione ${n} (${sha.slice(0, 7)})` : 'sviluppo locale';
 }
 
-export function InfoScreen({ sessions, logs, settings, persist, toast }: Props) {
+const ddmm = (iso: string) => new Date(iso).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
+
+export function InfoScreen({ sessions, logs, settings, programs, persist, toast }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [usage, setUsage] = useState<string>('');
   const [autoRest, setAutoRest] = useState(settings.autoRest);
   useEffect(() => setAutoRest(settings.autoRest), [settings.autoRest]);
+  const [phase1, setPhase1Local] = useState(settings.phase1);
+  useEffect(() => setPhase1Local(settings.phase1), [settings.phase1]);
+  const [userName, setUserName] = useState(settings.userName);
+  useEffect(() => setUserName(settings.userName), [settings.userName]);
+  // «Ricarica un modello»: elenco aperto e modello scelto (finestra di conferma)
+  const [reloadOpen, setReloadOpen] = useState(false);
+  const [confirmId, setConfirmId] = useState<TemplateId | null>(null);
+  const [reloading, setReloading] = useState(false);
+  // allenamento avviato (cronometro o circuito): blocca la ricarica
+  const startedDraft = useLiveQuery(async () => (await db.drafts.toArray()).find((d) => !!d.startedAt || !!d.circuitRun) ?? null, []);
+  const startedName = startedDraft ? (programs.find((p) => p.id === startedDraft.day)?.name ?? startedDraft.day) : null;
 
   useEffect(() => {
     navigator.storage?.estimate?.().then((e) => {
@@ -56,6 +84,26 @@ export function InfoScreen({ sessions, logs, settings, persist, toast }: Props) 
     setTimeout(() => URL.revokeObjectURL(url), 2000);
     await markBackupDone();
     toast('Backup esportato (cartella Download)');
+  };
+
+  const onReplace = async () => {
+    if (!confirmId || reloading) return;
+    setReloading(true);
+    try {
+      await reloadTemplate(confirmId);
+      toast(`Schede del ${TEMPLATE_BY_ID[confirmId].label} caricate`);
+      setConfirmId(null);
+      setReloadOpen(false);
+    } catch (e) {
+      setConfirmId(null);
+      alert(
+        e instanceof ReloadBlockedError
+          ? e.message
+          : `Ricarica non riuscita: le schede non sono cambiate. ${e instanceof Error ? e.message : ''}`.trim(),
+      );
+    } finally {
+      setReloading(false);
+    }
   };
 
   const onFile = async (file: File) => {
@@ -83,6 +131,56 @@ export function InfoScreen({ sessions, logs, settings, persist, toast }: Props) 
   return (
     <>
       <h2>Impostazioni</h2>
+      <label className="field">
+        <span>Nome (resta solo su questo telefono)</span>
+        <input
+          type="text"
+          value={userName}
+          maxLength={30}
+          autoComplete="off"
+          aria-label="Nome"
+          onChange={(e) => setUserName(e.target.value)}
+          onBlur={() => {
+            if (userName.trim() !== settings.userName) void setSetting('userName', userName.trim());
+          }}
+        />
+      </label>
+      <div className="box">
+        <b>Lato di partenza</b>
+        Negli esercizi a un lato si comincia da:
+        <div className="row2 sides" role="group" aria-label="Lato di partenza">
+          {(['left', 'right'] as const).map((side) => (
+            <button
+              key={side}
+              className={`ghost${settings.startSide === side ? ' on' : ''}`}
+              aria-pressed={settings.startSide === side}
+              onClick={() => void setSetting('startSide', side)}
+            >
+              {side === 'left' ? 'Sinistro' : 'Destro'}
+            </button>
+          ))}
+        </div>
+      </div>
+      <label className="toggle">
+        <input
+          type="checkbox"
+          checked={phase1}
+          onChange={(e) => {
+            setPhase1Local(e.target.checked);
+            void setPhase1(e.target.checked);
+          }}
+        />
+        <span>
+          Settimane 1-2: massimo 2 serie, RIR 3
+          <span className="muted small block" data-testid="phase1-since">
+            {!phase1
+              ? 'Disattivate'
+              : settings.phase1Since
+                ? `Attive dal ${ddmm(settings.phase1Since)}`
+                : 'La data parte dalla prima seduta salvata'}
+          </span>
+        </span>
+      </label>
       <label className="toggle">
         <input
           type="checkbox"
@@ -99,6 +197,44 @@ export function InfoScreen({ sessions, logs, settings, persist, toast }: Props) 
           ? 'Schermo sempre acceso: supportato (attivo durante l’allenamento).'
           : 'Schermo sempre acceso: non supportato.'}
       </div>
+
+      <h2>Schede</h2>
+      <div className="box">
+        <b>Schede attuali</b>
+        {programs.map((p) => p.name).join(', ') || 'nessuna'}
+        {settings.templateId && TEMPLATE_BY_ID[settings.templateId] && ` (dal ${TEMPLATE_BY_ID[settings.templateId].label})`}
+        <button className="ghost" onClick={() => setReloadOpen((o) => !o)} aria-expanded={reloadOpen}>
+          Ricarica un modello
+        </button>
+      </div>
+      {reloadOpen &&
+        (startedName ? (
+          <div className="warnbox" data-testid="reload-blocked">
+            C’è un allenamento avviato sulla scheda <b>{startedName}</b>: concludilo o annullalo prima di ricaricare un modello.
+          </div>
+        ) : (
+          <div data-testid="reload-models">
+            <p className="sub">Tocca un modello. Le schede attuali verranno sostituite; lo storico resta.</p>
+            <ModelCards onChoose={(id) => setConfirmId(id)} />
+          </div>
+        ))}
+      {confirmId && (
+        <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="reload-title">
+          <div className="dialog">
+            <h2 id="reload-title">Ricaricare il {TEMPLATE_BY_ID[confirmId].label}?</h2>
+            <p>Le schede attuali verranno sostituite. Lo storico resta.</p>
+            <button className="ghost" onClick={() => void onExport()}>
+              Scarica backup
+            </button>
+            <button className="primary" onClick={() => void onReplace()} disabled={reloading}>
+              Sostituisci
+            </button>
+            <button className="ghost" onClick={() => setConfirmId(null)} disabled={reloading}>
+              Annulla
+            </button>
+          </div>
+        </div>
+      )}
 
       <h2>Dati e backup</h2>
       <div className="box">
@@ -163,9 +299,9 @@ export function InfoScreen({ sessions, logs, settings, persist, toast }: Props) 
         <b>Regole</b>
         <ul>
           <li><strong>RIR 2</strong> (Reps In Reserve): chiudi la serie quando ne avresti ancora 2.</li>
-          <li><strong>Settimane 1-2</strong>: 2 serie, RIR 3 (interruttore in cima a ogni seduta).</li>
+          <li><strong>Settimane 1-2</strong>: 2 serie, RIR 3 (interruttore qui sopra, in Impostazioni).</li>
           <li><strong>Doppia progressione</strong>: quando arrivi al massimo del range su tutte le serie, aumenta il carico o passa alla variante più difficile.</li>
-          <li><strong>Esercizi a un arto</strong>: parti dal sinistro, stesse reps col destro.</li>
+          <li><strong>Esercizi a un arto</strong>: parti dal lato scelto in Impostazioni, stesse reps con l’altro.</li>
           <li><strong>Superset</strong> (stessa lettera, es. 2a/2b): esercizi di seguito, recupero solo dopo la coppia.</li>
           <li><strong>Gambe senza carico extra</strong> (quando 14 kg diventa leggero): discesa in 4-5 s, pausa 2 s in basso, 1,5 reps.</li>
           <li><strong>Dolore articolare</strong> (non fatica muscolare): fermati e cambia esercizio.</li>

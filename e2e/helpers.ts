@@ -10,9 +10,25 @@ export function autoDialogs(page: Page): string[] {
   return msgs;
 }
 
-export async function openApp(page: Page, tab = 'A') {
+export async function openApp(page: Page, tab = 'A', model: 'm1' | 'm2' | 'empty' = 'm1') {
   await page.goto('./');
+  await passFirstRun(page, model);
   await goTab(page, tab);
+}
+
+/**
+ * Profilo pulito → primo avvio (dal passo 5 non ci sono più schede automatiche): nome vuoto, modello, lato sinistro, «Inizia».
+ * Se l'app è già pronta (database migrato o primo avvio già fatto) non fa niente.
+ */
+export async function passFirstRun(page: Page, model: 'm1' | 'm2' | 'empty' = 'm1') {
+  const firstRun = page.getByTestId('firstrun');
+  const nav = page.locator('nav.tabbar');
+  await expect(firstRun.or(nav)).toBeVisible();
+  if (!(await firstRun.isVisible())) return;
+  await firstRun.getByRole('button', { name: 'Avanti' }).click();
+  await page.getByTestId(`model-${model}`).click();
+  await page.getByRole('button', { name: 'Inizia', exact: true }).click();
+  await expect(nav).toBeVisible();
 }
 
 export async function goTab(page: Page, label: string) {
@@ -168,4 +184,12 @@ export async function patchDraft(page: Page, name: string, patch: Record<string,
       }),
     [name, patch] as const,
   );
+}
+
+/** "Settimane 1-2": l'interruttore è in Info (dal passo 5); nella seduta c'è solo la riga. */
+export async function setPhase1InInfo(page: Page, on: boolean) {
+  await goTab(page, 'Info');
+  const box = page.getByRole('checkbox', { name: /Settimane 1-2/ });
+  if (on) await box.check();
+  else await box.uncheck();
 }

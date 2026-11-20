@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { autoDialogs, card, chip, expectToast, goTab, openApp, openHistory, row, saveSession, typeSet, checkSet, logSet } from './helpers';
+import { autoDialogs, card, chip, expectToast, goTab, openApp, openHistory, row, saveSession, setPhase1InInfo, typeSet, checkSet, logSet } from './helpers';
 
 // Prove 1-19 concordate. Ogni test parte da un profilo pulito (database vuoto).
 // Di default "Settimane 1-2" è attivo: 2 serie per esercizio.
@@ -118,11 +118,15 @@ test('P09 esporta backup con il nome giusto', async ({ page }) => {
   expect((await dl).suggestedFilename()).toMatch(/^teachergym-backup-\d{4}-\d{2}-\d{2}\.json$/);
 });
 
-test('P10 interruttore Settimane 1-2: 2 serie attivo, 3 disattivo', async ({ page }) => {
+test('P10 interruttore Settimane 1-2 (in Info): 2 serie attivo, 3 disattivo; nella seduta solo la riga', async ({ page }) => {
   await openApp(page);
   await expect(card(page, 'gsq').locator('.setrow')).toHaveCount(2);
-  await page.locator('.toggle input').uncheck();
+  await expect(page.getByTestId('phase1-line')).toHaveText('Settimane 1-2 attive: massimo 2 serie, RIR 3');
+  await expect(page.locator('main input[type="checkbox"]')).toHaveCount(0);
+  await setPhase1InInfo(page, false);
+  await goTab(page, 'A');
   await expect(card(page, 'gsq').locator('.setrow')).toHaveCount(3);
+  await expect(page.getByTestId('phase1-line')).toHaveCount(0);
 });
 
 test('P11 solo kg senza ripetizioni: non salvata e avviso', async ({ page }) => {
@@ -143,7 +147,8 @@ test('P13 da 2 a 3 serie: la terza è precompilata con la seconda', async ({ pag
   await logSet(page, 'gsq', 0, { kg: 14, reps: 10 });
   await logSet(page, 'gsq', 1, { kg: 12, reps: 9 });
   await saveSession(page);
-  await page.locator('.toggle input').uncheck();
+  await setPhase1InInfo(page, false);
+  await goTab(page, 'A');
   const r2 = row(page, 'gsq', 2);
   await expect(r2).toHaveClass(/prefilled/);
   await expect(r2.locator('input[placeholder="kg"]')).toHaveValue('12');

@@ -151,15 +151,13 @@ test('M1 installazione esistente: migrazione v1 → v2 senza perdite, valori cal
   expect(again.stores).toEqual(db.stores);
 });
 
-test('M2 installazione nuova: nessuna migrazione, schede con id generati (mai A/B/C), primo avvio ancora da fare', async ({ page }) => {
+test('M2 installazione nuova: nessuna migrazione, nessuna scheda creata da sola, compare il primo avvio', async ({ page }) => {
   await page.goto('./');
-  await expect(page.locator('h1')).toHaveText('TeacherGym');
+  await expect(page.getByTestId('firstrun')).toBeVisible();
+  await expect(page.locator('nav.tabbar')).toHaveCount(0);
   const db = await readDb(page);
   expect(db.version).toBe(20);
-  // provvisorio fino al primo avvio (passo 5): Modello 1, ma con id generati
-  const programs = (db.stores.programs as { id: string; name: string; order: number }[]).sort((a, b) => a.order - b.order);
-  expect(programs.map((p) => p.name)).toEqual(['A', 'B', 'C']);
-  for (const p of programs) expect(['A', 'B', 'C']).not.toContain(p.id);
+  expect(db.stores.programs).toEqual([]);
   expect((db.stores.settings as SettingRow[]).find((r) => r.key === 'onboarded')).toBeUndefined();
 });
 

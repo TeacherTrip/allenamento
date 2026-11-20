@@ -11,7 +11,7 @@ import {
 for (const autoRest of [true, false]) {
   test(`M01 pulsante "Avvia recupero" su TUTTI gli esercizi (recupero automatico ${autoRest ? 'attivo' : 'disattivato'})`, async ({ page }) => {
     await openApp(page, 'Info');
-    if (!autoRest) await page.locator('.toggle input').uncheck();
+    if (!autoRest) await page.getByRole('checkbox', { name: /Recupero automatico/ }).uncheck();
     for (const day of ['A', 'B', 'C']) {
       await goTab(page, day);
       const cards = page.locator('section.ex');

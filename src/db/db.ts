@@ -2,6 +2,7 @@ import Dexie, { type Table } from 'dexie';
 import type { Draft, DraftEntry, Session, SetLog, Settings } from './models';
 import { DEFAULT_SETTINGS } from './models';
 import type { Day, Program, TemplateId } from '../program/types';
+import { phase1SinceOnSave, phase1Snooze, phase1Toggle } from '../logic/phase1';
 import { PROGRAM_VERSION, exerciseById } from '../program/program';
 import { TEMPLATE_BY_ID } from '../catalog/templates';
 import { entryToValues, hasValues, isComplete, newId } from '../logic/values';
@@ -13,6 +14,9 @@ export const DB_NAME = 'teachergym';
 declare global {
   // eslint-disable-next-line no-var
   var __TG_TEST_FAIL_UPGRADE__: boolean | undefined;
+  /** Solo per le prove automatiche: fa fallire «Ricarica un modello» a metà transazione. */
+  // eslint-disable-next-line no-var
+  var __TG_TEST_FAIL_RELOAD__: boolean | undefined;
 }
 
 /**
@@ -97,28 +101,78 @@ export function programsFromTemplate(templateId: TemplateId): Program[] {
   }));
 }
 
-/** Sostituisce le schede con quelle di un modello. Lo storico non si tocca. */
-export async function applyTemplate(templateId: TemplateId): Promise<Program[]> {
-  const programs = programsFromTemplate(templateId);
+/** Scelte del primo avvio: tenute solo in memoria finché non si preme «Inizia». */
+export interface FirstRunChoice {
+  userName: string;
+  startSide: 'left' | 'right';
+  templateId: TemplateId;
+}
+
+/**
+ * Primo avvio, al tocco di «Inizia»: schede del modello + impostazioni, tutto in UNA transazione
+ * (se si chiude l'app prima, non resta niente di salvato e il primo avvio riparte da capo).
+ * Se nel frattempo le schede esistono già (es. un'altra scheda del browser), non le duplica.
+ */
+export async function completeFirstRun(choice: FirstRunChoice): Promise<void> {
   await db.transaction('rw', [db.programs, db.settings], async () => {
+    if ((await db.programs.count()) === 0) await db.programs.bulkAdd(programsFromTemplate(choice.templateId));
+    await db.settings.bulkPut([
+      { key: 'userName', value: choice.userName.trim() },
+      { key: 'startSide', value: choice.startSide },
+      { key: 'templateId', value: choice.templateId },
+      { key: 'onboarded', value: true },
+    ]);
+  });
+}
+
+/** «Ricarica un modello» rifiutata: c'è un allenamento avviato su questa scheda. */
+export class ReloadBlockedError extends Error {
+  constructor(public readonly programName: string) {
+    super(`C'è un allenamento avviato sulla scheda ${programName}: concludilo o annullalo prima di ricaricare un modello.`);
+    this.name = 'ReloadBlockedError';
+  }
+}
+
+/** Bozza "avviata": cronometro partito o circuito in corso. */
+const isStarted = (d: { startedAt?: string; circuitRun?: unknown }) => !!d.startedAt || !!d.circuitRun;
+
+/**
+ * «Ricarica un modello»: le schede attuali vengono CANCELLATE e sostituite da quelle del modello (id nuovi).
+ * Lo storico non si tocca: ogni seduta ha già la sua copia (`day` = id vecchio, `programName`, `plan`).
+ * In UNA transazione (o tutto o niente):
+ * - bloccata se c'è un allenamento avviato (ReloadBlockedError con il nome della scheda);
+ * - le bozze NON avviate (valori scritti senza Inizia) appartengono a schede che spariscono: cancellate;
+ * - `templateId` aggiornato.
+ * Fuori dalla transazione (non è IndexedDB) resta solo la scheda aperta in `localStorage`: chi chiama la aggiorna;
+ * se non ci riesce l'app apre comunque la prima scheda, perché ignora un id che non esiste più.
+ */
+export async function reloadTemplate(templateId: TemplateId): Promise<Program[]> {
+  const programs = programsFromTemplate(templateId);
+  await db.transaction('rw', [db.programs, db.settings, db.drafts], async () => {
+    const started = (await db.drafts.toArray()).find(isStarted);
+    if (started) {
+      const p = await db.programs.get(started.day);
+      throw new ReloadBlockedError(p?.name ?? started.day);
+    }
+    await db.drafts.clear();
     await db.programs.clear();
     await db.programs.bulkAdd(programs);
+    if (globalThis.__TG_TEST_FAIL_RELOAD__) throw new Error('Ricarica interrotta apposta (prova automatica)');
     await db.settings.put({ key: 'templateId', value: templateId });
   });
   return programs;
 }
 
-/**
- * PROVVISORIO (passo 4, fino al primo avvio del passo 5): un'installazione nuova senza schede
- * riceve il Modello 1 con id generati, così l'app è usabile.
- */
-export async function ensurePrograms(): Promise<void> {
-  // controllo e scrittura nella stessa transazione: due chiamate insieme non creano due volte le schede
-  await db.transaction('rw', [db.programs, db.settings], async () => {
-    if ((await db.programs.count()) > 0) return;
-    await db.programs.bulkAdd(programsFromTemplate('m1'));
-    await db.settings.put({ key: 'templateId', value: 'm1' });
-  });
+// ---------- Settimane 1-2 ----------
+
+/** Interruttore in Info: riattivarle azzera data e rinvio (vedi src/logic/phase1.ts). */
+export async function setPhase1(on: boolean): Promise<void> {
+  await db.settings.bulkPut(Object.entries(phase1Toggle(on)).map(([key, value]) => ({ key: key as keyof Settings, value })));
+}
+
+/** Avviso «Disattivarle?» → «Non ancora». */
+export async function snoozePhase1(now = new Date()): Promise<void> {
+  await db.settings.bulkPut(Object.entries(phase1Snooze(now)).map(([key, value]) => ({ key: key as keyof Settings, value })));
 }
 
 // ---------- bozza della seduta in corso ----------
@@ -165,10 +219,11 @@ export async function saveSessionFromDraft(
   const hasCircuit = !!draft.circuit && draft.circuit.completedRounds > 0;
   if (logs.length === 0 && !hasCircuit) return 0;
 
+  const date = new Date().toISOString();
   await db.transaction('rw', [db.sessions, db.setLogs, db.drafts, db.settings], async () => {
     await db.sessions.add({
       id: sessionId,
-      date: new Date().toISOString(),
+      date,
       day: draft.day,
       // copia della scheda di adesso: modificarla dopo non cambia questa seduta
       programName: program.name,
@@ -183,6 +238,14 @@ export async function saveSessionFromDraft(
     await db.drafts.delete(draft.day);
     const row = await db.settings.get('sessionsSinceBackup');
     await db.settings.put({ key: 'sessionsSinceBackup', value: ((row?.value as number) ?? 0) + 1 });
+    // Settimane 1-2: la data parte dalla prima seduta salvata con l'interruttore attivo
+    const p1 = await db.settings.get('phase1');
+    const since = await db.settings.get('phase1Since');
+    const newSince = phase1SinceOnSave(
+      { phase1: (p1?.value as boolean | undefined) ?? DEFAULT_SETTINGS.phase1, phase1Since: (since?.value as string | null | undefined) ?? null },
+      date,
+    );
+    if (newSince) await db.settings.put({ key: 'phase1Since', value: newSince });
   });
   return logs.length || 1;
 }

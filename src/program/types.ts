@@ -89,6 +89,8 @@ export type TemplateId = 'm1' | 'm2' | 'empty';
 export interface Template {
   id: TemplateId;
   label: string;
+  /** Immagine della scheda del modello (percorso relativo alla base dell'app, in precache). */
+  image?: string;
   programs: Program[];
 }
 

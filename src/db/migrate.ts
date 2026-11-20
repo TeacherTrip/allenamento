@@ -53,7 +53,7 @@ export interface SettingRow {
  * Impostazioni da AGGIUNGERE per un'installazione esistente (solo le chiavi che mancano):
  * primo avvio già fatto, Modello 1, lato sinistro (com'era prima), data di "Settimane 1-2".
  */
-export function settingsToAdd(rows: SettingRow[], sessions: Pick<Session, 'date'>[], now = new Date()): SettingRow[] {
+export function settingsToAdd(rows: SettingRow[], sessions: Pick<Session, 'date'>[]): SettingRow[] {
   const has = new Map(rows.map((r) => [r.key, r.value]));
   const out: SettingRow[] = [];
   const add = <K extends keyof Settings>(key: K, value: Settings[K]) => {
@@ -65,9 +65,10 @@ export function settingsToAdd(rows: SettingRow[], sessions: Pick<Session, 'date'
   add('userName', '');
   const phase1 = (has.has('phase1') ? has.get('phase1') : DEFAULT_SETTINGS.phase1) as boolean;
   if (phase1) {
-    // data sconosciuta: la prima seduta registrata (o adesso, se non ce ne sono)
+    // data sconosciuta: la prima seduta registrata; senza sedute resta vuota
+    // (si scrive al salvataggio della prima seduta: niente avviso «Disattivarle?» senza sedute)
     const first = sessions.reduce<string | null>((m, s) => (m == null || s.date < m ? s.date : m), null);
-    add('phase1Since', first ?? now.toISOString());
+    add('phase1Since', first);
   } else {
     add('phase1Since', null);
   }

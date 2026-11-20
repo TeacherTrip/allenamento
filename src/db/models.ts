@@ -82,8 +82,13 @@ export interface Settings {
   templateId: TemplateId | null;
   /** Primo avvio già fatto (o installazione esistente migrata). */
   onboarded: boolean;
-  /** Quando è stato attivato "Settimane 1-2" (ISO), per la riga "attive dal gg/mm". */
+  /**
+   * Data (ISO) della prima seduta salvata con "Settimane 1-2" attive (null = nessuna ancora).
+   * Serve per la riga "attive dal gg/mm" e per l'avviso «Disattivarle?» dopo 14 giorni.
+   */
   phase1Since: string | null;
+  /** «Non ancora» all'avviso: non riproporlo prima di questa data (ISO). */
+  phase1SnoozedUntil: string | null;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -97,6 +102,7 @@ export const DEFAULT_SETTINGS: Settings = {
   templateId: null,
   onboarded: false,
   phase1Since: null,
+  phase1SnoozedUntil: null,
 };
 
 /** Chiavi delle impostazioni della versione 1 del database (prima della Fase 4-bis). */

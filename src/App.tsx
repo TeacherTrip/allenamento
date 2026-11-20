@@ -6,6 +6,7 @@ import { useWakeLock } from './hooks/useWakeLock';
 import { SessionScreen } from './screens/SessionScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
 import { InfoScreen } from './screens/InfoScreen';
+import { FirstRun } from './screens/FirstRun';
 import { RestBar, restRemaining, type RestState } from './components/RestBar';
 import { UpdateBanner } from './components/UpdateBanner';
 import { fmtElapsed } from './logic/format';
@@ -116,6 +117,22 @@ export function App() {
     window.scrollTo(0, 0);
   };
 
+  // Primo avvio SOLO su un'installazione nuova: nessuna scheda e primo avvio mai fatto.
+  // (Un database v1 migrato ha le schede e onboarded = true; il numero di sedute non conta mai.)
+  // Finché impostazioni e schede non sono lette non si mostra niente (né barra né primo avvio): nessuno sfarfallio.
+  if (!settings || !programs) return <p className="sub">Caricamento…</p>;
+  // Il service worker si registra in UpdateBanner: serve anche qui, così l'app è pronta offline già dal primo avvio.
+  if (programs.length === 0 && !settings.onboarded)
+    return (
+      <>
+        <main className="firstrun">
+          <UpdateBanner busy={false} toast={toast} />
+          <FirstRun />
+        </main>
+        {toastMsg && <div className="toast">{toastMsg}</div>}
+      </>
+    );
+
   let body;
   if (!history || !settings || !programs || tab == null) body = <p className="sub">Caricamento…</p>;
   else if (tab === 'H') body = <HistoryScreen sessions={history.sessions} logs={history.logs} toast={toast} />;
@@ -126,7 +143,9 @@ export function App() {
       </Suspense>
     );
   else if (tab === 'I')
-    body = <InfoScreen sessions={history.sessions} logs={history.logs} settings={settings} persist={persist} toast={toast} />;
+    body = (
+      <InfoScreen sessions={history.sessions} logs={history.logs} settings={settings} programs={programs} persist={persist} toast={toast} />
+    );
   else
     body = (
       <SessionScreen

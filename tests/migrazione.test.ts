@@ -43,12 +43,11 @@ describe('migrazione v1 → v2: sedute', () => {
 });
 
 describe('migrazione v1 → v2: impostazioni', () => {
-  const now = new Date('2026-11-20T10:00:00.000Z');
   const sessions = [{ date: '2026-10-05T09:00:00.000Z' }, { date: '2026-09-28T09:00:00.000Z' }];
 
   it('installazione esistente: primo avvio fatto, Modello 1, lato sinistro, nome vuoto', () => {
     const rows: SettingRow[] = [{ key: 'phase1', value: false }, { key: 'cardioProtocol', value: 2 }];
-    expect(settingsToAdd(rows, sessions, now)).toEqual([
+    expect(settingsToAdd(rows, sessions)).toEqual([
       { key: 'onboarded', value: true },
       { key: 'templateId', value: 'm1' },
       { key: 'startSide', value: 'left' },
@@ -57,22 +56,23 @@ describe('migrazione v1 → v2: impostazioni', () => {
     ]);
   });
 
-  it('"Settimane 1-2" attivo: data = prima seduta; senza sedute = adesso', () => {
+  it('"Settimane 1-2" attivo: data = prima seduta; senza sedute resta vuota (nessun avviso)', () => {
     const rows: SettingRow[] = [{ key: 'phase1', value: true }];
-    expect(settingsToAdd(rows, sessions, now).find((r) => r.key === 'phase1Since')?.value).toBe('2026-09-28T09:00:00.000Z');
-    expect(settingsToAdd(rows, [], now).find((r) => r.key === 'phase1Since')?.value).toBe(now.toISOString());
+    expect(settingsToAdd(rows, sessions).find((r) => r.key === 'phase1Since')?.value).toBe('2026-09-28T09:00:00.000Z');
+    const empty = settingsToAdd(rows, []).find((r) => r.key === 'phase1Since');
+    expect(empty).toEqual({ key: 'phase1Since', value: null });
   });
 
   it('"Settimane 1-2" mai toccato: vale il predefinito (attivo)', () => {
     expect(DEFAULT_SETTINGS.phase1).toBe(true);
-    expect(settingsToAdd([], sessions, now).find((r) => r.key === 'phase1Since')?.value).toBe('2026-09-28T09:00:00.000Z');
+    expect(settingsToAdd([], sessions).find((r) => r.key === 'phase1Since')?.value).toBe('2026-09-28T09:00:00.000Z');
   });
 
   it('idempotente e mai sovrascritte le chiavi esistenti', () => {
     const rows: SettingRow[] = [{ key: 'phase1', value: true }, { key: 'startSide', value: 'right' }];
-    const added = settingsToAdd(rows, sessions, now);
+    const added = settingsToAdd(rows, sessions);
     expect(added.find((r) => r.key === 'startSide')).toBeUndefined();
-    expect(settingsToAdd([...rows, ...added], sessions, now)).toEqual([]);
+    expect(settingsToAdd([...rows, ...added], sessions)).toEqual([]);
   });
 });
 

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { passFirstRun } from './helpers';
 
 // Prove sulla versione COSTRUITA (npm run build + vite preview): il service worker esiste solo lì.
 const PWA = 'http://localhost:4174/allenamento/';
@@ -28,6 +29,7 @@ test('senza rete: l\'app si apre, con immagini e grafici', async ({ page, contex
 
   await context.setOffline(true);
   await page.reload();
+  await passFirstRun(page); // primo avvio offline: le immagini dei modelli vengono dalla cache
   await expect(page.locator('nav.tabbar')).toBeVisible();
   await expect(page.locator('section[data-ex]').first()).toBeVisible();
   // immagine di un esercizio servita dalla cache
@@ -51,12 +53,15 @@ test('precache: tutte le immagini degli esercizi, nessun doppione', async ({ req
   const webp = fs.readdirSync('public/esercizi').filter((f) => f.endsWith('.webp'));
   expect(webp.length).toBeGreaterThan(0);
   for (const f of webp) expect(urls, f).toContain(`esercizi/${f}`);
+  // immagini dei modelli: il primo avvio funziona anche offline
+  for (const f of ['modelli/modello-1.webp', 'modelli/modello-2.webp']) expect(urls, f).toContain(f);
   for (const f of ['index.html', 'manifest.webmanifest', 'favicon.svg', 'icone/icona-192.png', 'icone/icona-512.png'])
     expect(urls, f).toContain(f);
 });
 
 test('Info mostra la versione (in locale: "sviluppo locale")', async ({ page }) => {
   await page.goto(PWA);
+  await passFirstRun(page);
   await page.locator('nav.tabbar button', { hasText: /^Info$/ }).click();
   await expect(page.getByTestId('app-version')).toHaveText('TeacherGym · sviluppo locale');
 });

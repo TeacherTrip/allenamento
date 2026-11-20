@@ -1,5 +1,5 @@
 import type { Day, DayPlan, Exercise, Program, SimpleItem } from './types';
-import { CATALOG_BY_ID } from '../catalog/exercises';
+import { CATALOG, CATALOG_BY_ID } from '../catalog/exercises';
 import { TEMPLATE_BY_ID, supersetBadges } from '../catalog/templates';
 
 /**
@@ -67,6 +67,9 @@ export function catalogExercise(id: string): Exercise {
   });
   return ex;
 }
+
+/** Tutti gli esercizi del catalogo "risolti" (serie settimanali, indici, grafici: valgono per ogni modello). */
+export const CATALOG_EXERCISES: Exercise[] = CATALOG.map((c) => catalogExercise(c.id));
 
 const MODEL_1 = TEMPLATE_BY_ID.m1.programs;
 

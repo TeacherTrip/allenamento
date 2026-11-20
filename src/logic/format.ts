@@ -57,14 +57,16 @@ export const NBSP = '\u00a0';
 
 /**
  * Testo da mostrare senza a capo sbagliati: numero + unità ("14 kg", "30 s", "7 esercizi", "2 serie"),
- * "· 7", "2 × 10", "RIR 3" e "✓" con le parole vicine restano insieme. Usata solo per mostrare: i dati e le funzioni di formato restano con spazi normali.
+ * "· 7", "2 × 10", "RIR 3", "✓" e "fino al 05/11/2026" con le parole vicine restano insieme. Usata solo per mostrare: i dati e le funzioni di formato restano con spazi normali.
  */
 export function nb(text: string): string {
   return text
-    .replace(/(\d) (?=(?:kg|s|min|h|esercizi|esercizio|serie|reps|rip\.|ripetizioni|round|settimane)(?![\p{L}]))/gu, `$1${NBSP}`)
+    .replace(/(\d) (?=(?:kg|s|min|h|esercizi|esercizio|serie|reps|rip\.|ripetizioni|round|settimane|sedute|seduta)(?![\p{L}]))/gu, `$1${NBSP}`)
     .replace(/RIR (?=\d)/g, `RIR${NBSP}`)
     .replace(/ × /g, `${NBSP}×${NBSP}`)
     .replace(/· (?=\d)/g, `·${NBSP}`)
     .replace(/ ✓/g, `${NBSP}✓`)
-    .replace(/✓ (?=\p{L})/gu, `✓${NBSP}`);
+    .replace(/✓ (?=\p{L})/gu, `✓${NBSP}`)
+    .replace(/fino al /g, `fino${NBSP}al `)
+    .replace(/(al) (?=\d{2}\/\d{2}\/\d{4})/g, `$1${NBSP}`);
 }

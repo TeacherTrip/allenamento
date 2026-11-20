@@ -3,12 +3,15 @@ import { deleteSession, updateSession } from '../db/db';
 import type { Session, SetLog } from '../db/models';
 import { EXERCISES, exerciseById } from '../program/program';
 import { CATALOG } from '../catalog/exercises';
+import type { Program } from '../program/types';
+import { historyGroups } from '../logic/history';
 import { fmtDate, fmtDuration, formatSet, nb } from '../logic/format';
 import { fmtNum, parseNum } from '../logic/values';
 
 interface Props {
   sessions: Session[];
   logs: SetLog[];
+  programs: Program[];
   toast: (msg: string) => void;
 }
 
@@ -34,80 +37,87 @@ function groupByExercise(session: Session, logs: SetLog[]): [string, SetLog[]][]
     .sort((a, b) => order(a[0]) - order(b[0]) || a[0].localeCompare(b[0]));
 }
 
-export function HistoryScreen({ sessions, logs, toast }: Props) {
+export function HistoryScreen({ sessions, logs, programs, toast }: Props) {
   const [editing, setEditing] = useState<string | null>(null);
-  const sorted = [...sessions].sort((a, b) => b.date.localeCompare(a.date));
+  const groups = historyGroups(sessions, programs);
 
   return (
     <>
       <h2>Storico</h2>
       <p className="sub">{sessions.length} sedute salvate</p>
-      {sorted.length === 0 && <div className="box">Nessuna seduta ancora. Salvane una da una delle schede.</div>}
+      {sessions.length === 0 && <div className="box">Nessuna seduta ancora. Salvane una da una delle schede.</div>}
       <div className="hist">
-        {sorted.map((s) => {
-          const sLogs = logs.filter((l) => l.sessionId === s.id);
-          if (editing === s.id)
-            return (
-              <SessionEditor
-                key={s.id}
-                session={s}
-                logs={sLogs}
-                onDone={(saved) => {
-                  setEditing(null);
-                  if (saved) toast('Seduta aggiornata');
-                }}
-              />
-            );
-          return (
-            <details key={s.id}>
-              <summary>
-                {fmtDate(s.date)} · Seduta {sessionLabel(s)}{' '}
-                <span className="muted">
-                  {nb(`· ${sLogs.length} serie${s.durationSec != null ? ` · ${fmtDuration(s.durationSec)}` : ''}`)}
-                </span>
-              </summary>
-              {s.durationSec != null && (
-                <div className="it">
-                  <b>Durata</b>: {nb(fmtDuration(s.durationSec))}
-                </div>
-              )}
-              {groupByExercise(s, sLogs).map(([id, arr]) => {
-                const ex = exerciseById(id);
+        {groups.map((g) => (
+          <section key={g.id} className="hist-group" data-testid="hist-group">
+            <h3>
+              {nb(g.label)} <span className="muted">{nb(`· ${g.sessions.length} ${g.sessions.length === 1 ? 'seduta' : 'sedute'}`)}</span>
+            </h3>
+            {g.sessions.map((s) => {
+              const sLogs = logs.filter((l) => l.sessionId === s.id);
+              if (editing === s.id)
                 return (
-                  <div className="it" key={id}>
-                    <b>{ex?.name ?? id}</b>: {ex ? nb(arr.map((l) => formatSet(ex, l) + (l.extra ? ' (extra)' : '')).join(' · ')) : ''}
-                  </div>
+                  <SessionEditor
+                    key={s.id}
+                    session={s}
+                    logs={sLogs}
+                    onDone={(saved) => {
+                      setEditing(null);
+                      if (saved) toast('Seduta aggiornata');
+                    }}
+                  />
                 );
-              })}
-              {s.circuit && (
-                <div className="it">
-                  <b>Circuito</b>: {s.circuit.label}, {s.circuit.completedRounds}/{s.circuit.rounds} round
-                </div>
-              )}
-              {s.phase1 && <div className="it muted">Settimane 1-2</div>}
-              {s.notes && (
-                <div className="it pre">
-                  <b>Note</b>: {s.notes}
-                </div>
-              )}
-              <div className="row2">
-                <button className="ghost" onClick={() => setEditing(s.id)}>
-                  Modifica
-                </button>
-                <button
-                  className="ghost danger"
-                  onClick={async () => {
-                    if (!confirm(`Eliminare definitivamente la seduta ${sessionLabel(s)} del ${fmtDate(s.date)}?`)) return;
-                    await deleteSession(s.id);
-                    toast('Seduta eliminata');
-                  }}
-                >
-                  Elimina
-                </button>
-              </div>
-            </details>
-          );
-        })}
+              return (
+                <details key={s.id}>
+                  <summary>
+                    {fmtDate(s.date)} · Seduta {sessionLabel(s)}{' '}
+                    <span className="muted">
+                      {nb(`· ${sLogs.length} serie${s.durationSec != null ? ` · ${fmtDuration(s.durationSec)}` : ''}`)}
+                    </span>
+                  </summary>
+                  {s.durationSec != null && (
+                    <div className="it">
+                      <b>Durata</b>: {nb(fmtDuration(s.durationSec))}
+                    </div>
+                  )}
+                  {groupByExercise(s, sLogs).map(([id, arr]) => {
+                    const ex = exerciseById(id);
+                    return (
+                      <div className="it" key={id}>
+                        <b>{ex?.name ?? id}</b>: {ex ? nb(arr.map((l) => formatSet(ex, l) + (l.extra ? ' (extra)' : '')).join(' · ')) : ''}
+                      </div>
+                    );
+                  })}
+                  {s.circuit && (
+                    <div className="it">
+                      <b>Circuito</b>: {s.circuit.label}, {s.circuit.completedRounds}/{s.circuit.rounds} round
+                    </div>
+                  )}
+                  {s.phase1 && <div className="it muted">Settimane 1-2</div>}
+                  {s.notes && (
+                    <div className="it pre">
+                      <b>Note</b>: {s.notes}
+                    </div>
+                  )}
+                  <div className="row2">
+                    <button className="ghost" onClick={() => setEditing(s.id)}>
+                      Modifica
+                    </button>
+                    <button
+                      className="ghost danger"
+                      onClick={async () => {
+                        if (!confirm(`Eliminare definitivamente la seduta ${sessionLabel(s)} del ${fmtDate(s.date)}?`)) return;
+                        await deleteSession(s.id);
+                        toast('Seduta eliminata');
+                      }}
+                    >
+                      Elimina
+                    </button>
+                  </div>
+                </details>
+              );
+            })}
+          </section>
+        ))}
       </div>
     </>
   );

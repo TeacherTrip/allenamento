@@ -147,11 +147,11 @@ export function App() {
 
   let body;
   if (!history || !settings || !programs || tab == null) body = <p className="sub">Caricamento…</p>;
-  else if (tab === 'H') body = <HistoryScreen sessions={history.sessions} logs={history.logs} toast={toast} />;
+  else if (tab === 'H') body = <HistoryScreen sessions={history.sessions} logs={history.logs} programs={programs} toast={toast} />;
   else if (tab === 'G')
     body = (
       <Suspense fallback={<p className="sub">Caricamento…</p>}>
-        <ChartsScreen sessions={history.sessions} logs={history.logs} />
+        <ChartsScreen sessions={history.sessions} logs={history.logs} programs={programs} />
       </Suspense>
     );
   else if (tab === 'I')

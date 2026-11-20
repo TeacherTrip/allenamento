@@ -108,7 +108,10 @@ test('G04 per gruppo muscolare: serie della settimana, indice e serie settimanal
   await expect(page.locator('.chart canvas')).toHaveCount(3);
   // quadricipiti: gsq 100 → 120 (e1RM 14 → 16,8), bss 100 → media (120 + 100) / 2 = 110
   await expect(page.getByTestId('index-summary')).toContainText('100 → 110');
-  await page.getByRole('radio', { name: 'Petto' }).click();
+  // solo i gruppi allenati (passo 8): niente Petto né Polpacci in queste sedute
+  await expect(page.getByRole('radio', { name: 'Petto' })).toHaveCount(0);
+  await expect(page.getByRole('radio', { name: 'Polpacci' })).toHaveCount(0);
+  await page.getByRole('radio', { name: 'Core' }).click(); // solo secondario: nessun indice
   await expect(page.getByTestId('index-empty')).toBeVisible();
   await page.getByRole('radio', { name: 'Schiena' }).click();
   await expect(page.getByTestId('index-summary')).toBeVisible();

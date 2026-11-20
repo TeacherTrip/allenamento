@@ -1,16 +1,18 @@
 import { useMemo, useState } from 'react';
 import type { Session, SetLog } from '../db/models';
-import { DAYS, EXERCISES } from '../program/program';
-import type { Exercise, Muscle } from '../program/types';
+import { CATALOG_EXERCISES } from '../program/program';
+import type { Exercise, Muscle, Program } from '../program/types';
 import { Chart, type ChartDataset } from '../components/Chart';
 import {
-  MUSCLES,
   exerciseCharts,
+  exerciseMenu,
   exerciseSessions,
   fmtDelta,
+  groupHasZeroKg,
   groupIndex,
   lastWeeks,
   shortDate,
+  trainedMuscles,
   weeklySets,
   type SummaryRow,
 } from '../logic/charts';
@@ -20,6 +22,8 @@ interface Props {
   sessions: Session[];
   logs: SetLog[];
 }
+
+const EX_BY_ID = new Map(CATALOG_EXERCISES.map((e) => [e.id, e]));
 
 type View = 'ex' | 'mg';
 
@@ -41,7 +45,7 @@ const write = (k: string, v: string) => {
 
 const WEEKS = 8;
 
-export function ChartsScreen({ sessions, logs }: Props) {
+export function ChartsScreen({ sessions, logs, programs }: Props & { programs: Program[] }) {
   const [view, setView] = useState<View>(() => (read('tg.chartView') === 'mg' ? 'mg' : 'ex'));
   const choose = (v: View) => {
     setView(v);
@@ -69,21 +73,23 @@ export function ChartsScreen({ sessions, logs }: Props) {
           Per gruppo muscolare
         </button>
       </div>
-      {view === 'ex' ? <ExerciseView sessions={sessions} logs={logs} /> : <MuscleView sessions={sessions} logs={logs} />}
+      {view === 'ex' ? <ExerciseView sessions={sessions} logs={logs} programs={programs} /> : <MuscleView sessions={sessions} logs={logs} />}
     </>
   );
 }
 
 // ---------- per esercizio ----------
 
-function ExerciseView({ sessions, logs }: Props) {
+function ExerciseView({ sessions, logs, programs }: Props & { programs: Program[] }) {
   const withData = useMemo(() => new Set(logs.map((l) => l.exerciseId)), [logs]);
+  const menu = useMemo(() => exerciseMenu(programs, withData), [programs, withData]);
+  const firstWithData = menu.flatMap((g) => g.ids).find((id) => withData.has(id));
   const [exId, setExId] = useState(() => {
     const saved = read('tg.chartEx');
-    if (saved && withData.has(saved)) return saved;
-    return EXERCISES.find((e) => withData.has(e.id))?.id ?? EXERCISES[0].id;
+    if (saved && withData.has(saved) && EX_BY_ID.has(saved)) return saved;
+    return firstWithData ?? CATALOG_EXERCISES[0].id;
   });
-  const ex = EXERCISES.find((e) => e.id === exId) ?? EXERCISES[0];
+  const ex = EX_BY_ID.get(exId) ?? CATALOG_EXERCISES[0];
   const data = useMemo(() => exerciseCharts(ex, sessions, logs), [ex, sessions, logs]);
   const labels = useMemo(() => data.dates.map(shortDate), [data]);
   const count = exerciseSessions(ex.id, sessions, logs).length;
@@ -94,7 +100,6 @@ function ExerciseView({ sessions, logs }: Props) {
       {withData.has(e.id) ? '' : ' (nessun dato)'}
     </option>
   );
-  const retired = EXERCISES.filter((e) => e.retired && withData.has(e.id));
 
   return (
     <>
@@ -107,12 +112,11 @@ function ExerciseView({ sessions, logs }: Props) {
           write('tg.chartEx', e.target.value);
         }}
       >
-        {DAYS.map((d) => (
-          <optgroup key={d.day} label={`Seduta ${d.day}`}>
-            {EXERCISES.filter((e) => e.day === d.day && !e.retired).map(option)}
+        {menu.map((g, i) => (
+          <optgroup key={i} label={g.label}>
+            {g.ids.map((id) => option(EX_BY_ID.get(id)!))}
           </optgroup>
         ))}
-        {retired.length > 0 && <optgroup label="Tolti dalla scheda">{retired.map(option)}</optgroup>}
       </select>
 
       {count === 0 ? (
@@ -120,6 +124,12 @@ function ExerciseView({ sessions, logs }: Props) {
       ) : (
         <>
           <Summary rows={data.summary} sessions={count} />
+          {data.zeroKg === 'all' && (
+            <p className="legend" data-testid="zero-kg-all">
+              Tutte le sedute sono a 0 kg: il grafico mostra le ripetizioni totali. Con un carico compariranno anche e1RM e
+              carico.
+            </p>
+          )}
           {data.charts.map((c) => (
             <ChartBox key={c.title} title={c.title}>
               <Chart
@@ -141,10 +151,16 @@ function ExerciseView({ sessions, logs }: Props) {
               />
             </ChartBox>
           ))}
-          {ex.metric === 'kg' && (
+          {ex.metric === 'kg' && data.zeroKg !== 'all' && (
             <p className="legend">
               e1RM = massimale stimato su una ripetizione (Epley: kg × (1 + reps/30)). Sale anche quando aumenti solo le
               ripetizioni.
+              {data.zeroKg === 'mixed' && (
+                <span data-testid="zero-kg-mixed">
+                  {' '}
+                  Le sedute a 0 kg non hanno e1RM (buco nella linea): per quelle conta il grafico «Ripetizioni totali».
+                </span>
+              )}
             </p>
           )}
         </>
@@ -178,18 +194,19 @@ function Summary({ rows, sessions }: { rows: SummaryRow[]; sessions: number }) {
 // ---------- per gruppo muscolare ----------
 
 function MuscleView({ sessions, logs }: Props) {
-  const [group, setGroup] = useState<Muscle>(() => {
-    const saved = read('tg.chartGroup') as Muscle | null;
-    return saved && MUSCLES.includes(saved) ? saved : 'quadricipiti';
-  });
-
   const weekly = useMemo(() => weeklySets(sessions, logs), [sessions, logs]);
+  // solo i gruppi allenati almeno una volta (niente «Polpacci» a 0 se non si fanno)
+  const muscles = useMemo(() => trainedMuscles(weekly), [weekly]);
+  const [chosen, setGroup] = useState<Muscle | null>(() => read('tg.chartGroup') as Muscle | null);
+  const group: Muscle = chosen && muscles.includes(chosen) ? chosen : (muscles[0] ?? 'quadricipiti');
+  const zeroKg = useMemo(() => groupHasZeroKg(group, logs), [group, logs]);
+
   const weeks = useMemo(() => lastWeeks(WEEKS), []);
   const thisWeek = weeks[weeks.length - 1];
 
   const current = useMemo<ChartDataset[]>(
-    () => [{ label: 'Serie questa settimana', values: MUSCLES.map((m) => weekly.get(thisWeek)?.[m] ?? 0) }],
-    [weekly, thisWeek],
+    () => [{ label: 'Serie questa settimana', values: muscles.map((m) => weekly.get(thisWeek)?.[m] ?? 0) }],
+    [weekly, thisWeek, muscles],
   );
 
   const index = useMemo(() => groupIndex(group, sessions, logs), [group, sessions, logs]);
@@ -204,22 +221,29 @@ function MuscleView({ sessions, logs }: Props) {
 
   const last = index[index.length - 1];
 
+  if (!muscles.length)
+    return (
+      <div className="box" data-testid="muscles-empty">
+        Nessuna serie che conti per i gruppi muscolari (gli allungamenti non contano).
+      </div>
+    );
+
   return (
     <>
       <ChartBox title="Serie di questa settimana per gruppo" note="Muscolo primario = 1 serie, secondario = ½.">
         <Chart
           type="bar"
           horizontal
-          labels={MUSCLES.map(cap)}
+          labels={muscles.map(cap)}
           datasets={current}
-          height={280}
+          height={60 + 28 * muscles.length}
           ariaLabel="Serie di questa settimana per gruppo muscolare"
         />
-        <DataTable labels={MUSCLES.map(cap)} columns={[{ label: 'Serie', values: current[0].values.map((v) => fmtNum(v ?? 0)) }]} />
+        <DataTable labels={muscles.map(cap)} columns={[{ label: 'Serie', values: current[0].values.map((v) => fmtNum(v ?? 0)) }]} />
       </ChartBox>
 
       <div className="chips" role="radiogroup" aria-label="Gruppo muscolare">
-        {MUSCLES.map((m) => (
+        {muscles.map((m) => (
           <button
             key={m}
             role="radio"
@@ -255,6 +279,11 @@ function MuscleView({ sessions, logs }: Props) {
             <Chart type="line" labels={indexLabels} datasets={indexData} baseline={100} ariaLabel={`Indice di progressione: ${group}`} />
             <DataTable labels={indexLabels} columns={[{ label: 'Indice', values: index.map((p) => fmtNum(p.value)) }]} />
           </>
+        )}
+        {zeroKg && (
+          <p className="sub" data-testid="index-zero-kg">
+            Le sedute a 0 kg non entrano nell'indice.
+          </p>
         )}
       </ChartBox>
 

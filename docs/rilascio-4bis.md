@@ -1,5 +1,7 @@
 # Rilascio Fase 4-bis (passo 10) — checklist
 
+> **Eseguito il 20/11/2026 con un piano cambiato dall'utente** (storico del telefono vuoto): niente backup né prova a secco, sostituiti da `npm run prova-aggiornamento` (aggiornamento reale nel browser del PC); merge 6f23f93, pubblicazione n. 7. Esito in `docs/aperti.md` e `docs/storia.md`. Questa checklist resta per i prossimi aggiornamenti del database con dati veri.
+
 La migrazione del database sul telefono **non si può annullare**: l'unica rete di sicurezza è il backup. Non saltare nessun punto.
 
 ## Prima (sul PC)

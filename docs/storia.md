@@ -234,3 +234,18 @@ Orari presi da `git reflog show origin/main`.
 - Il passo 10 parte solo con l'OK dell'utente; il primo passo è il backup dal telefono.
 
 **Commit:** e4289b8, 7e051bc, 974fdc4, 217d8f4 (+ commit di chiusura sessione).
+
+## 2026-11-20 (sera) — Fase 4-bis: passo 10, rilascio
+- **Piano cambiato dall'utente**: storico del telefono vuoto, quindi nessuna prova sul telefono; tutte le prove nel browser del PC; merge e pubblicazione autorizzati solo se tutto verde, fermandosi al primo problema.
+- **Controlli sul ramo**: tsc, 230 Vitest, 133 Playwright verdi; nessun riferimento a salute oltre ai testi generici approvati; nessuna email o numero; autori e committer solo noreply.
+- **Prova di aggiornamento reale** (`npm run prova-aggiornamento`, nuova, solo a mano): la versione pubblicata d66419b, costruita dai suoi sorgenti, si installa col service worker in un profilo pulito; allo stesso indirizzo e porta si serve la versione nuova; ricarica, avviso «Nuova versione disponibile», «Aggiorna». AG01 (seduta salvata nella A con la versione vecchia) e AG02 (storico vuoto, poi 30 giorni dopo con orologio finto): tutto come atteso. Verificata facendola fallire. Due passate verdi.
+- **Fine riga**: controllati i byte con Python (0 CR); in questa shell il conteggio con `grep` dei CR non è affidabile (conta tutte le righe).
+- **Merge** `--no-ff` in `main` (6f23f93), autori solo noreply, tsc + prove + build verdi su `main`, push, GitHub Actions n. 7 verde.
+- **Sito pubblicato** (profilo pulito, come l'incognito): primo avvio → Modello 2 → seduta salvata → Storico e Grafici → Info con «Esempio», nessun errore in console. Lo script si era fermato sulle immagini degli esercizi: sono a caricamento differito (`loading="lazy"`), si caricano solo scorrendo; non è un difetto dell'app.
+- Ramo `fase-4bis` conservato.
+
+**Decisioni**
+- La prova di aggiornamento reale sostituisce la prova a secco quando lo storico è vuoto.
+- Restano da verificare a mano su un telefono vero: schermo acceso nel circuito col telefono scollegato; modalità aereo reale.
+
+**Commit:** 536024f (prova di aggiornamento), 6f23f93 (merge) (+ commit della documentazione).

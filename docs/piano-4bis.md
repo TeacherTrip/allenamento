@@ -2,6 +2,8 @@
 
 Obiettivo: l'app va anche su un secondo telefono Android con un'altra scheda. Niente profili né account: ogni dispositivo ha i suoi dati.
 
+**Cambio di piano (20/11/2026) — obiettivo unico:** l'app si avvia, fa scegliere Modello 1 o Modello 2 con le immagini e trova le schede pronte, con esercizi, immagini, sedute, recuperi, pesi, ripetizioni, storico e grafici funzionanti. **Niente funzioni in più.**
+
 ## Ramo e pubblicazione
 - Tutto lo sviluppo sul ramo **`fase-4bis`**. Merge in `main` **solo al passo 10**, dopo conferma esplicita dell'utente.
 - `.github/workflows/pubblica.yml` parte solo con `push` su `main` (e a mano con "Run workflow"). In più l'ambiente `github-pages` accetta pubblicazioni **solo da `main`** (regola del ramo impostata su GitHub). Quindi il push di `fase-4bis` non pubblica nulla: il workflow non viene modificato.
@@ -10,7 +12,7 @@ Obiettivo: l'app va anche su un secondo telefono Android con un'altra scheda. Ni
 ## Modello dati
 **Catalogo** (`src/catalog/exercises.ts`, nel codice): `id` stabile, `name`, `image?`, `equipment` generico, `notes` generali (niente istruzioni personali, niente lato di partenza), `metric`, `bandDirection?`, `unilateral`, `confirmSides?`, `kind?: 'mobility'`, `muscles`, `defaults { sets, repRange, restSec: number | null }`, `retired?`. Gli id esistenti non cambiano. Nuovo gruppo muscolare `polpacci`.
 
-**Modelli** (`src/catalog/templates.ts`, nel codice): "Modello 1" (= schede A/B/C di oggi), "Modello 2", "Schede vuote" (= una scheda "A" vuota).
+**Modelli** (`src/catalog/templates.ts`, nel codice): "Modello 1" (= schede A/B/C di oggi) e "Modello 2". «Schede vuote» tolte il 20/11 (senza editor non si potrebbero riempire).
 
 **Schede** (IndexedDB, tabella `programs`):
 - `Program { id, order, name (max 6 caratteri), subtitle?, notes?, notesPosition, warmup, circuit: 'no'|'yes'|'optional', items }`
@@ -22,13 +24,13 @@ Obiettivo: l'app va anche su un secondo telefono Android con un'altra scheda. Ni
 
 **Bozze** (decisione, correzione 2): si tiene la tabella `drafts` con la chiave `day`, il cui valore diventa l'id della scheda. Gli id del Modello 1 sono proprio `A`/`B`/`C`, quindi la bozza in corso resta valida **senza copiare né cancellare nulla**. Niente tabella `drafts2`: meno passaggi e nessuna cancellazione da provare.
 
-**Impostazioni** nuove: `userName`, `startSide` (`left`/`right`), `templateId`, `onboarded`, `phase1Since` (data della prima seduta salvata con "Settimane 1-2" attive; vuota finché non ce n'è una), `phase1SnoozedUntil` (rinvio dell'avviso «Disattivarle?»).
+**Impostazioni** nuove: `userName` (dal 20/11 non più usato: resta nei dati solo per i backup già fatti), `startSide` (`left`/`right`, conta solo con i lati separati), `separateSides` («Separa i lati»), `templateId`, `onboarded`, `phase1Since` (data della prima seduta salvata con "Settimane 1-2" attive; vuota finché non ce n'è una), `phase1SnoozedUntil` (rinvio dell'avviso «Disattivarle?»).
 
 ## Migrazione (Dexie versione 2)
 1. Crea le schede A/B/C del Modello 1.
 2. Sedute: `programName` = `A`/`B`/`C`; `plan` ricostruito dal Modello 1 (tutte le sedute di oggi sono della versione 1 della scheda).
 3. Bozze: nessuna modifica.
-4. Impostazioni: `onboarded = true`, `templateId = 'm1'`, `startSide = 'left'`. Se "Settimane 1-2" è attivo, `phase1Since` = data della prima seduta; **senza sedute resta vuota** (correzione del 20/11, passo 5: si scrive al salvataggio della prima seduta, così l'avviso non compare su uno storico vuoto).
+4. Impostazioni: `onboarded = true`, `templateId = 'm1'`, `startSide = 'left'`, `separateSides = true` (aggiunto il 20/11: prima i lati erano sempre separati). Se "Settimane 1-2" è attivo, `phase1Since` = data della prima seduta; **senza sedute resta vuota** (correzione del 20/11, passo 5: si scrive al salvataggio della prima seduta, così l'avviso non compare su uno storico vuoto).
 5. Un'installazione nuova non ha il database vecchio, quindi la migrazione non parte e compare il primo avvio.
 
 **Errori** (correzione 4):
@@ -43,24 +45,28 @@ Obiettivo: l'app va anche su un secondo telefono Android con un'altra scheda. Ni
 - **Valore di partenza**: precompila in grigio (da confermare con ✓) solo se l'esercizio non ha storico. Ciò che non è un numero (es. "sulle ginocchia") va nelle note della voce.
 - **Note**: nel riquadro "Esecuzione" prima quelle del catalogo, poi «Nota della scheda: …». «Come nella scheda A» si scrive per esteso.
 - **Superset numerati per blocchi** (1a/1b, 2…), calcolati dall'ordine.
-- **Lato di partenza** (Info): ordine dei tasti Sx/Dx e testi «Parti dal lato…».
+- **Lati degli esercizi a un arto (regola del 20/11)**: interruttore «Separa i lati» in Info.
+  - **Spento** (di serie sulle installazioni nuove, tutti e due i modelli): un solo ✓ per serie, ripetizioni e kg «per lato» (scritto accanto alle ripetizioni), nessuna indicazione di sinistro/destro nella seduta.
+  - **Acceso**: compare in Info la scelta del lato di partenza; la seduta mostra i tasti [Sx] [Dx] (esercizi con `confirmSides`) e i testi «Parti dal lato…», dal lato scelto. La migrazione lo accende sulle installazioni esistenti, con `startSide` attuale (sinistro): l'app resta com'era.
+  - **Dati invariati**: una riga `SetLog` per serie con i valori per lato, uguali per i due lati; storico, e1RM, grafici e serie settimanali (1 serie = 1) identici nei due modi. Backup: `separateSides` incluso, «spento» se manca; backup v1 e prototipo validi.
+  - Bloccato con un allenamento avviato (cronometro o circuito), come la ricarica di un modello. Spento con un «primo lato fatto» in bozza: quella serie torna «da confermare».
 - **Settimane 1-2**: interruttore in Info. Nella seduta compare solo la riga «Settimane 1-2 attive dal gg/mm» (senza data finché non c'è una seduta salvata).
   - `phase1Since` si scrive al salvataggio di una seduta **solo** se Settimane 1-2 sono attive e la data è vuota.
   - 14 giorni dopo `phase1Since`, se ancora attive, nella seduta: «Settimane 1-2 attive da 2 settimane. Disattivarle?» → «Sì» (le spegne) / «Non ancora» (riappare dopo 7 giorni). Mai spegnimento automatico. Con `phase1Since` vuoto l'avviso non compare mai.
   - Riattivate da Info → `phase1Since` e rinvio azzerati: la data diventa quella della prima seduta salvata dopo.
 - **Circuito facoltativo**: riquadro chiuso che si apre con un tocco.
-- **Scheda senza voci**: la seduta mostra «Aggiungi esercizi da Info» e il pulsante Inizia è disattivato.
+- **Scheda senza voci** (possibile solo da un backup): la seduta mostra «Questa scheda non ha esercizi.» e il pulsante Inizia è disattivato. Nessun testo rimanda a un editor.
 - **Carico in kg = per manubrio** (verificato: l'import del prototipo legge «2 x 10» come 10, prova in `tests/dataio.test.ts`). Nel Modello 2 rdl e fp partono da 6.
 
 ## Schermate
-- **Primo avvio** (una sola volta): nome (solo sul dispositivo) → modello → lato di partenza.
-- **Scelta del modello** (richiesta del 20/11, da fare al passo 5): ogni modello è una scheda toccabile con l'immagine grande in alto, il titolo «Modello 1» / «Modello 2» e sotto l'elenco delle schede con il numero di esercizi. «Schede vuote» senza immagine (o con un'icona semplice). Le stesse schede, con le immagini, anche in Info → «Ricarica un modello». **Titoli, testi e `alt` neutri**: nessuna parola che indichi il genere, né nel codice né nei testi.
+- **Primo avvio** (una sola volta, semplificato il 20/11): **una sola schermata** con le schede dei due modelli, la riga sulle Settimane 1-2 e «Inizia». Niente nome, niente lato.
+- **Scelta del modello** (richiesta del 20/11, da fare al passo 5): ogni modello è una scheda toccabile con l'immagine grande in alto, il titolo «Modello 1» / «Modello 2» e sotto l'elenco delle schede con il numero di esercizi. Le stesse schede, con le immagini, anche in Info → «Ricarica un modello». **Titoli, testi e `alt` neutri**: nessuna parola che indichi il genere, né nel codice né nei testi.
   - Immagini: originali in `immagini-originali/modelli/` (`modello-1.jpg`, `modello-2.jpg`, esclusi da Git) (JPEG 1200 × 896) → `npm run immagini`, con un secondo passaggio in fondo allo script → `public/modelli/modello-1.webp`, `public/modelli/modello-2.webp`, **800 × 597** (proporzioni mantenute, mai ingrandite). `vite.config.ts` non cambia. Conversione al passo 5, con anteprima all'utente prima del commit. Il resto dello script resta uguale: le immagini degli esercizi devono rigenerarsi identiche.
   - Precache: le due immagini sono incluse, così il primo avvio funziona anche offline.
 - **Primo avvio, regole (20/11)**: compare solo su un'installazione nuova = nessuna scheda e `onboarded` assente (un database v1 migrato ha le schede e `onboarded = true`). Mai usare il numero di sedute. Le scelte restano in memoria fino a «Inizia» (una transazione): se l'app si chiude prima, riparte dalla prima schermata senza dati parziali. Riga sulle Settimane 1-2: «Le prime 2 settimane: 2 serie per esercizio e più margine (RIR 3, cioè 3 ripetizioni di riserva). Si cambia in Info.»
-- **Info**: nome, lato, Settimane 1-2, «Modifica le schede», «Ricarica un modello».
+- **Info**: Settimane 1-2, recupero automatico, «Separa i lati» (con il lato di partenza solo se acceso), «Ricarica un modello». Niente nome, niente editor.
 - **Ricarica un modello (approvata il 20/11)**: le schede attuali vengono **cancellate** e sostituite da quelle del modello, con id nuovi. Lo storico resta perché ogni seduta ha la sua copia (`day` = id vecchio, `programName`, `plan`). Finestra con tre pulsanti «Scarica backup», «Sostituisci», «Annulla» e il testo «Le schede attuali verranno sostituite. Lo storico resta.». Bloccata se c'è un allenamento avviato (cronometro o circuito): il messaggio dice quale scheda. Un'unica transazione: schede, `templateId` e bozze non avviate (appartengono a schede che spariscono). Riferimenti all'id di una scheda fuori dalla tabella: `drafts` (bloccata o svuotata), `settings.templateId` (aggiornato), `localStorage tg.tab` (la ricarica parte da Info, quindi vale `I`; un id che non esiste più viene comunque ignorato), `sessions.day` (storico, non si tocca).
-- **Editor**: da 1 a 4 schede (rinomina, aggiungi, elimina); per ogni scheda riscaldamento, circuito, note e posizione; voci con ↑ ↓ ✕, "superset con il successivo", serie, range, recupero, partenza, attrezzo e note. Nel catalogo gli esercizi già presenti nella scheda sono disattivati. L'editor è bloccato per la scheda con un allenamento in corso.
+- **Editor delle schede**: eliminato il 20/11 (vedi «Idea futura» in `docs/aperti.md`). Nessuna schermata, pulsante o testo deve portare a un editor o farne capire l'esistenza.
 - **Barra in basso**: nomi delle schede di massimo 6 caratteri. Prova a 360 px: pulsanti ≥ 48 px, nessun testo tagliato.
 
 ## Passi (un commit per passo; `tsc`, Vitest e Playwright verdi a ogni passo)
@@ -73,11 +79,11 @@ Obiettivo: l'app va anche su un secondo telefono Android con un'altra scheda. Ni
    - avviso con la versione `blocked`.
    - Vitest per l'import dei backup v1, v2 e del prototipo.
 4. **Seduta dalle schede del database** (barra dinamica, copia delle voci, lato, note, superset, scheda vuota, prova a 360 px).
-5. **Primo avvio + Info + Ricarica un modello** (con le schede dei modelli illustrate). Prova Playwright: profilo pulito → primo avvio → le due immagini sono visibili e caricate (`naturalWidth > 0`) → scelta del Modello 2. Prova: migrazione → Ricarica Modello 2 → le sedute vecchie restano raggruppate sotto il loro `programName` e non si mescolano con le nuove (anche con una nuova scheda chiamata «A»).
-6. **Editor delle schede**.
-7. **Prove e controllo del contenuto del Modello 2** (il contenuto è stato anticipato al passo 5, strada A del 20/11, con i soli testi approvati).
+5. **Primo avvio + Info + Ricarica un modello** (con le schede dei modelli illustrate). Prova Playwright: profilo pulito → primo avvio → le due immagini sono visibili e caricate (`naturalWidth > 0`) → scelta del Modello 2. Prova: migrazione → Ricarica Modello 2 → le sedute vecchie restano raggruppate sotto il loro `programName` e non si mescolano con le nuove (anche con una nuova scheda chiamata «A»). **Rifatto il 20/11** (cambio di piano): primo avvio in una schermata, via nome e lato, «Separa i lati» in Info, via «Schede vuote».
+6. ~~Editor delle schede~~ **eliminato** il 20/11 (cambio di piano: obiettivo unico = l'app si avvia, fa scegliere Modello 1 o 2 e trova le schede pronte). Spostato in `docs/aperti.md` come idea futura.
+7. **Prove e controllo del contenuto del Modello 2** (il contenuto è stato anticipato al passo 5, strada A del 20/11, con i soli testi approvati) **+ in Info «Settimana tipo» e «Regole» dipendenti dal modello scelto**: per il Modello 2 solo testi già approvati in questo piano; se mancano, fermarsi e chiedere i testi all'utente.
 8. **Storico e grafici** (raggruppamento per scheda, polpacci, esercizi fuori scheda).
-9. **Segnaposto immagini**; immagini vere quando arrivano.
+9. **Ridotto il 20/11 a una prova automatica**: ogni esercizio del Modello 1 e del Modello 2 ha un file in `public/esercizi/` e l'immagine si carica nel browser (`naturalWidth > 0`). Se ne manca una: fermarsi e dire quale. (Controllo del 20/11 sui file: 26 esercizi, nessuna immagine mancante.)
 10. **Rilascio**: checklist in `docs/rilascio-4bis.md`; merge in `main` solo dopo conferma esplicita.
 
 ## Controllo prima di ogni commit (correzione 9)

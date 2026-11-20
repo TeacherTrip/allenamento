@@ -50,4 +50,15 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 - Lista privata di parole: **nessuna voce attiva** → la compila l'utente, poi rilanciare il controllo sulla cronologia (stampa solo commit e file).
 - Hook: eccezione esatta solo per `i@izs.me` (package-lock). Modello del telefono mai nei file versionati. Immagini: `npm run immagini`; icone: `npm run icone`.
 - Shell partita prima del PATH aggiornato: per gitleaks/adb/gh ricaricare il PATH utente o riavviare Claude Code.
-- Prossimo passo: uso reale dell'app; punti residui in `docs/aperti.md` (lista parole, firewall, notifica di fine recupero, "Vibrazione tattile" facoltativa).
+- Prossimo passo: Fase 4-bis (sotto); punti residui in `docs/aperti.md` (lista parole, firewall, notifica di fine recupero, "Vibrazione tattile" facoltativa).
+
+## Fase 4-bis + Modello 2 — IN CORSO (piano approvato il 20/11/2026)
+- Piano completo: **`docs/piano-4bis.md`** (fonte di verità della fase). Rilascio: **`docs/rilascio-4bis.md`** (checklist).
+- Secondo telefono Android con un'altra scheda; niente profili/account, ogni dispositivo ha i suoi dati.
+- Catalogo esercizi + modelli nel codice; schede (1-4) in IndexedDB; primo avvio una sola volta; impostazioni in Info; migrazione Dexie v2 senza perdite (installazione esistente = Modello 1, nessun primo avvio).
+- **Ramo `fase-4bis`**: tutto lo sviluppo lì. Il push del ramo NON pubblica (workflow solo su `main` + ambiente Pages limitato a `main`). **Merge in `main` solo al passo 10, dopo conferma esplicita.** `/chiudi` in questa fase: commit + push del ramo, mai di `main`.
+- Bozze: tabella `drafts` invariata, la chiave `day` contiene l'id della scheda (Modello 1 = `A`/`B`/`C`). Anche `Session.day` contiene l'id della scheda.
+- Carico `kg` = **per manubrio** (come l'import del prototipo: «2 x 10» → 10).
+- **Prima di ogni commit**: controllare che `CLAUDE.md`, `docs/` e codice non contengano riferimenti a condizioni di salute (dolori/fastidi localizzati, patologie, infortuni). Ammesse solo indicazioni tecniche generiche da manuale.
+- Note del Modello 2 da riscrivere in forma generica: **aspettare l'approvazione dell'utente** prima di scriverle nel codice (vedi `docs/aperti.md`).
+- Prove all'inizio della fase: 94 Vitest + 86 Playwright.

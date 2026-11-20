@@ -10,6 +10,8 @@ playwright-report/
 scheda-casa-backup-*.json
 backup/
 export/
+# dati reali copiati dal telefono per le prove a secco (solo sul PC, mai in Git)
+dati-locali/
 # file di sistema
 Thumbs.db
 desktop.ini

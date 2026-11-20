@@ -9,4 +9,5 @@ Chiudiamo la sessione di lavoro sul progetto Allenamento.
    - `git diff --staged` non deve contenere nomi reali, email, misure, peso, dati di salute, chiavi o token.
 6. Commit con un messaggio in italiano che descrive la sessione, aggiungendo i file nominati uno per uno (mai `git add -A` né `git add .`, mai `--no-verify`). Se il pre-commit blocca il commit, FERMATI e spiegami il motivo. Dimmi l'id del commit.
 7. Poi `git push` su GitHub, solo se il remote `origin` è già configurato: lanciare /chiudi vale come richiesta esplicita di push. Prima del push verifica con `git log --format="%an <%ae>"` che tutti i commit da inviare abbiano l'email noreply. Se il push fallisce (login scaduto, conflitto) fermati e dimmelo, senza forzare nulla (mai --force).
+   Durante la Fase 4-bis: push del solo ramo `fase-4bis` (`git push -u origin fase-4bis`), **mai** di `main`; se il ramo attuale è `main`, fermati e chiedi.
 8. Chiudi con un riepilogo di 3 righe: cosa è stato fatto, cosa devo provare io, da dove ripartiamo.

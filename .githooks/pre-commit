@@ -21,8 +21,8 @@ else
   fail=1
 fi
 
-# 2. File di backup / export
-bad_files=$(printf '%s\n' "$staged" | grep -iE '(backup|export)[^/]*\.json$|(^|/)(backup|export)/')
+# 2. File di backup / export e cartella dati-locali/ (dati reali per le prove a secco, solo sul PC)
+bad_files=$(printf '%s\n' "$staged" | grep -iE '(backup|export)[^/]*\.json$|(^|/)(backup|export|dati-locali)/')
 if [ -n "$bad_files" ]; then
   echo "BLOCCATO: file di backup/export (contengono lo storico personale):"
   printf '  %s\n' $bad_files

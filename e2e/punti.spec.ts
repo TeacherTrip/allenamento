@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   autoDialogs, card, checkSet, expectToast, fakes, goTab, installFakes, openApp, openHistory, row, saveSession,
-  logSet, setVisibility, typeSet, via,
+  logSet, setVisibility, typeSet, via, separateSidesOn,
 } from './helpers';
 
 // Prove dei punti 1-6 (revisione del 2026-11-19).
@@ -11,7 +11,7 @@ import {
 for (const autoRest of [true, false]) {
   test(`M01 pulsante "Avvia recupero" su TUTTI gli esercizi (recupero automatico ${autoRest ? 'attivo' : 'disattivato'})`, async ({ page }) => {
     await openApp(page, 'Info');
-    if (!autoRest) await page.locator('.toggle input').uncheck();
+    if (!autoRest) await page.getByRole('checkbox', { name: /Recupero automatico/ }).uncheck();
     for (const day of ['A', 'B', 'C']) {
       await goTab(page, day);
       const cards = page.locator('section.ex');
@@ -157,6 +157,7 @@ test('A02 AudioContext creato/ripreso al tocco su ✓', async ({ page }) => {
 
 test('U01 per lato: Sx (nessun timer) → Dx (timer); a metà la serie non è confermata', async ({ page }) => {
   await openApp(page, 'B');
+  await separateSidesOn(page, 'B'); // prima della Fase 4-bis i lati erano sempre separati
   const r = row(page, 'bss', 0);
   await typeSet(page, 'bss', 0, { kg: 10, reps: 10 });
   await r.getByRole('button', { name: 'Conferma lato sinistro' }).click();
@@ -172,6 +173,7 @@ test('U01 per lato: Sx (nessun timer) → Dx (timer); a metà la serie non è co
 test('U02 per lato: se salvo con solo il lato sinistro fatto, la serie NON viene salvata', async ({ page }) => {
   const msgs = autoDialogs(page);
   await openApp(page, 'C');
+  await separateSidesOn(page, 'C'); // prima della Fase 4-bis i lati erano sempre separati
   await logSet(page, 'slrdl', 0, { kg: 10, reps: 8 }); // S1 completa
   await typeSet(page, 'slrdl', 1, { kg: 10, reps: 8 });
   await row(page, 'slrdl', 1).getByRole('button', { name: 'Conferma lato sinistro' }).click();
@@ -179,7 +181,7 @@ test('U02 per lato: se salvo con solo il lato sinistro fatto, la serie NON viene
   expect(msgs.some((m) => /1 serie non confermate \(senza ✓\)/.test(m))).toBe(true);
   await openHistory(page);
   await expect(page.locator('.hist details').first().locator('.it', { hasText: 'Stacco rumeno' })).toHaveText(
-    'Stacco rumeno a una gamba: 10 kg × 8 /lato',
+    'Stacco rumeno a una gamba: 10 kg × 8 per lato',
   );
 });
 
@@ -188,9 +190,9 @@ test('U02 per lato: se salvo con solo il lato sinistro fatto, la serie NON viene
 test('SP01 side plank: registra i secondi per lato, non le ripetizioni', async ({ page }) => {
   autoDialogs(page);
   await openApp(page, 'B');
-  await expect(card(page, 'sp').locator('input[placeholder^="reps"]')).toHaveCount(0);
+  await expect(card(page, 'sp').locator('input[data-field="reps"]')).toHaveCount(0);
   await logSet(page, 'sp', 0, { sec: 35 });
   await saveSession(page);
   await openHistory(page);
-  await expect(page.locator('.hist details').first()).toContainText('Side plank: 35 s /lato');
+  await expect(page.locator('.hist details').first()).toContainText('Side plank: 35 s per lato');
 });

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import {
-  autoDialogs, card, checkSet, chip, expectToast, goTab, openApp, openHistory, logSet, patchDraft, row, saveSession, typeSet, via,
+  autoDialogs, card, checkSet, chip, expectToast, goTab, openApp, openHistory, logSet, patchDraft, row, saveSession, typeSet, via, separateSidesOn,
 } from './helpers';
 
 // ---------- Cronometro della seduta ----------
@@ -101,6 +101,7 @@ test('R01 scrivere i valori NON avvia il recupero; il tasto ✓ sì', async ({ p
 
 test('R02 superset: ✓ su 2a → avviso "Passa a 2b" senza timer; ✓ su 2b → timer', async ({ page }) => {
   await openApp(page);
+  await separateSidesOn(page, 'A'); // prima della Fase 4-bis i lati erano sempre separati
   await chip(page, 'pu', 0, '2 Schienale divano');
   await typeSet(page, 'pu', 0, { reps: 10 });
   await row(page, 'pu', 0).locator('.check').click();
@@ -132,7 +133,7 @@ test('R03 ultima serie dell’ultimo esercizio: niente timer', async ({ page }) 
 test('R04 recupero automatico disattivato in Info: ✓ non avvia il timer; il pulsante manuale sì', async ({ page }) => {
   await openApp(page);
   await goTab(page, 'Info');
-  await page.locator('.toggle input').uncheck();
+  await page.getByRole('checkbox', { name: /Recupero automatico/ }).uncheck();
   await goTab(page, 'A');
   await typeSet(page, 'gsq', 0, { kg: 14, reps: 10 });
   await row(page, 'gsq', 0).locator('.check').click();

@@ -125,7 +125,7 @@ export function Chart({ type, labels, datasets, unit = '', steps, horizontal, ba
         scales: {
           [horizontal ? 'y' : 'x']: {
             grid: { display: false },
-            ticks: { color: tx, maxRotation: 0, autoSkip: true, autoSkipPadding: 10 },
+            ticks: { color: tx, maxRotation: 0, autoSkip: !horizontal, autoSkipPadding: 10 },
           },
           [horizontal ? 'x' : 'y']: {
             beginAtZero: type === 'bar' || !!steps,
@@ -166,6 +166,9 @@ export function Chart({ type, labels, datasets, unit = '', steps, horizontal, ba
       ];
     }
     const chart = new ChartJS(canvas.current, config);
+    // etichette dell'asse delle categorie davvero disegnate (dopo lo scarto automatico): le legge la prova ST05
+    const cat = chart.scales[horizontal ? 'y' : 'x'];
+    if (cat) canvas.current.dataset.ticks = cat.ticks.map((t) => String(cat.getLabelForValue(t.value))).join('|');
     return () => chart.destroy();
   }, [type, labels, datasets, unit, steps, horizontal, baseline, integer, theme]);
 

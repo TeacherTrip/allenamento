@@ -4,8 +4,12 @@ import { bandOptions } from '../program/bands';
 import type { Exercise } from '../program/types';
 import { parseNum, valuesToEntry } from '../logic/values';
 
+export type Side = 'left' | 'right';
+
 interface Props {
   ex: Exercise;
+  /** Lato di partenza (Info): il primo dei due tasti dei lati. Predefinito: sinistro. */
+  startSide?: Side;
   /** Etichetta della riga: "S1", "S2", … (anche per le extra). */
   label: string;
   prefill: SetValues | undefined;
@@ -14,23 +18,29 @@ interface Props {
   onChange: (entry: DraftEntry | null) => void;
   /** Serie confermata col tasto (per esercizi con lati separati: dopo [Dx]). */
   onCheck?: () => void;
-  /** Esercizi con lati separati: confermato il lato sinistro. */
+  /** Esercizi con lati separati: confermato il PRIMO lato (quello di partenza). */
   onLeft?: () => void;
   /** Serie extra non confermata: si può eliminare. */
   onRemove?: () => void;
   extra?: boolean;
+  /** «Separa i lati» (Info). */
+  separateSides?: boolean;
 }
 
 /**
  * Una serie: campi della metrica + conferma. Grigio = da confermare, pieno = confermato.
- * Esercizi con lati separati (confirmSides): due tasti affiancati [Sx] [Dx].
+ * Esercizi con lati separati (confirmSides) e «Separa i lati» acceso: due tasti affiancati [Sx] [Dx].
  */
-export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, onRemove, extra }: Props) {
+export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, onRemove, extra, startSide = 'left', separateSides = false }: Props) {
   const confirmed = entry != null && !entry.pending;
-  const leftDone = !confirmed && !!entry?.leftDone;
+  // tasti [Sx] [Dx] solo con «Separa i lati» acceso; spento, un «primo lato fatto» rimasto in bozza è solo «da confermare»
+  const sides = !!ex.confirmSides && separateSides;
+  const leftDone = sides && !confirmed && !!entry?.leftDone;
   const shown: DraftEntry = entry ? { load: entry.load, reps: entry.reps, seconds: entry.seconds } : valuesToEntry(prefill);
   const hasAny = [shown.load, shown.reps, shown.seconds].some((x) => x != null && x !== '');
-  const sides = !!ex.confirmSides;
+  // `leftDone` nella bozza vuol dire "primo lato fatto" (il primo è quello di partenza)
+  const [firstName, secondName] = startSide === 'left' ? ['sinistro', 'destro'] : ['destro', 'sinistro'];
+  const [firstShort, secondShort] = startSide === 'left' ? ['Sx', 'Dx'] : ['Dx', 'Sx'];
 
   // scrivere NON conferma: conferma solo il tasto ✓ (che fa partire il recupero).
   // Una serie già confermata resta confermata se si corregge un valore.
@@ -52,16 +62,18 @@ export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, o
   };
 
   const cls = confirmed ? 'confirmed' : 'prefilled';
-  const repsLabel = ex.unilateral ? 'reps /lato' : 'reps';
+  const perSide = ex.unilateral ? ' per lato' : '';
 
-  const numInput = (field: DraftField, placeholder: string, decimal = false) => (
+  // segnaposto CORTO (mai tagliato a 360 px, anche con [Sx] [Dx]); il nome completo è nell'aria-label
+  const numInput = (field: DraftField, placeholder: string, name: string, decimal = false) => (
     <input
       className={`num ${cls}`}
       inputMode={decimal ? 'decimal' : 'numeric'}
       placeholder={placeholder}
+      data-field={field}
       value={shown[field] ?? ''}
       onChange={(e) => edit(field, e.target.value)}
-      aria-label={`${label} ${placeholder}`}
+      aria-label={`${label} ${name}`}
     />
   );
 
@@ -104,18 +116,18 @@ export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, o
           className={`check side-btn ${confirmed ? 'on' : leftDone ? 'half' : ''}`}
           onClick={confirmed ? unconfirm : leftDone ? undefined : left}
           disabled={!confirmed && !leftDone && !hasAny}
-          aria-label={confirmed ? 'Annulla conferma' : leftDone ? 'Lato sinistro fatto' : 'Conferma lato sinistro'}
+          aria-label={confirmed ? 'Annulla conferma' : leftDone ? `Lato ${firstName} fatto` : `Conferma lato ${firstName}`}
         >
-          Sx
+          {firstShort}
         </button>
         <button
           type="button"
           className={`check side-btn ${confirmed ? 'on' : ''}`}
           onClick={leftDone ? confirm : undefined}
           disabled={!leftDone}
-          aria-label={confirmed ? 'Lato destro fatto' : 'Conferma lato destro'}
+          aria-label={confirmed ? `Lato ${secondName} fatto` : `Conferma lato ${secondName}`}
         >
-          Dx
+          {secondShort}
         </button>
       </div>
     );
@@ -132,8 +144,10 @@ export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, o
         {ex.metric === 'level' &&
           chips(Object.entries(PUSHUP_LEVELS).map(([k, v]) => ({ value: Number(k), label: `${k} ${v}` })))}
         <div className="inputs">
-          {ex.metric === 'kg' && numInput('load', 'kg', true)}
-          {ex.metric === 'time' ? numInput('seconds', ex.unilateral ? 'sec /lato' : 'sec') : numInput('reps', repsLabel)}
+          {ex.metric === 'kg' && numInput('load', 'kg', `kg${perSide}`, true)}
+          {ex.metric === 'time'
+            ? numInput('seconds', 'sec', `secondi${perSide}`)
+            : numInput('reps', 'rip.', `ripetizioni${perSide}`)}
           {onRemove && !confirmed && (
             <button type="button" className="x" onClick={onRemove} aria-label={`Elimina ${label}`}>
               ✕

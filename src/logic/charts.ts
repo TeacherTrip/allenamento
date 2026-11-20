@@ -1,12 +1,15 @@
 import type { Session, SetLog, SetValues } from '../db/models';
 import { bandOptions } from '../program/bands';
-import { EXERCISES } from '../program/program';
-import type { Exercise, Muscle } from '../program/types';
+import { CATALOG_EXERCISES } from '../program/program';
+import type { Exercise, Muscle, Program } from '../program/types';
 import { bestScore, difficultyStep, e1rm, setScore } from './difficulty';
 import { fmtNum } from './values';
 
 /** Gruppi muscolari, nell'ordine dei grafici. */
-export const MUSCLES: Muscle[] = ['quadricipiti', 'femorali', 'glutei', 'petto', 'schiena', 'spalle', 'bicipiti', 'tricipiti', 'core'];
+export const MUSCLES: Muscle[] = ['quadricipiti', 'femorali', 'glutei', 'petto', 'schiena', 'spalle', 'bicipiti', 'tricipiti', 'core', 'polpacci'];
+
+/** Esercizi che contano per gruppi muscolari (serie settimanali, indici): la mobilità no. */
+const countsForMuscles = (ex: Exercise) => ex.kind !== 'mobility';
 
 /** Una seduta in cui l'esercizio è stato fatto, con le sue serie. */
 export interface ExerciseSession {
@@ -29,13 +32,16 @@ export function exerciseSessions(exerciseId: string, sessions: Session[], logs: 
     .map((session) => ({ session, sets: byId.get(session.id)!.sort((a, b) => a.setIndex - b.setIndex) }));
 }
 
-/** Serie migliore (punteggio più alto: per `kg` l'e1RM). */
+/**
+ * Serie migliore (punteggio più alto: per `kg` l'e1RM).
+ * A pari punteggio vince quella con più ripetizioni (serve per le serie a 0 kg, che hanno e1RM 0).
+ */
 export function bestSet(ex: Exercise, sets: SetValues[]): SetValues | undefined {
   let best: SetValues | undefined;
   let max = -1;
   for (const s of sets) {
     const sc = setScore(ex, s);
-    if (sc > max) {
+    if (sc > max || (sc === max && (s.reps ?? 0) > (best?.reps ?? 0))) {
       max = sc;
       best = s;
     }
@@ -68,8 +74,12 @@ export interface SummaryRow {
   trend: -1 | 0 | 1;
 }
 
+/** Sedute a 0 kg di un esercizio `kg`: 'all' = tutte (niente carico), 'mixed' = alcune, 'none' = nessuna. */
+export type ZeroKg = 'all' | 'mixed' | 'none';
+
 export interface ExerciseCharts {
   dates: string[];
+  zeroKg: ZeroKg;
   charts: ChartSpec[];
   summary: SummaryRow[];
 }
@@ -115,9 +125,22 @@ export function exerciseCharts(ex: Exercise, sessions: Session[], logs: SetLog[]
   const charts: ChartSpec[] = [];
   const summary: (SummaryRow | null)[] = [];
 
+  let zeroKg: ZeroKg = 'none';
   if (ex.metric === 'kg') {
+    const all = rows.flatMap((r) => r.sets);
+    if (!all.some((s) => (s.load ?? 0) > 0)) zeroKg = 'all';
+    else if (all.some((s) => s.load === 0)) zeroKg = 'mixed';
+  }
+
+  if (zeroKg === 'all') {
+    // sempre a 0 kg (corpo libero): niente e1RM né carico, solo le ripetizioni
+    const reps = rows.map((r) => sum(r.sets.map((s) => s.reps)));
+    charts.push({ title: `Ripetizioni totali${side}`, unit: 'reps', series: [{ label: 'Ripetizioni totali', values: reps }] });
+    summary.push(numericRow('Ripetizioni totali', reps, ''));
+  } else if (ex.metric === 'kg') {
     const best = rows.map((r) => bestSet(ex, r.sets));
-    const est = best.map((b) => (b?.load != null && b.reps != null ? round1(e1rm(b.load, b.reps)) : null));
+    // e1RM solo con carico > 0: a 0 kg (corpo libero) non ha senso → buco nel grafico
+    const est = best.map((b) => (b?.load != null && b.load > 0 && b.reps != null ? round1(e1rm(b.load, b.reps)) : null));
     const load = best.map((b) => b?.load ?? null);
     charts.push({
       title: 'Serie migliore',
@@ -128,6 +151,12 @@ export function exerciseCharts(ex: Exercise, sessions: Session[], logs: SetLog[]
       ],
     });
     summary.push(numericRow('e1RM', est, 'kg'), numericRow('Carico', load, 'kg'));
+    // con sedute a 0 kg conta anche quante ripetizioni si fanno
+    if (rows.some((r) => r.sets.some((s) => s.load === 0))) {
+      const reps = rows.map((r) => sum(r.sets.map((s) => s.reps)));
+      charts.push({ title: `Ripetizioni totali${side}`, unit: 'reps', series: [{ label: 'Ripetizioni totali', values: reps }] });
+      summary.push(numericRow('Ripetizioni totali', reps, ''));
+    }
   } else if (ex.metric === 'band' || ex.metric === 'level') {
     const steps = stepLabels(ex);
     // gradino più difficile usato nella seduta
@@ -164,7 +193,7 @@ export function exerciseCharts(ex: Exercise, sessions: Session[], logs: SetLog[]
     summary.push(numericRow('Secondi totali', secs, 's'));
   }
 
-  return { dates, charts, summary: summary.filter((s): s is SummaryRow => s != null) };
+  return { dates, zeroKg, charts, summary: summary.filter((s): s is SummaryRow => s != null) };
 }
 
 // ---------- indice di progressione ----------
@@ -193,10 +222,10 @@ export function exerciseIndex(ex: Exercise, sessions: Session[], logs: SetLog[])
  * PRIMARIO, usando per ciascuno l'ultimo valore noto. Mai somme di kg di esercizi diversi.
  * Comprende anche gli esercizi tolti dalla scheda (lo storico resta).
  */
-export function groupIndex(group: Muscle, sessions: Session[], logs: SetLog[], exercises: Exercise[] = EXERCISES): IndexPoint[] {
+export function groupIndex(group: Muscle, sessions: Session[], logs: SetLog[], exercises: Exercise[] = CATALOG_EXERCISES): IndexPoint[] {
   const events: (IndexPoint & { ex: string })[] = [];
   for (const ex of exercises) {
-    if (!ex.muscles.primary.includes(group)) continue;
+    if (!countsForMuscles(ex) || !ex.muscles.primary.includes(group)) continue;
     for (const p of exerciseIndex(ex, sessions, logs)) events.push({ ...p, ex: ex.id });
   }
   events.sort((a, b) => a.date.localeCompare(b.date));
@@ -211,6 +240,14 @@ export function groupIndex(group: Muscle, sessions: Session[], logs: SetLog[], e
     else out.push({ date: e.date, sessionId: e.sessionId, value: avg });
   }
   return out;
+}
+
+/** Il gruppo ha sedute a 0 kg in esercizi `kg` dove è primario? (quelle sedute non entrano nell'indice) */
+export function groupHasZeroKg(group: Muscle, logs: SetLog[], exercises: Exercise[] = CATALOG_EXERCISES): boolean {
+  const ids = new Set(
+    exercises.filter((e) => e.metric === 'kg' && countsForMuscles(e) && e.muscles.primary.includes(group)).map((e) => e.id),
+  );
+  return logs.some((l) => ids.has(l.exerciseId) && l.load === 0);
 }
 
 // ---------- serie settimanali ----------
@@ -228,19 +265,53 @@ export type MuscleCount = Record<Muscle, number>;
 const zero = (): MuscleCount => Object.fromEntries(MUSCLES.map((m) => [m, 0])) as MuscleCount;
 
 /** Serie per gruppo muscolare in ogni settimana: primario = 1, secondario = 0,5. */
-export function weeklySets(sessions: Session[], logs: SetLog[], exercises: Exercise[] = EXERCISES): Map<string, MuscleCount> {
+export function weeklySets(sessions: Session[], logs: SetLog[], exercises: Exercise[] = CATALOG_EXERCISES): Map<string, MuscleCount> {
   const exById = new Map(exercises.map((e) => [e.id, e]));
   const week = new Map(sessions.map((s) => [s.id, weekStart(s.date)]));
   const out = new Map<string, MuscleCount>();
   for (const l of logs) {
     const ex = exById.get(l.exerciseId);
     const w = week.get(l.sessionId);
-    if (!ex || !w) continue;
+    if (!ex || !w || !countsForMuscles(ex)) continue;
     const c = out.get(w) ?? zero();
     for (const m of ex.muscles.primary) c[m] += 1;
     for (const m of ex.muscles.secondary) c[m] += 0.5;
     out.set(w, c);
   }
+  return out;
+}
+
+/** Gruppi muscolari con almeno una serie (primaria o secondaria) nelle sedute salvate, nell'ordine dei grafici. */
+export function trainedMuscles(weekly: Map<string, MuscleCount>): Muscle[] {
+  return MUSCLES.filter((m) => [...weekly.values()].some((c) => c[m] > 0));
+}
+
+// ---------- menu degli esercizi ----------
+
+export interface MenuGroup {
+  label: string;
+  ids: string[];
+}
+
+/**
+ * Menu «Per esercizio»: una voce per scheda attuale (ogni esercizio una volta sola, nella prima scheda
+ * in cui compare), poi «Altri esercizi con dati» (fuori dalle schede di oggi ma con serie salvate).
+ */
+export function exerciseMenu(programs: Program[], withData: Set<string>, exercises: Exercise[] = CATALOG_EXERCISES): MenuGroup[] {
+  const known = new Set(exercises.map((e) => e.id));
+  const seen = new Set<string>();
+  const out: MenuGroup[] = [];
+  for (const p of [...programs].sort((a, b) => a.order - b.order)) {
+    const ids: string[] = [];
+    for (const it of p.items) {
+      if (seen.has(it.exerciseId) || !known.has(it.exerciseId)) continue;
+      seen.add(it.exerciseId);
+      ids.push(it.exerciseId);
+    }
+    if (ids.length) out.push({ label: `Seduta ${p.name}`, ids });
+  }
+  const others = exercises.filter((e) => !seen.has(e.id) && withData.has(e.id)).map((e) => e.id);
+  if (others.length) out.push({ label: 'Altri esercizi con dati', ids: others });
   return out;
 }
 

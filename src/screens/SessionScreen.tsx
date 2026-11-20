@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { db, saveDraft, saveSessionFromDraft, setSetting } from '../db/db';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { db, saveDraft, saveSessionFromDraft, setPhase1, setSetting, snoozePhase1 } from '../db/db';
+import { shouldAskPhase1Off } from '../logic/phase1';
 import type { Draft, DraftEntry, Session, SetLog, SetValues, Settings } from '../db/models';
-import { DAYS, WARMUP, exercisesForDay, supersetPartner } from '../program/program';
-import type { Day, Exercise } from '../program/types';
-import { buildPrefill, lastSessionSets } from '../logic/prefill';
+import { WARMUP, resolveProgram } from '../program/program';
+import type { Day, Exercise, Program } from '../program/types';
+import { lastSessionSets, prefillWithStart } from '../logic/prefill';
+import { afterCheck, blockOf, manualRest, type FlowItem } from '../logic/superset';
 import { progressionHint } from '../logic/progression';
-import { durationSec, fmtDuration, formatSet } from '../logic/format';
+import { durationSec, fmtDuration, formatSet, nb, NBSP } from '../logic/format';
 import { entryToValues, hasValues, isComplete } from '../logic/values';
 import { unlockAudio } from '../hooks/sound';
 import { wakeLockSupported } from '../hooks/useWakeLock';
@@ -16,8 +18,13 @@ import { CircuitOverlay } from '../components/CircuitOverlay';
 import { pauseRun, resumeRun } from '../logic/circuit';
 import type { SimpleItem } from '../program/types';
 
+const ddmm = (iso: string) => new Date(iso).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
+
 interface Props {
-  day: Day;
+  /** Scheda di questa seduta (dal database). */
+  program: Program;
+  /** Nome della scheda con l'allenamento in corso, se è un'altra. */
+  activeName?: string;
   sessions: Session[];
   logs: SetLog[];
   settings: Settings;
@@ -51,14 +58,18 @@ function shouldWarnScreen(): boolean {
 const shownValues = (entry: DraftEntry | null | undefined, prefill: SetValues | undefined): SetValues | undefined =>
   entry ? entryToValues(entry) : prefill;
 
-export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDay, startRest, stopRest, toast }: Props) {
-  const plan = DAYS.find((d) => d.day === day)!;
-  const exercises = useMemo(() => exercisesForDay(day), [day]);
+export function SessionScreen({ program, activeName, sessions, logs, settings, activeDay, goToDay, startRest, stopRest, toast }: Props) {
+  const day = program.id;
+  const exercises = useMemo(() => resolveProgram(program), [program]);
+  const title = nb(`Seduta ${program.name}${program.description ? ` — ${program.description}` : ''}`);
+  const startSide = settings.startSide;
   const [draft, setDraft] = useState<Draft | null>(null);
 
-  // interruttore aggiornato subito (senza aspettare il database): niente sfarfallio
-  const [phase1, setPhase1] = useState(settings.phase1);
-  useEffect(() => setPhase1(settings.phase1), [settings.phase1]);
+  // "Settimane 1-2": l'interruttore è in Info; qui la riga e l'avviso «Disattivarle?».
+  // Valore locale aggiornato subito al «Sì» (senza aspettare il database): niente sfarfallio
+  const [phase1, setPhase1Local] = useState(settings.phase1);
+  useEffect(() => setPhase1Local(settings.phase1), [settings.phase1]);
+  const askPhase1Off = phase1 && shouldAskPhase1Off(settings);
 
   // carica la bozza salvata (la seduta in corso sopravvive alla chiusura dell'app)
   useEffect(() => {
@@ -86,11 +97,13 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
         const planned = last.filter((l) => !l.extra);
         const lastDate = last.length ? sessions.find((s) => s.id === last[0].sessionId)?.date : undefined;
         const lastText = last.length
-          ? `${new Date(lastDate!).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' })} · ${last
+          ? nb(`${new Date(lastDate!).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' })} · ${last
               .map((l) => formatSet(ex, l) + (l.extra ? ' (extra)' : ''))
-              .join(' · ')}`
+              .join(' · ')}`)
           : null;
-        return { ex, count, prefill: buildPrefill(planned, count), hint: progressionHint(ex, planned), lastText };
+        // senza storico: valore di partenza della voce (in grigio, da confermare)
+        const prefill = prefillWithStart(planned, count, ex.metric, ex.startValue);
+        return { ex, count, prefill, hint: progressionHint(ex, planned), lastText };
       }),
     [exercises, sessions, logs, phase1],
   );
@@ -143,17 +156,24 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
   const setExtra = (exId: string, fn: (arr: (DraftEntry | null)[]) => (DraftEntry | null)[]) =>
     update((d) => ({ ...d, extra: { ...(d.extra ?? {}), [exId]: fn([...(d.extra?.[exId] ?? [])]) } }));
 
-  /** Tasto di conferma: avviso superset, recupero automatico, niente timer sull'ultima serie della seduta (extra comprese). */
-  const onCheck = (ex: Exercise, rowIndex: number, totalRows: number) => {
+  // righe di ogni voce (previste + extra) per le regole di superset e recupero (logic/superset.ts)
+  const flow: FlowItem[] = rows.map((r) => ({
+    id: r.ex.id,
+    count: r.count + extraOf(r.ex.id).length,
+    restSec: r.ex.restSec,
+    supersetNext: r.ex.supersetNext,
+  }));
+
+  /** Tasto di conferma: passa alla voce successiva del superset, oppure recupero del blocco (mai dopo l'ultima serie). */
+  const onCheck = (index: number, rowIndex: number) => {
     unlockAudio();
-    const partner = supersetPartner(ex);
-    if (partner) {
-      toast(`→ Passa a ${partner.superset}`);
-      return;
+    const action = afterCheck(flow, index, rowIndex);
+    if (action.kind === 'next') {
+      const to = exercises.find((e) => e.id === action.to);
+      toast(`→ Passa a ${to?.superset ?? to?.name ?? ''}`);
+    } else if (action.kind === 'rest' && settings.autoRest) {
+      startRest(action.sec, exercises[index].name);
     }
-    const isLastEx = exercises[exercises.length - 1]?.id === ex.id;
-    if (isLastEx && rowIndex === totalRows - 1) return;
-    if (settings.autoRest && ex.restSec > 0) startRest(ex.restSec, ex.name);
   };
 
   // conteggi per il salvataggio (serie previste + extra)
@@ -178,8 +198,9 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
   const hasCircuit = !!draft.circuit && draft.circuit.completedRounds > 0;
 
   const onStart = () => {
+    if (exercises.length === 0) return;
     if (otherActive) {
-      toast(`Hai già un allenamento in corso sulla seduta ${otherActive}`);
+      toast(`Hai già un allenamento in corso sulla seduta ${activeName ?? ''}`.trim());
       return;
     }
     unlockAudio();
@@ -215,7 +236,7 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
       if (!confirm([head, ...lines].join('\n\n'))) return;
     }
     const maxSets = Object.fromEntries(rows.map((r) => [r.ex.id, r.count]));
-    const n = await saveSessionFromDraft(draft, phase1, maxSets, dur);
+    const n = await saveSessionFromDraft(draft, phase1, maxSets, dur, program);
     if (n > 0) {
       stopRest(); // seduta finita: il recupero partito dall'ultima ✓ non serve più
       setDraft(emptyDraft(day));
@@ -260,8 +281,8 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
 
   return (
     <>
-      <h2>{plan.title}</h2>
-      <p className="sub">{plan.subtitle}</p>
+      <h2>{title}</h2>
+      {program.subtitle && <p className="sub" data-testid="program-subtitle">{nb(program.subtitle)}</p>}
 
       {started ? (
         <>
@@ -274,44 +295,68 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
         </>
       ) : otherActive ? (
         <div className="warnbox">
-          Hai un allenamento in corso sulla <b>seduta {otherActive}</b>. Terminalo prima di iniziarne un altro.
+          Hai un allenamento in corso sulla <b>seduta {activeName}</b>. Terminalo prima di iniziarne un altro.
           <button className="ghost" onClick={() => goToDay(otherActive)}>
-            Vai alla seduta {otherActive}
+            Vai alla seduta {activeName}
           </button>
         </div>
       ) : (
-        <button className="primary big start" onClick={onStart}>
+        <button className="primary big start" onClick={onStart} disabled={exercises.length === 0}>
           ▶ Inizia allenamento
         </button>
       )}
+      {exercises.length === 0 && (
+        <div className="box" data-testid="empty-program">
+          Questa scheda non ha esercizi.
+        </div>
+      )}
+      {program.notes && program.notesPosition !== 'bottom' && <ProgramNotes text={program.notes} />}
 
       {settings.sessionsSinceBackup >= 6 && (
         <div className="warnbox">
           {settings.sessionsSinceBackup} sedute dall'ultimo backup. Vai in <b>Info</b> → Esporta backup.
         </div>
       )}
-      <label className="toggle">
-        <input
-          type="checkbox"
-          checked={phase1}
-          onChange={(e) => {
-            setPhase1(e.target.checked);
-            void setSetting('phase1', e.target.checked);
-          }}
-        />
-        Settimane 1-2: massimo 2 serie, RIR 3
-      </label>
-      <div className="box">
-        <b>Riscaldamento (5-6 min)</b>
-        <ItemList items={WARMUP} testId="warmup" />
-      </div>
+      {askPhase1Off ? (
+        <div className="warnbox" role="alert" data-testid="phase1-ask">
+          Settimane 1-2 attive da 2 settimane. Disattivarle?
+          <div className="row2">
+            <button
+              className="ghost"
+              onClick={() => {
+                setPhase1Local(false);
+                void setPhase1(false);
+              }}
+            >
+              Sì
+            </button>
+            <button className="ghost" onClick={() => void snoozePhase1()}>
+              Non ancora
+            </button>
+          </div>
+        </div>
+      ) : (
+        phase1 && (
+          <p className="sub" data-testid="phase1-line">
+            {nb(`Settimane 1-2 attive${settings.phase1Since ? ` dal ${ddmm(settings.phase1Since)}` : ''}: massimo 2 serie, RIR 3`)}
+          </p>
+        )
+      )}
+      {program.warmup && (
+        <div className="box">
+          <b>Riscaldamento (5-6 min)</b>
+          <ItemList items={WARMUP} testId="warmup" />
+        </div>
+      )}
       <p className="legend">
-        <span className="dot prefilled" /> da confermare (precompilato o scritto) · <span className="dot confirmed" /> confermato con ✓
+        <span className="dot prefilled" /> da confermare (precompilato o scritto) · <span className="dot confirmed" /> {`confermato con${NBSP}✓`}
       </p>
 
-      {rows.map((r) => {
+      {rows.map((r, idx) => {
         const extras = extraOf(r.ex.id);
-        const totalRows = r.count + extras.length;
+        const [bs, be] = blockOf(flow, idx);
+        const supersetPos = bs === be ? null : idx === bs ? 'first' : 'next';
+        const nextBadge = idx < be ? exercises[idx + 1].superset : undefined;
         return (
           <ExerciseCard
             key={r.ex.id}
@@ -323,14 +368,19 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
             extraPrefill={extraPrefillOf(r)}
             hint={r.hint}
             lastText={r.lastText}
+            supersetPos={supersetPos}
+            nextBadge={nextBadge}
+            manualRestSec={manualRest(flow, idx)}
+            startSide={startSide}
+            separateSides={settings.separateSides}
             onSetChange={(i, e) => setEntry(r.ex.id, i, e)}
             onExtraChange={(k, e) => setExtra(r.ex.id, (arr) => ((arr[k] = e), arr))}
             onExtraRemove={(k) => setExtra(r.ex.id, (arr) => (arr.splice(k, 1), arr))}
             onAddSet={() => setExtra(r.ex.id, (arr) => [...arr, null])}
-            onSetCheck={(i) => onCheck(r.ex, i, totalRows)}
+            onSetCheck={(i) => onCheck(idx, i)}
             onSetLeft={() => {
               unlockAudio();
-              toast('→ Lato destro, senza pausa');
+              toast(`→ Lato ${startSide === 'left' ? 'destro' : 'sinistro'}, senza pausa`);
             }}
             onRest={(sec) => {
               unlockAudio();
@@ -340,9 +390,8 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
         );
       })}
 
-      {day === 'C' && (
-        <div className="box circuit" data-testid="circuit-box">
-          <b>Circuito cardio senza salti</b>
+      {program.circuit !== 'no' && (
+        <CircuitBox optional={program.circuit === 'optional'}>
           <ItemList items={CARDIO_EXERCISES} testId="circuit" />
           <div className="sub">Rotazione dei 4 esercizi, uno per round. Intensità: {CARDIO_INTENSITY.toLowerCase()}</div>
           <div className="seg" role="radiogroup" aria-label="Protocollo del circuito">
@@ -359,7 +408,7 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
               >
                 {p.label}
                 <br />
-                {p.rounds}× {p.workSec}/{p.restSec} s
+                {nb(`${p.rounds}× ${p.workSec}/${p.restSec} s`)}
               </button>
             ))}
           </div>
@@ -374,9 +423,9 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
           <button className="primary" onClick={onCircuitStart}>
             ▶ Avvia circuito
           </button>
-        </div>
+        </CircuitBox>
       )}
-      {day === 'C' && draft.circuitRun && (
+      {program.circuit !== 'no' && draft.circuitRun && (
         <CircuitOverlay
           run={draft.circuitRun}
           onPause={() => update((d) => (d.circuitRun ? { ...d, circuitRun: pauseRun(d.circuitRun) } : d))}
@@ -386,6 +435,7 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
         />
       )}
 
+      {program.notes && program.notesPosition === 'bottom' && <ProgramNotes text={program.notes} />}
       <textarea
         placeholder="Note della seduta (sensazioni, dolori, ...)"
         value={draft.notes}
@@ -402,6 +452,35 @@ export function SessionScreen({ day, sessions, logs, settings, activeDay, goToDa
         Svuota i campi
       </button>
     </>
+  );
+}
+
+/** Circuito cardio: riquadro aperto, oppure chiuso da aprire con un tocco se è facoltativo. */
+function CircuitBox({ optional, children }: { optional: boolean; children: ReactNode }) {
+  if (!optional)
+    return (
+      <div className="box circuit" data-testid="circuit-box">
+        <b>Circuito cardio senza salti</b>
+        {children}
+      </div>
+    );
+  return (
+    <details className="box circuit optional" data-testid="circuit-box">
+      <summary>
+        <b>Circuito cardio senza salti (facoltativo)</b>
+      </summary>
+      {children}
+    </details>
+  );
+}
+
+/** Note della scheda (in cima o in fondo alla seduta). */
+function ProgramNotes({ text }: { text: string }) {
+  return (
+    <div className="box prog-notes" data-testid="program-notes">
+      <b>Note della scheda</b>
+      {text}
+    </div>
   );
 }
 

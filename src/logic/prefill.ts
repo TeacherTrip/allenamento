@@ -1,4 +1,5 @@
 import type { Session, SetLog, SetValues } from '../db/models';
+import type { Metric } from '../program/types';
 
 /** Serie dell'ultima seduta (per data) in cui l'esercizio è stato fatto, ordinate. */
 export function lastSessionSets(exerciseId: string, sessions: Session[], logs: SetLog[]): SetLog[] {
@@ -30,6 +31,27 @@ export function buildPrefill(last: SetLog[], count: number): (SetValues | undefi
     out.push(src ? pick(src) : undefined);
   }
   return out;
+}
+
+/**
+ * Valore di partenza della voce (ProgramItem.startValue) come valori di una serie:
+ * kg / elastico / livello → carico; time → secondi; bodyweight → niente (si scrivono solo le ripetizioni).
+ */
+export function startValues(metric: Metric, startValue: number | undefined): SetValues | undefined {
+  if (startValue == null) return undefined;
+  if (metric === 'time') return { seconds: startValue };
+  if (metric === 'bodyweight') return undefined;
+  return { load: startValue };
+}
+
+/**
+ * Precompilazione completa: dall'ultima volta; se l'esercizio non ha storico, il valore di partenza
+ * della voce su tutte le serie (in grigio, da confermare come ogni precompilazione).
+ */
+export function prefillWithStart(last: SetLog[], count: number, metric: Metric, startValue?: number): (SetValues | undefined)[] {
+  if (last.length > 0) return buildPrefill(last, count);
+  const v = startValues(metric, startValue);
+  return Array.from({ length: count }, () => (v ? { ...v } : undefined));
 }
 
 function pick(l: SetValues): SetValues {

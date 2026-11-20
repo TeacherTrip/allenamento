@@ -11,6 +11,7 @@ Specifica completa: `PROMPT.md` (fonte di verità per requisiti, fasi e regole; 
 - Struttura delle risposte: prima codice/azione, poi breve spiegazione dei punti chiave.
 - Commit frequenti, messaggi in italiano; push a fine fase.
 - Messaggi di commit **senza** riga `Co-Authored-By` né altre email (scelta dell'utente: nessuna email nei messaggi).
+- Gli script che scrivono file del progetto devono salvarli con fine riga **LF** (già successo due volte con CRLF). In Python: `open(..., newline='')` oppure `newline='\n'`; prima del commit, `grep -c $'\r$'` sui file toccati deve dare 0.
 
 ## Decisioni prese (Fase 0, 2026-11-19)
 - Telefono **Android**, browser **Chrome**.
@@ -40,14 +41,32 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 ## Comandi
 - `npm run dev` (app su http://localhost:5173/allenamento/), `npm test` (test unitari Vitest), `npx playwright test` (prove nel browser: Chrome del PC, Pixel 7, profilo pulito; i download dei test vanno in una cartella temporanea di sistema, mai nel progetto), `npm run build`.
 - Dopo ogni modifica: `npx tsc --noEmit`, `npm test`, `npx playwright test`. Ogni bug trovato → nuova prova automatica.
+- `npm run prova-usb`: prove sul telefono vero via debug USB (`e2e-usb/`, `playwright.usb.config.ts`). Solo a mano, escluse da CI, `npm test` e `npx playwright test`. Usa SOLO `http://localhost:5173/allenamento/` (versione costruita), cancella solo i dati di quell'origine, mai l'app installata né il sito pubblicato; nessuna app installata, nessuna impostazione cambiata. adb dal PATH o dalla variabile `ADB`. Schermate e misure nella cartella temporanea di sistema (`teachergym-usb`).
+- `npm run prova-a-secco`: migrazione provata sul backup reale messo in `dati-locali/` (esclusa da Git, bloccata dal pre-commit). Solo a mano; stampa solo conteggi e percorsi delle differenze, **mai i dati**. Se ci sono differenze: fermarsi e mostrarle, non correggerle da soli. Il file reale non va mai letto né mostrato.
 - `/chiudi` (`.claude/commands/chiudi.md`): chiusura sessione (stato, diario in `docs/storia.md`, punti aperti in `docs/aperti.md`, controlli, commit, push).
 
 ## Stato per ripartire
-- **Fase 7 chiusa il 20/11/2026** (checklist §10 completa). App pubblicata su `https://teachertrip.github.io/allenamento/`, versione d66419b installata e verificata sul telefono; sedute di prova cancellate, debug USB spento. PWA: aggiornamento solo a richiesta, mai durante allenamento/recupero/circuito.
-- Regole dell'app decise il 19/11: la serie si conferma **solo con ✓** (scrivere non conferma) e la ✓ avvia il recupero; "Termina e salva" ferma il recupero.
-- GitHub: repo **pubblico**, secret scanning + push protection, `main` protetto. Workflow `pubblica.yml`: push su main → `npm test` + build → Pages. **Conferma dell'utente prima di ogni modifica su GitHub** (push compresi, tranne /chiudi).
-- Prove: 94 Vitest + 86 Playwright, verdi. Prove sul telefono dal PC: debug USB + CDP con Playwright (i tocchi adb sono bloccati); suono/vibrazione solo a mano dall'utente.
-- Lista privata di parole: **nessuna voce attiva** → la compila l'utente, poi rilanciare il controllo sulla cronologia (stampa solo commit e file).
-- Hook: eccezione esatta solo per `i@izs.me` (package-lock). Modello del telefono mai nei file versionati. Immagini: `npm run immagini`; icone: `npm run icone`.
-- Shell partita prima del PATH aggiornato: per gitleaks/adb/gh ricaricare il PATH utente o riavviare Claude Code.
-- Prossimo passo: uso reale dell'app; punti residui in `docs/aperti.md` (lista parole, firewall, notifica di fine recupero, "Vibrazione tattile" facoltativa).
+- **Fase 4-bis IN CORSO sul ramo `fase-4bis`** (`docs/piano-4bis.md`): passi 1-5 e 7-9 fatti (passo 8: Storico per scheda in `src/logic/history.ts`, Grafici per scheda + «Altri esercizi con dati», frasi 0 kg, gruppi solo se allenati, conteggio su `CATALOG_EXERCISES`; passo 9: `e2e/immagini-modelli.spec.ts`). `main` e il sito restano alla Fase 7 (codice d66419b, `main` a 01f7f1f); merge in `main` solo al passo 10, con conferma esplicita.
+- Regole dell'app: serie confermata **solo con ✓** (avvia il recupero); "Termina e salva" ferma il recupero. PWA: aggiornamento solo a richiesta. Avvisi brevi in basso, chiudibili.
+- GitHub: repo **pubblico**, `main` protetto, Pages solo da `main`. **Conferma dell'utente prima di ogni modifica su GitHub** (push di `fase-4bis` autorizzato; /chiudi = push del ramo).
+- Prove: 230 Vitest + 133 Playwright, verdi (due passate). `npm run prova-usb` solo a mano. Prova a secco sui dati reali obbligatoria al rilascio.
+- Da provare a mano (utente): al via del passo 10, **backup dal telefono** (Info → Esporta backup) + screenshot dei Grafici, file in `dati-locali/`; poi controlli del piano di rilascio (telefono scollegato: schermo acceso nel circuito, modalità aereo).
+- Lista privata di parole: **nessuna voce attiva** (la compila l'utente). Hook: eccezione esatta solo per `i@izs.me`. Per gitleaks/adb/gh ricaricare il PATH. `fake-indexeddb`: NON si installa.
+- **Prossimo passo: passo 10** (rilascio). Piano in 14 punti mostrato il 20/11 (sintesi in `docs/aperti.md`, checklist `docs/rilascio-4bis.md`): **parte solo con l'OK dell'utente**; da chiarire cosa intende per «chiusura della Fase 7» (già chiusa il 20/11).
+- **PROMEMORIA nuova sessione:** leggere `CLAUDE.md`, `docs/aperti.md`, `docs/piano-4bis.md`, `docs/rilascio-4bis.md`; confermare ramo, ultimo commit, prove e prossimo passo; **non iniziare il passo 10 senza OK**.
+## Fase 4-bis + Modello 2 — IN CORSO (piano approvato il 20/11/2026)
+- Piano completo: **`docs/piano-4bis.md`** (fonte di verità della fase). Rilascio: **`docs/rilascio-4bis.md`** (checklist).
+- Secondo telefono Android con un'altra scheda; niente profili/account, ogni dispositivo ha i suoi dati.
+- **Cambio di piano (20/11) — obiettivo unico:** l'app si avvia, fa scegliere Modello 1 o 2 con le immagini e trova le schede pronte (esercizi, immagini, sedute, recuperi, pesi, ripetizioni, storico, grafici). **Niente funzioni in più.** Editor delle schede eliminato (idea futura in `docs/aperti.md`): nessun testo o pulsante deve farne capire l'esistenza. Niente «Schede vuote», niente nome.
+- Catalogo esercizi + modelli (solo Modello 1 e Modello 2) nel codice; schede in IndexedDB; primo avvio una sola volta, una schermata; impostazioni in Info; migrazione Dexie v2 senza perdite (installazione esistente = Modello 1, nessun primo avvio).
+- **Ramo `fase-4bis`**: tutto lo sviluppo lì. Il push del ramo NON pubblica (workflow solo su `main` + ambiente Pages limitato a `main`). **Merge in `main` solo al passo 10, dopo conferma esplicita.** `/chiudi` in questa fase: commit + push del ramo, mai di `main`.
+- Bozze: tabella `drafts` invariata, la chiave `day` contiene l'id della scheda (Modello 1 = `A`/`B`/`C`). Anche `Session.day` contiene l'id della scheda.
+- Id `A`/`B`/`C` assegnati **solo dalla migrazione**; ogni scheda creata dopo ha un id generato univoco (`newId()`), anche se si chiama «A».
+- Settimane 1-2: `phase1Since` = data della prima seduta salvata (non del primo avvio). Se Settimane 1-2 vengono riattivate da Info: `phase1Since` = data della prima seduta salvata dopo la riattivazione; rinvio dell'avviso azzerato. Con `phase1Since` vuoto l'avviso «Disattivarle?» non compare mai.
+- **Lati** (20/11): «Separa i lati» in Info (`separateSides`). Spento sulle installazioni nuove: un ✓ per serie, «per lato», nessun sinistro/destro. Acceso dalla migrazione sulle esistenti (con `startSide` sinistro). Dati invariati (una riga per serie, valori per lato, uguali per i due lati). Bloccato con un allenamento avviato. `userName` resta nei dati ma non è usato.
+- Carico `kg` = **per manubrio** (come l'import del prototipo: «2 x 10» → 10).
+- **Prima di ogni commit**: controllare che `CLAUDE.md`, `docs/` e codice non contengano riferimenti a condizioni di salute (dolori/fastidi localizzati, patologie, infortuni). Ammesse solo indicazioni tecniche generiche da manuale.
+- Note del Modello 2: testi definitivi approvati il 20/11 (in `docs/piano-4bis.md`). `gb` ha la sua immagine dedicata (`gb.webp`, commit 9e16dfb), non più una copia di `wu-bridge`.
+- Prove all'inizio della fase: 94 Vitest + 86 Playwright. Dopo il passo 3: 172 + 91. Dopo il passo 4: 172 + 100. Dopo il passo 5: 194 + 110; dopo il cambio di piano: 200 Vitest + 115 Playwright; dopo le correzioni della prova USB (D1-D4: tasti 48 × 48, segnaposto «rip.», avviso breve in basso e chiudibile, spazi non separabili con `nb()`): 202 + 122. Dopo il passo 7: 215 + 125. Dopo il passo 8: 230 + 131 (ST05: etichette del grafico a barre dei gruppi, lette da `data-ticks` del canvas). Dopo il passo 9: 230 + 133.
+- Passo 5: `ensurePrograms()` tolto. Installazione nuova (nessuna scheda e `onboarded` assente, mai il numero di sedute) → primo avvio (`src/screens/FirstRun.tsx`, una schermata), salvato solo con «Inizia». Nelle prove `openApp(page, tab, model)` passa il primo avvio (`passFirstRun`); le prove scritte per i lati separati li accendono con `separateSidesOn(page, tab)`; le prove passano il NOME della scheda (`goTab(page, 'A')`), mai l'id. Modello 2 già nel codice (strada A). «Ricarica un modello» = `reloadTemplate()` in `src/db/db.ts` (cancella e sostituisce le schede in una transazione; storico intatto). Regole Settimane 1-2 in `src/logic/phase1.ts`.
+- Database: Dexie versione 2 (IndexedDB 20), tabella `programs`; upgrade in `src/db/db.ts` + regole pure in `src/db/migrate.ts`; errori/altre schede in `src/screens/DbGate.tsx`.

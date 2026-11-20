@@ -1,4 +1,5 @@
 import { EXERCISE_BY_ID, PROGRAM_VERSION } from '../program/program';
+import { upgradeSession } from '../db/migrate';
 import { bandOptions } from '../program/bands';
 import type { Day, Exercise } from '../program/types';
 import type { Session, SetLog, SetValues } from '../db/models';
@@ -114,14 +115,17 @@ export function convertPrototype(obj: unknown): ProtoImportResult {
       });
     }
 
-    sessions.push({
-      id: sessionId,
-      date: new Date(ps.date).toISOString(),
-      day: ps.day as Day,
-      phase1: false,
-      notes: notes.join('\n'),
-      programVersion: PROGRAM_VERSION,
-    });
+    // il prototipo usava le schede A/B/C del Modello 1: nome e copia delle voci come nella migrazione
+    sessions.push(
+      upgradeSession({
+        id: sessionId,
+        date: new Date(ps.date).toISOString(),
+        day: ps.day as Day,
+        phase1: false,
+        notes: notes.join('\n'),
+        programVersion: PROGRAM_VERSION,
+      }),
+    );
   }
 
   return { sessions, setLogs, warnings };

@@ -10,9 +10,24 @@ export function autoDialogs(page: Page): string[] {
   return msgs;
 }
 
-export async function openApp(page: Page, tab = 'A') {
+export async function openApp(page: Page, tab = 'A', model: 'm1' | 'm2' = 'm1') {
   await page.goto('./');
+  await passFirstRun(page, model);
   await goTab(page, tab);
+}
+
+/**
+ * Profilo pulito → primo avvio (dal passo 5 non ci sono più schede automatiche): una schermata, modello e «Inizia».
+ * Se l'app è già pronta (database migrato o primo avvio già fatto) non fa niente.
+ */
+export async function passFirstRun(page: Page, model: 'm1' | 'm2' = 'm1') {
+  const firstRun = page.getByTestId('firstrun');
+  const nav = page.locator('nav.tabbar');
+  await expect(firstRun.or(nav)).toBeVisible();
+  if (!(await firstRun.isVisible())) return;
+  await page.getByTestId(`model-${model}`).click();
+  await page.getByRole('button', { name: 'Inizia', exact: true }).click();
+  await expect(nav).toBeVisible();
 }
 
 export async function goTab(page: Page, label: string) {
@@ -25,8 +40,8 @@ export const row = (page: Page, id: string, i: number) => card(page, id).locator
 export async function typeSet(page: Page, id: string, i: number, v: { kg?: number; reps?: number; sec?: number }) {
   const r = row(page, id, i);
   if (v.kg != null) await r.locator('input[placeholder="kg"]').fill(String(v.kg));
-  if (v.reps != null) await r.locator('input[placeholder^="reps"]').fill(String(v.reps));
-  if (v.sec != null) await r.locator('input[placeholder^="sec"]').fill(String(v.sec));
+  if (v.reps != null) await r.locator('input[data-field="reps"]').fill(String(v.reps));
+  if (v.sec != null) await r.locator('input[data-field="seconds"]').fill(String(v.sec));
 }
 
 /** Conferma col tasto (per gli esercizi con lati separati: [Sx] poi [Dx]). */
@@ -143,22 +158,44 @@ export async function openHistory(page: Page) {
   for (let i = 0; i < n; i++) await items.nth(i).locator('summary').click();
 }
 
-/** Modifica direttamente la bozza nel database (per simulare il passare del tempo). */
-export async function patchDraft(page: Page, day: string, patch: Record<string, unknown>) {
+/**
+ * Modifica direttamente la bozza nel database (per simulare il passare del tempo).
+ * `name` = nome della scheda (es. "A"): la bozza è salvata con l'id della scheda, che si cerca per nome.
+ */
+export async function patchDraft(page: Page, name: string, patch: Record<string, unknown>) {
   await page.evaluate(
-    ([day, patch]) =>
+    ([name, patch]) =>
       new Promise<void>((resolve, reject) => {
         const req = indexedDB.open('teachergym');
         req.onerror = () => reject(req.error);
         req.onsuccess = () => {
-          const tx = req.result.transaction('drafts', 'readwrite');
-          const store = tx.objectStore('drafts');
-          const g = store.get(day as string);
-          g.onsuccess = () => store.put({ ...g.result, ...(patch as object) });
+          const tx = req.result.transaction(['programs', 'drafts'], 'readwrite');
+          const progs = tx.objectStore('programs').getAll();
+          progs.onsuccess = () => {
+            const id = (progs.result as { id: string; name: string }[]).find((p) => p.name === name)?.id ?? name;
+            const store = tx.objectStore('drafts');
+            const g = store.get(id);
+            g.onsuccess = () => store.put({ ...g.result, ...(patch as object) });
+          };
           tx.oncomplete = () => resolve();
           tx.onerror = () => reject(tx.error);
         };
       }),
-    [day, patch] as const,
+    [name, patch] as const,
   );
+}
+
+/** "Settimane 1-2": l'interruttore è in Info (dal passo 5); nella seduta c'è solo la riga. */
+export async function setPhase1InInfo(page: Page, on: boolean) {
+  await goTab(page, 'Info');
+  const box = page.getByRole('checkbox', { name: /Settimane 1-2/ });
+  if (on) await box.check();
+  else await box.uncheck();
+}
+
+/** «Separa i lati» acceso da Info (spento di serie sulle installazioni nuove), poi torna alla scheda `tab`. */
+export async function separateSidesOn(page: Page, tab = 'A') {
+  await goTab(page, 'Info');
+  await page.getByRole('checkbox', { name: /Separa i lati/ }).check();
+  await goTab(page, tab);
 }

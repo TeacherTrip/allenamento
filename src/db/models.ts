@@ -1,4 +1,4 @@
-import type { Day } from '../program/types';
+import type { Day, ProgramItem, TemplateId } from '../program/types';
 import type { CircuitRun } from '../logic/circuit';
 
 /** Valori di una serie. Il significato di `load` dipende dalla metrica:
@@ -19,7 +19,12 @@ export interface CircuitLog {
 export interface Session {
   id: string;
   date: string; // ISO
+  /** Id della scheda (Modello 1 dalla migrazione: 'A' / 'B' / 'C'; schede nuove: id generato). */
   day: Day;
+  /** Nome della scheda quando la seduta è stata salvata (lo storico raggruppa per id e mostra questo). */
+  programName?: string;
+  /** Copia delle voci previste dalla scheda al salvataggio: modificare la scheda dopo non cambia lo storico. */
+  plan?: ProgramItem[];
   phase1: boolean;
   notes: string;
   programVersion: number;
@@ -69,6 +74,27 @@ export interface Settings {
   sessionsSinceBackup: number;
   /** Il recupero parte da solo quando si conferma una serie con ✓. */
   autoRest: boolean;
+  /** Non più usato nell'interfaccia (20/11): resta nei dati solo perché i backup già fatti lo contengono. */
+  userName: string;
+  /** Lato da cui partono gli esercizi a un arto (conta solo con `separateSides`). */
+  startSide: 'left' | 'right';
+  /**
+   * «Separa i lati» (Info): spento = un solo ✓ per serie, valori «per lato», nessuna indicazione di lato;
+   * acceso = tasti [Sx] [Dx] dal lato di partenza. I dati salvati sono uguali nei due modi (valori per lato).
+   * Spento sulle installazioni nuove; acceso dalla migrazione sulle installazioni esistenti (come prima).
+   */
+  separateSides: boolean;
+  /** Modello da cui sono nate le schede (null = nessuno: primo avvio da fare). */
+  templateId: TemplateId | null;
+  /** Primo avvio già fatto (o installazione esistente migrata). */
+  onboarded: boolean;
+  /**
+   * Data (ISO) della prima seduta salvata con "Settimane 1-2" attive (null = nessuna ancora).
+   * Serve per la riga "attive dal gg/mm" e per l'avviso «Disattivarle?» dopo 14 giorni.
+   */
+  phase1Since: string | null;
+  /** «Non ancora» all'avviso: non riproporlo prima di questa data (ISO). */
+  phase1SnoozedUntil: string | null;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -77,4 +103,14 @@ export const DEFAULT_SETTINGS: Settings = {
   lastBackupAt: null,
   sessionsSinceBackup: 0,
   autoRest: true,
+  userName: '',
+  startSide: 'left',
+  separateSides: false,
+  templateId: null,
+  onboarded: false,
+  phase1Since: null,
+  phase1SnoozedUntil: null,
 };
+
+/** Chiavi delle impostazioni della versione 1 del database (prima della Fase 4-bis). */
+export const SETTINGS_KEYS_V1 = ['phase1', 'cardioProtocol', 'lastBackupAt', 'sessionsSinceBackup', 'autoRest'] as const;

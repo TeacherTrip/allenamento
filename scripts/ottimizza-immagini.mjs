@@ -53,3 +53,28 @@ console.log(`Media dopo: ${kb(totDopo / files.length)} KB`);
 const sopra = righe.filter((r) => r.avviso);
 if (sopra.length) console.warn(`ATTENZIONE: ${sopra.length} file oltre ${AVVISO_KB} KB`);
 if (totDopo > AVVISO_TOTALE_MB * 1024 * 1024) console.warn(`ATTENZIONE: totale oltre ${AVVISO_TOTALE_MB} MB`);
+
+// Secondo passaggio: immagini dei modelli per il primo avvio e «Ricarica un modello»
+// (immagini-originali/modelli/*.jpg → public/modelli/*.webp, larghe 800 px, proporzioni mantenute, mai ingrandite).
+const SRC_MODELLI = path.join(SRC, 'modelli');
+const OUT_MODELLI = path.join('public', 'modelli');
+const LARGHEZZA_MODELLI = 800;
+
+const modelli = (await readdir(SRC_MODELLI)).filter((f) => /\.(png|jpe?g)$/i.test(f)).sort();
+if (modelli.length === 0) {
+  console.error(`Nessuna immagine in ${SRC_MODELLI}/`);
+  process.exit(1);
+}
+await mkdir(OUT_MODELLI, { recursive: true });
+const righeModelli = [];
+for (const f of modelli) {
+  const dest = path.join(OUT_MODELLI, `${path.parse(f).name}.webp`);
+  const info = await sharp(path.join(SRC_MODELLI, f))
+    .rotate()
+    .resize({ width: LARGHEZZA_MODELLI, withoutEnlargement: true })
+    .webp({ quality: QUALITY })
+    .toFile(dest);
+  const prima = (await stat(path.join(SRC_MODELLI, f))).size;
+  righeModelli.push({ file: `modelli/${f}`, dimensioni: `${info.width}×${info.height}`, 'prima (KB)': kb(prima), 'dopo (KB)': kb(info.size) });
+}
+console.table(righeModelli);

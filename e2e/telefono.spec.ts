@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   autoDialogs, card, checkSet, expectToast, fakes, goTab, installFakes, openApp, openHistory, row, saveSession,
-  logSet, setVisibility, typeSet, via,
+  logSet, setVisibility, typeSet, via, separateSidesOn,
 } from './helpers';
 
 // Prove nate dalla diagnosi sul telefono (telefono Android, Chrome 157), 2026-11-19.
@@ -97,6 +97,7 @@ const SIDES = { B: ['bss', 'mp', 'sp'], A: ['row'], C: ['slrdl'] } as const;
 
 test('C1 esercizi con lati separati: due tasti [Sx] [Dx] affiancati su OGNI serie', async ({ page }) => {
   await openApp(page);
+  await separateSidesOn(page, 'A'); // prima della Fase 4-bis i lati erano sempre separati
   for (const [day, ids] of Object.entries(SIDES)) {
     await goTab(page, day);
     for (const id of ids) {
@@ -118,6 +119,7 @@ test('C1 esercizi con lati separati: due tasti [Sx] [Dx] affiancati su OGNI seri
 
 test('C2 [Dx] è attivo solo dopo [Sx]', async ({ page }) => {
   await openApp(page, 'B');
+  await separateSidesOn(page, 'B'); // prima della Fase 4-bis i lati erano sempre separati
   await typeSet(page, 'bss', 0, { kg: 10, reps: 10 });
   const r = row(page, 'bss', 0);
   await expect(r.getByRole('button', { name: 'Conferma lato destro' })).toBeDisabled();
@@ -130,12 +132,13 @@ test('C2 [Dx] è attivo solo dopo [Sx]', async ({ page }) => {
 
 test('P4 dead bug e curl alternato: un solo ✓, "reps per lato", recupero subito', async ({ page }) => {
   await openApp(page);
+  await separateSidesOn(page, 'A'); // prima della Fase 4-bis i lati erano sempre separati
   for (const [day, id] of [['A', 'db'], ['C', 'cu']] as const) {
     await goTab(page, day);
     const c = card(page, id);
     await expect(c.locator('.sides')).toHaveCount(0);
     await expect(c.getByRole('button', { name: 'Conferma serie' }).first()).toHaveText('✓');
-    await expect(c.locator('input[placeholder="reps /lato"]').first()).toBeVisible();
+    await expect(c.locator('input[data-field="reps"]').first()).toHaveAttribute('aria-label', /ripetizioni per lato$/);
     await expect(c).toContainText('lati alternati');
   }
   // dead bug S1: un tocco → recupero (non è l'ultima serie della seduta)
@@ -157,7 +160,7 @@ test('S1 "+ Serie": riga grigia con i valori dell’ultima serie, eliminabile se
   await expect(x).toHaveClass(/prefilled/);
   await expect(x.locator('.setn')).toContainText('S3');
   await expect(x.locator('input[placeholder="kg"]')).toHaveValue('12');
-  await expect(x.locator('input[placeholder^="reps"]')).toHaveValue('9');
+  await expect(x.locator('input[data-field="reps"]')).toHaveValue('9');
   await x.getByRole('button', { name: 'Elimina S3' }).click();
   await expect(card(page, 'gsq').locator('.setrow')).toHaveCount(2);
 });

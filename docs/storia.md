@@ -153,3 +153,84 @@ Orari presi da `git reflog show origin/main`.
 - Le pulizie sul telefono le fa l'utente.
 
 **Commit:** 69ab15a, 7a7f9b4, 1a70ca5, d66419b (+ commit di chiusura sessione).
+
+## 2026-11-20 (pomeriggio) — Fase 4-bis: piano e passi 1-4 (ramo `fase-4bis`)
+- **Nuovo requisito**: l'app va anche su un secondo telefono Android con un'altra scheda (niente profili: ogni dispositivo ha i suoi dati). Catalogo esercizi nel codice, schede componibili in IndexedDB, modelli (Modello 1 = schede di prima, Modello 2, schede vuote), primo avvio, impostazioni in Info. Piano approvato con correzioni → `docs/piano-4bis.md`; checklist di rilascio → `docs/rilascio-4bis.md`.
+- **Ramo `fase-4bis`**: verificato che il push del ramo non pubblica (workflow solo su `main` + ambiente `github-pages` limitato a `main`); workflow non modificato. `/chiudi` in questa fase spinge solo il ramo.
+- **Passo 1**: catalogo (20 esercizi di prima con id invariati + `gb`, `ss`, `bdog`, `hfs`, `cr`, `cls`; gruppo `polpacci`; `hfs` = mobilità) e Modello 1 nel codice. Copia della scheda di prima in `tests/fixtures/scheda-v1.json` e prova campo per campo. Note del catalogo senza lato di partenza. Immagini dei 6 nuovi esercizi (1200 × 896 → WebP); `gb.jpg` era inizialmente una copia identica di `wu-bridge.jpg` (stessa impronta), poi sostituita dall'utente con quella dedicata. Precache: 45 voci, ~1,43 MB.
+- **Passo 2**: logica pura con prove — superset con serie diverse (recupero del blocco dopo il giro), recupero "–", 0 kg (e1RM vuoto, grafico ripetizioni, niente % da 0), mobilità esclusa da serie settimanali e indici, valore di partenza.
+- **Passo 3**: Dexie versione 2 (tabella `programs`). Upgrade che solo aggiunge (schede A/B/C, `programName` e `plan` alle sedute, impostazioni mancanti), idempotente, in un'unica transazione (se fallisce il database resta v1). Schermata d'errore con "Scarica backup grezzo", avvisi "Chiudi le altre schede" / "Ricarica". Backup formato 2 (con le schede; i v1 restano importabili). Prova M1 con confronto PRIMA/DOPO dei valori calcolati, M3 con migrazione forzata a fallire. Prova a secco sui dati reali (`npm run prova-a-secco`, `dati-locali/` esclusa da Git e bloccata dal pre-commit): collaudata con dati inventati; quella reale è rinviata perché lo storico del telefono è vuoto.
+- **Passo 4**: la seduta legge le schede dal database (barra dinamica, copia della scheda in ogni seduta salvata, superset per blocchi, recupero "–", valore di partenza, note della voce e della scheda, lato di partenza, scheda vuota, circuito facoltativo). Trovato e corretto: a 360 px con 4 schede i pulsanti della barra erano 46 × 42 px e "Gambe1" usciva dal bordo → margini più stretti, altezza minima 48 px, carattere 12 px con 7 pulsanti (prova D08).
+- Prove: da 94 Vitest + 86 Playwright a **172 + 100**, tutte verdi.
+
+**Decisioni**
+- Bozze: tabella `drafts` invariata, la chiave `day` contiene l'id della scheda; anche `Session.day`. Id `A`/`B`/`C` solo dalla migrazione, ogni scheda nuova ha un id generato (anche se si chiama «A»).
+- Carico `kg` = per manubrio (verificato nell'import del prototipo).
+- Superset numerati per blocchi; attrezzo con i kg nella voce di scheda (Modello 1 come prima, Modello 2 senza kg); nomi delle schede max 6 caratteri; "Settimane 1-2" in Info con data; circuito facoltativo chiuso.
+- Note del Modello 2 riscritte in forma generica (nessun riferimento a condizioni di salute) e approvate; forme neutre. Prima di ogni commit: controllo dei riferimenti alla salute.
+- Primo avvio (passo 5): schede dei modelli con immagine (`immagini-originali/modelli/` → `public/modelli/*.webp` 800 × 597, in precache), testi neutri.
+- Fino al passo 5 un'installazione nuova riceve il Modello 1 con id generati (provvisorio).
+
+**Commit:** 2578150, e044ac5, da54c68, edd081e, 9e16dfb, 36cfd45, ccb0a9f (+ commit di chiusura sessione).
+
+## 2026-11-20 (sera) — Fase 4-bis: requisiti aggiuntivi del passo 5 (solo documenti)
+- Scritte in `docs/aperti.md`, alla voce del passo 5, le aggiunte 1-5 dell'utente: niente Modello 1 automatico (primo avvio su profilo pulito, nessuna scheda prima di «Inizia»); Settimane 1-2 attive di serie con riga di spiegazione, `phase1Since` = prima seduta salvata, avviso dopo 14 giorni con «Sì» / «Non ancora» (rinvio 7 giorni, mai spegnimento automatico); Ricarica un modello con id generati e blocco durante l'allenamento; immagini dei modelli a 800 px con anteprima e pesi; istruzioni per la prova sul telefono in Wi-Fi a fine passo 5.
+- Corretta in `CLAUDE.md` la frase superata su `gb.jpg` (ora `gb.webp` dedicata, commit 9e16dfb).
+- Nessun codice scritto: il passo 5 parte solo dopo l'approvazione dell'utente.
+
+**Decisioni**
+- Se Settimane 1-2 viene riattivato da Info, `phase1Since` diventa la data della prima seduta salvata dopo la riattivazione e il rinvio del «Non ancora» si azzera.
+
+**Commit:** e3caed6 (+ commit di chiusura sessione).
+
+## 2026-11-20 (notte) — Fase 4-bis: passo 5, cambio di piano, prova sul telefono via USB (ramo `fase-4bis`)
+- **Passo 5**: immagini dei modelli (`public/modelli/*.webp`, 800 × 597); primo avvio al posto delle schede automatiche; Modello 2 (A, B, C, D leggera) con i testi approvati; Info con Settimane 1-2 e «Ricarica un modello» (finestra con «Scarica backup» / «Sostituisci» / «Annulla», bloccata con un allenamento avviato, un'unica transazione, storico intatto); avviso «Disattivarle?» dopo 14 giorni; `phase1Since` dalla prima seduta salvata (vuoto senza sedute, anche nella migrazione).
+- **Cambio di piano**: obiettivo unico = l'app si avvia, fa scegliere Modello 1 o 2 e trova le schede pronte. Editor eliminato (idea futura in `docs/aperti.md`); primo avvio in una sola schermata (niente nome, niente lato, niente «Schede vuote»); «Separa i lati» in Info (spento sulle installazioni nuove, acceso dalla migrazione, bloccato con un allenamento avviato, dati invariati); passo 7 allargato a «Settimana tipo» e «Regole» per modello; passo 9 ridotto alla prova delle immagini.
+- **Prova sul telefono via debug USB** (solo `http://localhost:5173/allenamento/`, versione costruita; app installata e sito pubblicato non toccati; nessuna app installata, nessuna impostazione cambiata). Schermo 384 px. Tutto funzionante: primo avvio, immagini, Modello 2, seduta, Storico, Grafici, lati, ricarica, primo avvio offline, Wake Lock concesso durante il circuito e rilasciato dopo «Interrompi». Trovati 4 difetti:
+  - D1: ✓ 48 × 44 e [Sx] [Dx] 46 × 44 px;
+  - D2: segnaposto «reps /lato» tagliato con i lati accesi;
+  - D3: l'avviso «App pronta» copriva titoli e tasti;
+  - D4: righe che andavano a capo male («· 7 / esercizi», «con / ✓»).
+- **Correzioni** D1-D4: tasti 48 × 48; segnaposto «rip.» / «sec» e «per lato» anche nello Storico; avvisi brevi in basso sopra la barra (e sopra quella del recupero), con spazio riservato, chiudibili con un tocco, «App pronta» dopo «Inizia»; spazi non separabili con `nb()`. Nuove prove: `e2e/tasti.spec.ts` (360 e 384 px), `e2e/avviso.spec.ts`, prove di `nb()`.
+- **Prove USB nei commit**: `npm run prova-usb` (`scripts/prova-usb.mjs`, `playwright.usb.config.ts`, `e2e-usb/`), solo a mano, escluse da CI e prove normali; adb dal PATH o da `ADB`; schermate fuori dal progetto.
+- Lezioni dalla prova USB: una scheda aperta via debug resta dietro e non viene disegnata (si apre come un link con `am start`); col debug collegato Chrome tiene acceso lo schermo comunque (il Wake Lock si verifica dalla pagina); togliere l'inoltro USB non basta per l'offline (si ferma il server); `vite preview` senza `--host` ascoltava solo in IPv6.
+- Prove: da 172 + 100 a **202 Vitest + 122 Playwright**, due passate verdi; prova USB 6 su 6. Una sola caduta di CI01 sotto carico, non ripetuta (10 ripetizioni + 2 passate).
+
+**Decisioni**
+- `fake-indexeddb` non si installa; la prova della transazione fallita resta in Playwright.
+- Controlli a mano al passo 10, col telefono scollegato: schermo acceso durante il circuito, modalità aereo (`docs/rilascio-4bis.md`).
+- Il passo 7 parte solo con l'OK dell'utente.
+
+**Commit:** 3c722d5, 52cd544, dc7a7b9, 24e44ab, ab55e2c, 418ba3e, 026dac0 (+ commit di chiusura sessione).
+
+## 2026-11-20 (pomeriggio e sera) — Fase 4-bis: passo 7 e preparazione del passo 8 (ramo `fase-4bis`)
+- **Prima del passo 7**: ramo pulito, prove della migrazione e del primo avvio ripristinate; `.gitattributes` (LF) già presente, nessun file con CRLF nel repository; prova instabile CI01 annotata nei punti aperti.
+- **Passo 7**: contenuto del Modello 2 confrontato voce per voce con il piano (nessuna differenza). Descrizioni e sottotitoli delle schede del Modello 2 (solo durata, nessun giorno). Info dipendente dal modello (`src/catalog/infoTexts.ts`): «Settimana tipo» con «Esempio», «Ogni giorno», «Regole», scala dei push-up; il Modello 1 resta invariato; senza modello salvato si usano i testi del Modello 1.
+- **Testi rivisti con la regola sulla salute**: sostituiti dall'utente i testi con parti del corpo legate a dolore e sintomi (giorni «no», sera, Dolore, Stop, «Se ci si sente poco bene», note di rdl e ht generiche, tolto «Evitare nella prima ora dopo il risveglio» dalla nota del rdl).
+- **Catalogo neutro**: parti legate al Modello 1 spostate nelle note delle voci del Modello 1 con testo identico (pu, pull, ht, lpd); tolto «fascia» dalla nota del clamshell (nota della voce «Fascia sopra le ginocchia» nella D); attrezzo di ht «Manubrio». Forme neutre: «Sdraiati sulla schiena», «Arnold press (da seduti)», «Respiro affannoso, ma riesci a dire una frase breve.». Riscaldamento: «2 hang alla barra da 15-20 s (anche con i piedi appoggiati, se serve)».
+- **Backup v2**: include già il modello scelto; aggiunte le prove (Vitest + BK01: telefono vuoto → import → Modello 2 con i testi di Info).
+- **Passo 8**: analisi di Storico e Grafici e proposta mostrata all'utente (dettagli in `docs/aperti.md`); trovati difetti nel menu dei Grafici e nel conteggio per gruppo col Modello 2. Nessun codice scritto.
+- Prove: da 202 + 122 a **216 Vitest + 126 Playwright**, due passate verdi; build riuscita; gitleaks pulito.
+
+**Decisioni**
+- Testi del Modello 2 per Info e note approvati dall'utente (in `docs/piano-4bis.md`); regola salute applicata anche ai testi dell'app.
+- Ordine delle note: catalogo, poi «Nota della scheda: …».
+- Il passo 8 parte solo con l'OK dell'utente; l'idea dei Grafici caricati all'apertura resta in `docs/aperti.md`.
+
+**Commit:** 1e8bcc4, 5c1a06b, eb5abc6, d42b81c (+ commit di chiusura sessione).
+
+## 2026-11-20 (notte) — Fase 4-bis: passi 8 e 9, piano di rilascio (ramo `fase-4bis`)
+- **Passo 8** (approvato con una modifica alle etichette dello Storico): Storico raggruppato per id della scheda, prima le schede attuali («Scheda A · n sedute»), poi quelle che non ci sono più («Scheda A — fino al gg/mm/aaaa», «dal … al …» se nome e data coincidono); menu dei Grafici per scheda attuale + «Altri esercizi con dati» (col Modello 2 la D non ha una voce propria: approvato); esercizi kg sempre a 0 kg → solo «Ripetizioni totali» con frase, sedute miste con nota in legenda, frase sotto l'indice; gruppi muscolari visibili solo se allenati; serie settimanali e indici su tutto il catalogo (`CATALOG_EXERCISES`). `nb()` tiene insieme «fino al» + data e «n sedute».
+- **Difetto trovato guardando le schermate**: il grafico a barre orizzontale scartava etichette con pochi gruppi (Femorali, Polpacci). Corretto; prova ST05 che legge le etichette disegnate (`data-ticks` del canvas), verificata sul codice vecchio (falliva: «Quadricipiti|Glutei»).
+- **Fine riga**: lo script Python della sessione aveva salvato 8 file con CRLF; riportati a LF prima del commit. Nuova regola in `CLAUDE.md`: gli script salvano con LF.
+- **Passo 9**: `e2e/immagini-modelli.spec.ts` (IM01 file in `public/`, IM02 caricamento nel browser) per gli esercizi dei due modelli, le immagini dei modelli, riscaldamento e circuito; verificata togliendo per un momento `gb.webp` (falliscono e dicono quale file manca; file rimesso identico).
+- **Passo 10**: piano di rilascio in 14 punti mostrato all'utente (sintesi in `docs/aperti.md`). Nessuna azione su `main`.
+- Sessione interrotta una volta per il limite di utilizzo (passo 8 scritto ma non committato), ripresa senza perdite.
+- Prove: da 216 + 126 a **230 Vitest + 133 Playwright**, due passate verdi; build riuscita; gitleaks pulito.
+
+**Decisioni**
+- Etichette dello Storico per le schede che non ci sono più: «fino al» con la data dell'ultima seduta; «dal … al …» solo se nome e data coincidono.
+- Frasi per le sedute a 0 kg, «Altri esercizi con dati» e menu senza voce D approvati.
+- Il passo 10 parte solo con l'OK dell'utente; il primo passo è il backup dal telefono.
+
+**Commit:** e4289b8, 7e051bc, 974fdc4, 217d8f4 (+ commit di chiusura sessione).

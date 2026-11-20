@@ -21,4 +21,4 @@ export const CARDIO_EXERCISES: SimpleItem[] = [
   { id: 'cx-climber', image: 'cx-climber', name: 'Mountain climber lento (mani sul divano)' },
 ];
 
-export const CARDIO_INTENSITY = 'Affannato ma riesci a dire una frase breve.';
+export const CARDIO_INTENSITY = 'Respiro affannoso, ma riesci a dire una frase breve.';

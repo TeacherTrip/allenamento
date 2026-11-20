@@ -1,12 +1,65 @@
 # Punti aperti
 
-Stato: app **pubblicata** su https://teachertrip.github.io/allenamento/ e installata sul telefono (versione con commit d66419b). **Fase 7 chiusa il 20/11/2026**: checklist §10 completa (dettagli in `docs/storia.md`). Repository **pubblico**; protezioni GitHub attive (secret scanning + push protection, `main` protetto da force push e cancellazione, Issues/Projects/Wiki spenti).
+Stato: app **pubblicata** su https://teachertrip.github.io/allenamento/ e installata sul telefono (versione con commit d66419b, Fase 7). **Fase 4-bis in corso sul ramo `fase-4bis`** (passi 1-5 e 7-9 fatti, non pubblicati; passo 6 eliminato col cambio di piano del 20/11; prossimo: passo 10, rilascio, solo con l'OK dell'utente). **Fase 7 chiusa il 20/11/2026**: checklist §10 completa (dettagli in `docs/storia.md`). Repository **pubblico**; protezioni GitHub attive (secret scanning + push protection, `main` protetto da force push e cancellazione, Issues/Projects/Wiki spenti).
 
 ## Da fare (utente)
 - [ ] Lista privata di parole: risulta senza voci attive (solo vuoti/commenti), quindi il controllo delle parole personali non agisce. La compila l'utente; poi rilanciare il controllo su tutta la cronologia (stampa solo commit e file).
 - [ ] Facoltativo: riattivare "Vibrazione tattile" sul telefono (senza, Chrome non vibra a fine recupero; restano i suoni). Se riattivata: una ✓ con recupero per controllare la vibrazione.
 
+## Fase 4-bis + Modello 2 (piano approvato il 20/11/2026, ramo `fase-4bis`)
+Piano: `docs/piano-4bis.md`. Rilascio: `docs/rilascio-4bis.md`.
+- [x] Passo 1: catalogo + Modello 1 nel codice (app invariata)
+- [x] Passo 2: logica pura (superset con serie diverse, recupero "–", 0 kg, mobilità, polpacci, valore di partenza)
+- [x] Passo 3: database v2 + migrazione + schermata d'errore + backup v2 (prova di migrazione con confronto prima/dopo)
+- [x] Passo 4: seduta guidata dalle schede del database
+- [x] Passo 5 (20/11): primo avvio, Info, Ricarica un modello, Modello 2 anticipato, avviso Settimane 1-2, migrazione corretta (`phase1Since` vuoto senza sedute). Commit 3c722d5 (immagini), 52cd544 (codice), poi **rifatto col cambio di piano del 20/11**:
+  - primo avvio in **una sola schermata** (modelli con immagini, riga Settimane 1-2, «Inizia»); via nome e lato dal primo avvio, via il nome da Info;
+  - **«Separa i lati»** in Info: spento sulle installazioni nuove (un ✓ per serie, «per lato»), acceso dalla migrazione sulle esistenti; lato di partenza visibile solo se acceso; bloccato con un allenamento avviato; dati invariati;
+  - via «Schede vuote» e ogni testo che rimandi a un editor.
+  - `fake-indexeddb` **non** si installa (decisione del 20/11): la prova della transazione fallita resta in Playwright (F10).
+  - [x] **Prova sul telefono via debug USB** (20/11, `npm run prova-usb`): tutto funzionante; difetti D1-D4 (tasti, segnaposto, avviso, a capo) corretti in 418ba3e. Prove: 202 Vitest + 122 Playwright, due passate verdi.
+  - Requisiti del 20/11 già applicati: niente Modello 1 automatico (`ensurePrograms()` tolto); Settimane 1-2 (`phase1Since` dalla prima seduta salvata, avviso dopo 14 giorni con «Sì»/«Non ancora» a 7 giorni, riattivazione che azzera data e rinvio, nessun avviso con data vuota); Ricarica un modello (id generati, bloccata con allenamento avviato, storico separato); immagini dei modelli a 800 px.
+- Passo 6: **eliminato** (cambio di piano del 20/11) → vedi «Idea futura» qui sotto.
+- [x] Passo 7 (20/11): contenuto del Modello 2 confrontato con il piano (nessuna differenza); descrizioni e sottotitoli di A-D; «Settimana tipo», «Ogni giorno», «Regole» e scala dei push-up in Info secondo il modello (`src/catalog/infoTexts.ts`); catalogo neutro (parti del Modello 1 nelle note delle voci); forme neutre; voce della barra nel riscaldamento. Testi approvati in `docs/piano-4bis.md`.
+- [x] Passo 8 (20/11): storico e grafici con due modelli (codice e4289b8). Proposta approvata con una modifica (etichette dello Storico):
+  - **Storico** raggruppato per id della scheda: prima le schede attuali («Scheda A · 2 sedute»), poi quelle che non ci sono più, dalla più recente: «Scheda A — fino al gg/mm/aaaa» (data dell'ultima seduta del gruppo); se due gruppi hanno nome e data uguali: «Scheda A — dal gg/mm/aaaa al gg/mm/aaaa». Testi con `nb()`. Logica in `src/logic/history.ts`;
+  - **menu dei Grafici** per scheda attuale («Seduta A», ogni esercizio una volta, nella prima scheda in cui compare) + «Altri esercizi con dati». Col Modello 2 la D non ha una voce propria (ripete esercizi di A-C): approvato;
+  - **0 kg**: esercizio `kg` sempre a 0 kg → solo «Ripetizioni totali» e la frase «Tutte le sedute sono a 0 kg: il grafico mostra le ripetizioni totali. Con un carico compariranno anche e1RM e carico.»; sedute miste → in legenda «Le sedute a 0 kg non hanno e1RM (buco nella linea): per quelle conta il grafico «Ripetizioni totali».»; sotto l'indice (solo se il gruppo ha serie a 0 kg) «Le sedute a 0 kg non entrano nell'indice.»;
+  - **gruppi muscolari** visibili solo se allenati (anche come secondari); solo allungamenti → «Nessuna serie che conti per i gruppi muscolari (gli allungamenti non contano).»; conteggio su tutto il catalogo (`CATALOG_EXERCISES`: primario 1, secondario 0,5, extra comprese, un arto = 1, mobilità esclusa, settimana lun-dom);
+  - difetto trovato e corretto: il grafico a barre orizzontale scartava etichette con pochi gruppi → prova ST05 (verificata: fallisce sul codice vecchio);
+  - prove: 230 Vitest + 131 Playwright, due passate verdi; build e gitleaks puliti.
+- [x] Passo 9 (20/11): prova automatica `e2e/immagini-modelli.spec.ts` (IM01 file in `public/`, IM02 caricamento nel browser con `naturalWidth > 0`) per ogni esercizio del Modello 1 e del Modello 2, le due immagini dei modelli (`public/modelli/`), riscaldamento e circuito. Verificata togliendo per un momento `gb.webp`: entrambe falliscono e dicono quale file manca. Nessuna immagine mancante. Prove: 230 Vitest + 133 Playwright, due passate verdi.
+- [ ] Passo 10: rilascio (merge in `main` solo con conferma esplicita). Controlli a mano col telefono scollegato: schermo acceso durante il circuito, modalità aereo (`docs/rilascio-4bis.md`).
+  - **Piano di rilascio mostrato il 20/11, in attesa dell'OK** (14 punti): (1) prove e controlli sul ramo, annotare `main` = 01f7f1f; (2-3) utente: screenshot dei Grafici, Info → Esporta backup, file in `dati-locali/`; (4) `npm run prova-a-secco` → 0 differenze, conteggio sedute confrontato dall'utente; (5) facoltativo: import del backup in Chrome in incognito; (6) `git switch main`, `git pull --ff-only`, `git merge --no-ff fase-4bis`, controllo autori noreply, prove e build, `git push origin main`; (7) Actions verde (`gh run watch`); (8) controllo del sito in incognito; (9-10) aggiornamento del telefono: nessun primo avvio, A-B-C, «Separa i lati» acceso, lato sinistro, Storico intatto, Grafici uguali; (11) secondo telefono: installazione, Modello 2, «Inizia»; (12) controlli a telefono scollegato; (13) verifica della versione pubblicata e documenti; (14) ritorno indietro: backup grezzo / Importa backup / `git revert -m 1` del merge + cancellare i dati del sito e importare il backup.
+  - Da chiarire con l'utente: cosa intende per «chiusura della Fase 7» al punto 13 (la Fase 7 risulta già chiusa il 20/11).
+- [ ] Prima di aggiornare il telefono attuale: **backup esportato e verificato**, poi prova a secco (`dati-locali/` → `npm run prova-a-secco` → 0 differenze; controlla anche che «Separa i lati» risulti acceso; se lo storico è vuoto basta il backup). Rinviata il 20/11: storico del telefono ancora vuoto.
+
+## Idea futura: Grafici caricati solo quando si aprono
+Caricare il codice dei Grafici (e la libreria dei grafici) solo all'apertura della scheda Grafici, per un avvio più leggero. Fuori dalla Fase 4-bis: nessuna funzione nuova.
+
+## Idea futura: editor delle schede (solo se servirà)
+Tolto dalla Fase 4-bis il 20/11. Era: da 1 a 4 schede (rinomina, aggiungi, elimina); per ogni scheda riscaldamento, circuito, note e posizione; voci con ↑ ↓ ✕, «superset con il successivo», serie, range, recupero, partenza, attrezzo e note; esercizi già presenti disattivati nel catalogo; bloccato per la scheda con un allenamento in corso; prova con un nome di 6 lettere larghe («MMMMMM») nella barra a 360 px. Fino ad allora nessuna schermata, pulsante o testo deve farne capire l'esistenza.
+
+## Prova sul telefono in Wi-Fi (facoltativa: la prova del passo 5 è stata fatta via USB)
+1. Sul PC, nella cartella del progetto: `npm run dev -- --host` (il server si apre anche alla rete di casa).
+2. Sul telefono, in Chrome (stessa rete Wi-Fi): `http://<indirizzo del PC>:5173/allenamento/`. L'indirizzo del PC lo mostra Vite nella riga «Network» (può cambiare da un giorno all'altro).
+3. È un indirizzo **diverso** da quello dell'app installata (`https://teachertrip.github.io/allenamento/`): ogni indirizzo ha i suoi dati, quindi l'app installata e il suo storico **non vengono toccati**. Qui si parte da zero: compare il primo avvio.
+4. **Limiti di http in rete locale**: niente service worker (quindi niente installazione, uso offline e avviso di aggiornamento) e niente Wake Lock (lo schermo si può spegnere, anche col circuito). La prova riguarda **solo l'interfaccia**.
+5. Cosa controllare:
+   - primo avvio: **una sola schermata**, senza nome né lato; le due immagini nitide; «Inizia» spento finché non si tocca un modello; testi leggibili a schermo stretto;
+   - chiudere Chrome dopo aver toccato un modello ma prima di «Inizia», e riaprire: nessun modello scelto, «Inizia» spento;
+   - Modello 2: barra A, B, C, D; nella seduta A goblet squat con 6 kg in grigio;
+   - lati, interruttore **spento** (di serie): rematore, split squat, side plank… con un solo ✓ per serie, «per lato» accanto alle ripetizioni, nessun «sinistro/destro»;
+   - Info → accendere **«Separa i lati»**: compare «Lato di partenza»; scegliere Destro → nella seduta i tasti sono [Dx] [Sx] e il testo dice «Parti dal lato destro»; rispegnere → torna un solo ✓;
+   - con un allenamento avviato, in Info «Separa i lati» è bloccato e il messaggio dice quale scheda;
+   - Info: interruttore Settimane 1-2 («La data parte dalla prima seduta salvata»); salvare una seduta → «Attive dal gg/mm»;
+   - Info → «Ricarica un modello»: solo Modello 1 e Modello 2; tre pulsanti; con «Annulla» non cambia niente; con «Sostituisci» la barra torna A, B, C e lo Storico tiene la seduta di prima;
+   - con un allenamento avviato, «Ricarica un modello» mostra il blocco con il nome della scheda.
+6. Se Windows chiede il permesso del firewall per Node.js: solo reti **private**.
+
 ## Da decidere
+- [ ] **Prova instabile CI01** (protocollo del circuito): fallita 1 volta sotto carico il 20/11, poi sempre verde. **Se si ripete, va corretta prima del rilascio** (passo 10).
+- [ ] `docs/piano-4bis.md` usa ancora «/lato» come abbreviazione nella tabella dei modelli (solo documentazione; l'app dice «per lato»).
 - [ ] Stringere il firewall: una sola regola Allow per node.exe (profilo Private, solo TCP 5173). I comandi li esegue l'utente come amministratore.
 - [ ] Valutare la notifica di fine recupero (vibra/suona anche a telefono bloccato).
 

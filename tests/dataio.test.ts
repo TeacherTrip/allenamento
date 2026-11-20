@@ -3,6 +3,8 @@ import { buildBackup, detectFormat, parseBackup } from '../src/logic/backup';
 import { convertPrototype, parseProtoLoad, protoImportMessage } from '../src/logic/importPrototype';
 import { DEFAULT_SETTINGS, type Session, type SetLog } from '../src/db/models';
 import { EXERCISE_BY_ID } from '../src/program/program';
+import { model1Programs, upgradeSession } from '../src/db/migrate';
+import { programsFromTemplate } from '../src/db/db';
 
 // Dati INVENTATI per i test.
 const sessions: Session[] = [{ id: 'x1', date: '2026-02-02T09:00:00.000Z', day: 'A', phase1: true, notes: 'prova', programVersion: 1 }];
@@ -10,16 +12,27 @@ const setLogs: SetLog[] = [{ id: 'l1', sessionId: 'x1', exerciseId: 'gsq', setIn
 
 describe('backup TeacherGym', () => {
   it('export → import restituisce gli stessi dati', () => {
-    const file = JSON.parse(JSON.stringify(buildBackup(sessions, setLogs, DEFAULT_SETTINGS)));
+    const v2 = sessions.map(upgradeSession);
+    const file = JSON.parse(JSON.stringify(buildBackup(v2, setLogs, DEFAULT_SETTINGS, model1Programs())));
     expect(detectFormat(file)).toBe('teachergym');
     const back = parseBackup(file);
-    expect(back.sessions).toEqual(sessions);
+    expect(back.sessions).toEqual(v2);
     expect(back.setLogs).toEqual(setLogs);
     expect(back.settings).toEqual(DEFAULT_SETTINGS);
+    expect(back.programs).toEqual(model1Programs());
+  });
+
+  it('backup fatto col Modello 2: il modello scelto e le sue schede tornano con l’import', () => {
+    const programs = programsFromTemplate('m2');
+    const settings = { ...DEFAULT_SETTINGS, templateId: 'm2' as const, onboarded: true };
+    const back = parseBackup(JSON.parse(JSON.stringify(buildBackup([], [], settings, programs))));
+    expect(back.settings?.templateId).toBe('m2');
+    expect(back.settings?.onboarded).toBe(true);
+    expect(back.programs).toEqual(programs);
   });
 
   it('rifiuta serie che puntano a sedute inesistenti', () => {
-    const file = buildBackup(sessions, [{ ...setLogs[0], sessionId: 'nope' }], DEFAULT_SETTINGS);
+    const file = buildBackup(sessions, [{ ...setLogs[0], sessionId: 'nope' }], DEFAULT_SETTINGS, model1Programs());
     expect(() => parseBackup(file)).toThrow(/senza seduta/);
   });
 

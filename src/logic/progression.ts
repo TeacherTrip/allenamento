@@ -14,6 +14,7 @@ export function reachedTop(ex: Exercise, lastSets: SetValues[]): boolean {
 
 /** Testo del suggerimento di progressione, o null se non serve. */
 export function progressionHint(ex: Exercise, lastSets: SetValues[]): string | null {
+  if (ex.kind === 'mobility') return null;
   if (!reachedTop(ex, lastSets)) return null;
   const loads = lastSets.map((s) => s.load).filter((x): x is number => x != null);
 

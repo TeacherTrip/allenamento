@@ -47,7 +47,7 @@ Tolto dalla Fase 4-bis il 20/11. Era: da 1 a 4 schede (rinomina, aggiungi, elimi
 6. Se Windows chiede il permesso del firewall per Node.js: solo reti **private**.
 
 ## Da decidere
-- [ ] Prova CI01 (protocollo del circuito) caduta una volta sola sotto carico il 20/11, non ripetuta: se ricapita, renderla stabile.
+- [ ] **Prova instabile CI01** (protocollo del circuito): fallita 1 volta sotto carico il 20/11, poi sempre verde. **Se si ripete, va corretta prima del rilascio** (passo 10).
 - [ ] `docs/piano-4bis.md` usa ancora «/lato» come abbreviazione nella tabella dei modelli (solo documentazione; l'app dice «per lato»).
 - [ ] Stringere il firewall: una sola regola Allow per node.exe (profilo Private, solo TCP 5173). I comandi li esegue l'utente come amministratore.
 - [ ] Valutare la notifica di fine recupero (vibra/suona anche a telefono bloccato).

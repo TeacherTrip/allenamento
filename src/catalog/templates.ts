@@ -147,9 +147,6 @@ const MODEL_2: Program[] = [
   },
 ];
 
-/** «Schede vuote»: una scheda "A" senza voci (gli esercizi si aggiungono dall'editor). */
-const EMPTY: Program[] = [{ id: 'A', order: 1, name: 'A', warmup: true, circuit: 'no', items: [] }];
-
 /**
  * Modelli proposti al primo avvio e in Info → «Ricarica un modello».
  * Gli id 'A'/'B'/… qui sono solo segnaposto: le schede create da un modello ricevono sempre un id generato.
@@ -158,7 +155,6 @@ const EMPTY: Program[] = [{ id: 'A', order: 1, name: 'A', warmup: true, circuit:
 export const TEMPLATES: Template[] = [
   { id: 'm1', label: 'Modello 1', image: 'modelli/modello-1.webp', programs: MODEL_1 },
   { id: 'm2', label: 'Modello 2', image: 'modelli/modello-2.webp', programs: MODEL_2 },
-  { id: 'empty', label: 'Schede vuote', programs: EMPTY },
 ];
 
 export const TEMPLATE_BY_ID = Object.fromEntries(TEMPLATES.map((t) => [t.id, t])) as Record<string, Template>;

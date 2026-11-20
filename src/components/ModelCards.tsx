@@ -20,13 +20,7 @@ export function ModelCards({ onChoose, selected }: { onChoose: (id: TemplateId) 
           aria-pressed={selected === t.id}
           onClick={() => onChoose(t.id)}
         >
-          {t.image ? (
-            <img src={publicUrl(t.image)} alt={`Illustrazione del ${t.label}`} width={800} height={597} />
-          ) : (
-            <span className="model-empty" aria-hidden="true">
-              ＋
-            </span>
-          )}
+          {t.image && <img src={publicUrl(t.image)} alt={`Illustrazione del ${t.label}`} width={800} height={597} />}
           <b>{t.label}</b>
           <ul>
             {t.programs.map((p) => (

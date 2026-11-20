@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {
   db,
+  isStarted,
   markBackupDone,
   mergeSessions,
   reloadTemplate,
-  ReloadBlockedError,
+  setSeparateSides,
+  StartedWorkoutError,
   replaceAllData,
   setPhase1,
   setSetting,
@@ -53,15 +55,16 @@ export function InfoScreen({ sessions, logs, settings, programs, persist, toast 
   const [autoRest, setAutoRest] = useState(settings.autoRest);
   useEffect(() => setAutoRest(settings.autoRest), [settings.autoRest]);
   const [phase1, setPhase1Local] = useState(settings.phase1);
+  // «Separa i lati»: valore locale aggiornato subito al tocco (come gli altri interruttori)
+  const [sides, setSidesLocal] = useState(settings.separateSides);
+  useEffect(() => setSidesLocal(settings.separateSides), [settings.separateSides]);
   useEffect(() => setPhase1Local(settings.phase1), [settings.phase1]);
-  const [userName, setUserName] = useState(settings.userName);
-  useEffect(() => setUserName(settings.userName), [settings.userName]);
   // «Ricarica un modello»: elenco aperto e modello scelto (finestra di conferma)
   const [reloadOpen, setReloadOpen] = useState(false);
   const [confirmId, setConfirmId] = useState<TemplateId | null>(null);
   const [reloading, setReloading] = useState(false);
-  // allenamento avviato (cronometro o circuito): blocca la ricarica
-  const startedDraft = useLiveQuery(async () => (await db.drafts.toArray()).find((d) => !!d.startedAt || !!d.circuitRun) ?? null, []);
+  // allenamento avviato (cronometro o circuito): blocca la ricarica e «Separa i lati»
+  const startedDraft = useLiveQuery(async () => (await db.drafts.toArray()).find(isStarted) ?? null, []);
   const startedName = startedDraft ? (programs.find((p) => p.id === startedDraft.day)?.name ?? startedDraft.day) : null;
 
   useEffect(() => {
@@ -97,7 +100,7 @@ export function InfoScreen({ sessions, logs, settings, programs, persist, toast 
     } catch (e) {
       setConfirmId(null);
       alert(
-        e instanceof ReloadBlockedError
+        e instanceof StartedWorkoutError
           ? e.message
           : `Ricarica non riuscita: le schede non sono cambiate. ${e instanceof Error ? e.message : ''}`.trim(),
       );
@@ -131,36 +134,6 @@ export function InfoScreen({ sessions, logs, settings, programs, persist, toast 
   return (
     <>
       <h2>Impostazioni</h2>
-      <label className="field">
-        <span>Nome (resta solo su questo telefono)</span>
-        <input
-          type="text"
-          value={userName}
-          maxLength={30}
-          autoComplete="off"
-          aria-label="Nome"
-          onChange={(e) => setUserName(e.target.value)}
-          onBlur={() => {
-            if (userName.trim() !== settings.userName) void setSetting('userName', userName.trim());
-          }}
-        />
-      </label>
-      <div className="box">
-        <b>Lato di partenza</b>
-        Negli esercizi a un lato si comincia da:
-        <div className="row2 sides" role="group" aria-label="Lato di partenza">
-          {(['left', 'right'] as const).map((side) => (
-            <button
-              key={side}
-              className={`ghost${settings.startSide === side ? ' on' : ''}`}
-              aria-pressed={settings.startSide === side}
-              onClick={() => void setSetting('startSide', side)}
-            >
-              {side === 'left' ? 'Sinistro' : 'Destro'}
-            </button>
-          ))}
-        </div>
-      </div>
       <label className="toggle">
         <input
           type="checkbox"
@@ -192,6 +165,51 @@ export function InfoScreen({ sessions, logs, settings, programs, persist, toast 
         />
         Recupero automatico (parte quando confermi una serie con ✓)
       </label>
+      <label className="toggle">
+        <input
+          type="checkbox"
+          checked={sides}
+          disabled={!!startedName}
+          onChange={(e) => {
+            const on = e.target.checked;
+            setSidesLocal(on);
+            setSeparateSides(on).catch((err: unknown) => {
+              setSidesLocal(!on); // rifiutato (allenamento avviato nel frattempo): torna com'era
+              alert(err instanceof Error ? err.message : String(err));
+            });
+          }}
+        />
+        <span>
+          Separa i lati
+          <span className="muted small block">
+            {sides
+              ? 'Esercizi a un arto: un tasto per lato, dal lato di partenza.'
+              : 'Esercizi a un arto: un solo ✓ per serie, ripetizioni e kg per lato.'}
+          </span>
+        </span>
+      </label>
+      {startedName && (
+        <div className="warnbox" data-testid="sides-blocked">
+          C’è un allenamento avviato sulla scheda <b>{startedName}</b>: concludilo o annullalo prima di cambiare «Separa i lati».
+        </div>
+      )}
+      {sides && (
+        <div className="box" data-testid="start-side">
+          <b>Lato di partenza</b>
+          <div className="row2 sides" role="group" aria-label="Lato di partenza">
+            {(['left', 'right'] as const).map((side) => (
+              <button
+                key={side}
+                className={`ghost${settings.startSide === side ? ' on' : ''}`}
+                aria-pressed={settings.startSide === side}
+                onClick={() => void setSetting('startSide', side)}
+              >
+                {side === 'left' ? 'Sinistro' : 'Destro'}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="box wakelock-info">
         {wakeLockSupported()
           ? 'Schermo sempre acceso: supportato (attivo durante l’allenamento).'
@@ -301,7 +319,7 @@ export function InfoScreen({ sessions, logs, settings, programs, persist, toast 
           <li><strong>RIR 2</strong> (Reps In Reserve): chiudi la serie quando ne avresti ancora 2.</li>
           <li><strong>Settimane 1-2</strong>: 2 serie, RIR 3 (interruttore qui sopra, in Impostazioni).</li>
           <li><strong>Doppia progressione</strong>: quando arrivi al massimo del range su tutte le serie, aumenta il carico o passa alla variante più difficile.</li>
-          <li><strong>Esercizi a un arto</strong>: parti dal lato scelto in Impostazioni, stesse reps con l’altro.</li>
+          <li><strong>Esercizi a un arto</strong>: ripetizioni e kg per lato, stesse reps con l’altro lato.</li>
           <li><strong>Superset</strong> (stessa lettera, es. 2a/2b): esercizi di seguito, recupero solo dopo la coppia.</li>
           <li><strong>Gambe senza carico extra</strong> (quando 14 kg diventa leggero): discesa in 4-5 s, pausa 2 s in basso, 1,5 reps.</li>
           <li><strong>Dolore articolare</strong> (non fatica muscolare): fermati e cambia esercizio.</li>

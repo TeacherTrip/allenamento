@@ -74,10 +74,16 @@ export interface Settings {
   sessionsSinceBackup: number;
   /** Il recupero parte da solo quando si conferma una serie con ✓. */
   autoRest: boolean;
-  /** Nome di chi usa l'app: resta solo su questo dispositivo (e nei suoi backup). */
+  /** Non più usato nell'interfaccia (20/11): resta nei dati solo perché i backup già fatti lo contengono. */
   userName: string;
-  /** Lato da cui partono gli esercizi unilaterali. */
+  /** Lato da cui partono gli esercizi a un arto (conta solo con `separateSides`). */
   startSide: 'left' | 'right';
+  /**
+   * «Separa i lati» (Info): spento = un solo ✓ per serie, valori «per lato», nessuna indicazione di lato;
+   * acceso = tasti [Sx] [Dx] dal lato di partenza. I dati salvati sono uguali nei due modi (valori per lato).
+   * Spento sulle installazioni nuove; acceso dalla migrazione sulle installazioni esistenti (come prima).
+   */
+  separateSides: boolean;
   /** Modello da cui sono nate le schede (null = nessuno: primo avvio da fare). */
   templateId: TemplateId | null;
   /** Primo avvio già fatto (o installazione esistente migrata). */
@@ -99,6 +105,7 @@ export const DEFAULT_SETTINGS: Settings = {
   autoRest: true,
   userName: '',
   startSide: 'left',
+  separateSides: false,
   templateId: null,
   onboarded: false,
   phase1Since: null,

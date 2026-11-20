@@ -58,14 +58,20 @@ function v1WithSessions() {
   return { sessions, setLogs, drafts: [], settings: [setting('phase1', true)] as SettingRow[] };
 }
 
-test('F01 profilo pulito: primo avvio, immagini dei modelli caricate, nessuna scheda prima di «Inizia», Modello 2', async ({ page }) => {
+test('F01 profilo pulito: una sola schermata, immagini dei modelli caricate, nessuna scheda prima di «Inizia», Modello 2', async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto('./');
   const fr = page.getByTestId('firstrun');
   await expect(fr).toBeVisible();
   await expect(page.locator('nav.tabbar')).toHaveCount(0);
-  await page.getByLabel('Nome').fill('Prova');
-  await page.getByRole('button', { name: 'Avanti' }).click();
+  // niente nome né lato: solo i modelli, la riga sulle Settimane 1-2 e «Inizia» (disattivato finché non si sceglie)
+  await expect(fr.locator('input')).toHaveCount(0);
+  await expect(fr.getByRole('button', { name: /Sinistro|Destro|Avanti|Indietro/ })).toHaveCount(0);
+  await expect(fr.locator('[data-testid^="model-"]')).toHaveCount(2);
+  await expect(page.getByRole('button', { name: 'Inizia', exact: true })).toBeDisabled();
+  await expect(page.getByTestId('firstrun-phase1')).toHaveText(
+    'Le prime 2 settimane: 2 serie per esercizio e più margine (RIR 3, cioè 3 ripetizioni di riserva). Si cambia in Info.',
+  );
 
   // le due immagini sono visibili e caricate davvero
   for (const id of ['m1', 'm2']) {
@@ -73,16 +79,13 @@ test('F01 profilo pulito: primo avvio, immagini dei modelli caricate, nessuna sc
     await expect(img).toBeVisible();
     await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth)).toBe(800);
   }
+  await expect(page.getByTestId('model-m1')).toContainText('Modello 1');
   await expect(page.getByTestId('model-m1')).toContainText('Scheda A — Full body · 6 esercizi');
+  await expect(page.getByTestId('model-m2')).toContainText('Modello 2');
   await expect(page.getByTestId('model-m2')).toContainText('Scheda D — leggera (~25 min) · 6 esercizi');
-  await expect(page.getByTestId('model-empty')).toContainText('Scheda A · nessun esercizio');
-  await expect(page.getByTestId('model-empty').locator('img')).toHaveCount(0);
 
   await page.getByTestId('model-m2').click();
-  await expect(page.getByTestId('firstrun-phase1')).toHaveText(
-    'Le prime 2 settimane: 2 serie per esercizio e più margine (RIR 3, cioè 3 ripetizioni di riserva). Si cambia in Info.',
-  );
-  await page.getByRole('button', { name: 'Destro' }).click();
+  await expect(page.getByTestId('model-m2')).toHaveAttribute('aria-pressed', 'true');
   // fin qui niente di salvato
   expect(await programsOf(page)).toEqual([]);
   expect((await settingsOf(page)).onboarded).toBeUndefined();
@@ -94,8 +97,9 @@ test('F01 profilo pulito: primo avvio, immagini dei modelli caricate, nessuna sc
   expect(programs.map((p) => p.name)).toEqual(['A', 'B', 'C', 'D']);
   for (const p of programs) expect(['A', 'B', 'C', 'D']).not.toContain(p.id);
   const s = await settingsOf(page);
-  expect([s.onboarded, s.templateId, s.startSide, s.userName]).toEqual([true, 'm2', 'right', 'Prova']);
+  expect([s.onboarded, s.templateId]).toEqual([true, 'm2']);
   expect(s.phase1Since).toBeUndefined(); // nessuna seduta ancora
+  expect(s.separateSides).toBeUndefined(); // vale il predefinito: spento
 
   // la seduta A del Modello 2 si apre: primo esercizio goblet squat con 6 kg di partenza
   await goTab(page, 'A');
@@ -107,13 +111,11 @@ test('F01 profilo pulito: primo avvio, immagini dei modelli caricate, nessuna sc
 
 test('F02 primo avvio interrotto: alla riapertura riparte da capo, senza dati parziali', async ({ page }) => {
   await page.goto('./');
-  await page.getByLabel('Nome').fill('Prova');
-  await page.getByRole('button', { name: 'Avanti' }).click();
   await page.getByTestId('model-m1').click();
-  await page.getByRole('button', { name: 'Destro' }).click();
   await page.reload(); // app chiusa prima di «Inizia»
-  await expect(page.getByTestId('firstrun')).toContainText('Passo 1 di 3');
-  await expect(page.getByLabel('Nome')).toHaveValue('');
+  await expect(page.getByTestId('firstrun')).toBeVisible();
+  await expect(page.getByTestId('model-m1')).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByRole('button', { name: 'Inizia', exact: true })).toBeDisabled();
   const db = await readDb(page);
   expect(db.stores.programs).toEqual([]);
   expect(db.stores.settings).toEqual([]);
@@ -174,7 +176,7 @@ test('F06 «Non ancora»: l’avviso sparisce e non torna alla riapertura', asyn
   expect(Date.parse(s.phase1SnoozedUntil as string) - Date.now()).toBeGreaterThan(6.9 * 24 * 60 * 60 * 1000);
 });
 
-test('F07 Info: nome e lato di partenza salvati; riattivare Settimane 1-2 azzera data e rinvio', async ({ page }) => {
+test('F07 Info: niente nome; riattivare Settimane 1-2 azzera data e rinvio', async ({ page }) => {
   await openApp(page);
   await putSettings(page, [
     setting('phase1', false),
@@ -182,15 +184,13 @@ test('F07 Info: nome e lato di partenza salvati; riattivare Settimane 1-2 azzera
     setting('phase1SnoozedUntil', daysAgo(-3)),
   ]);
   await goTab(page, 'Info');
-  await page.getByLabel('Nome').fill('Altro nome');
-  await page.getByLabel('Nome').blur();
-  await page.getByRole('group', { name: 'Lato di partenza' }).getByRole('button', { name: 'Destro' }).click();
+  await expect(page.getByLabel('Nome')).toHaveCount(0);
   await page.getByRole('checkbox', { name: /Settimane 1-2/ }).check();
   await expect(page.getByTestId('phase1-since')).toHaveText('La data parte dalla prima seduta salvata');
   await expect.poll(async () => {
     const s = await settingsOf(page);
-    return [s.userName, s.startSide, s.phase1, s.phase1Since, s.phase1SnoozedUntil];
-  }).toEqual(['Altro nome', 'right', true, null, null]);
+    return [s.phase1, s.phase1Since, s.phase1SnoozedUntil];
+  }).toEqual([true, null, null]);
 });
 
 test('F08 Ricarica un modello: tre pulsanti; Annulla non cambia niente; Sostituisci → Modello 2, storico separato, nessun errore', async ({ page }) => {

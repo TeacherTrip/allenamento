@@ -51,7 +51,7 @@ export interface SettingRow {
 
 /**
  * Impostazioni da AGGIUNGERE per un'installazione esistente (solo le chiavi che mancano):
- * primo avvio già fatto, Modello 1, lato sinistro (com'era prima), data di "Settimane 1-2".
+ * primo avvio già fatto, Modello 1, lati separati dal sinistro (com'era prima), data di "Settimane 1-2".
  */
 export function settingsToAdd(rows: SettingRow[], sessions: Pick<Session, 'date'>[]): SettingRow[] {
   const has = new Map(rows.map((r) => [r.key, r.value]));
@@ -62,6 +62,7 @@ export function settingsToAdd(rows: SettingRow[], sessions: Pick<Session, 'date'
   add('onboarded', true);
   add('templateId', 'm1');
   add('startSide', 'left');
+  add('separateSides', true); // prima della Fase 4-bis i lati erano separati: l'app resta com'era
   add('userName', '');
   const phase1 = (has.has('phase1') ? has.get('phase1') : DEFAULT_SETTINGS.phase1) as boolean;
   if (phase1) {

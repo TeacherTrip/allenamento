@@ -307,7 +307,7 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
       )}
       {exercises.length === 0 && (
         <div className="box" data-testid="empty-program">
-          Questa scheda non ha esercizi. Aggiungi esercizi da <b>Info</b>.
+          Questa scheda non ha esercizi.
         </div>
       )}
       {program.notes && program.notesPosition !== 'bottom' && <ProgramNotes text={program.notes} />}
@@ -372,6 +372,7 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
             nextBadge={nextBadge}
             manualRestSec={manualRest(flow, idx)}
             startSide={startSide}
+            separateSides={settings.separateSides}
             onSetChange={(i, e) => setEntry(r.ex.id, i, e)}
             onExtraChange={(k, e) => setExtra(r.ex.id, (arr) => ((arr[k] = e), arr))}
             onExtraRemove={(k) => setExtra(r.ex.id, (arr) => (arr.splice(k, 1), arr))}

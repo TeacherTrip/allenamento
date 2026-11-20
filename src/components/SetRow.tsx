@@ -23,18 +23,21 @@ interface Props {
   /** Serie extra non confermata: si può eliminare. */
   onRemove?: () => void;
   extra?: boolean;
+  /** «Separa i lati» (Info). */
+  separateSides?: boolean;
 }
 
 /**
  * Una serie: campi della metrica + conferma. Grigio = da confermare, pieno = confermato.
- * Esercizi con lati separati (confirmSides): due tasti affiancati [Sx] [Dx].
+ * Esercizi con lati separati (confirmSides) e «Separa i lati» acceso: due tasti affiancati [Sx] [Dx].
  */
-export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, onRemove, extra, startSide = 'left' }: Props) {
+export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, onRemove, extra, startSide = 'left', separateSides = false }: Props) {
   const confirmed = entry != null && !entry.pending;
-  const leftDone = !confirmed && !!entry?.leftDone;
+  // tasti [Sx] [Dx] solo con «Separa i lati» acceso; spento, un «primo lato fatto» rimasto in bozza è solo «da confermare»
+  const sides = !!ex.confirmSides && separateSides;
+  const leftDone = sides && !confirmed && !!entry?.leftDone;
   const shown: DraftEntry = entry ? { load: entry.load, reps: entry.reps, seconds: entry.seconds } : valuesToEntry(prefill);
   const hasAny = [shown.load, shown.reps, shown.seconds].some((x) => x != null && x !== '');
-  const sides = !!ex.confirmSides;
   // `leftDone` nella bozza vuol dire "primo lato fatto" (il primo è quello di partenza)
   const [firstName, secondName] = startSide === 'left' ? ['sinistro', 'destro'] : ['destro', 'sinistro'];
   const [firstShort, secondShort] = startSide === 'left' ? ['Sx', 'Dx'] : ['Dx', 'Sx'];

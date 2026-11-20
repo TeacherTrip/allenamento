@@ -118,11 +118,10 @@ describe('modelli: regole comuni', () => {
     }
   });
 
-  it('titoli neutri e immagini dei modelli in public/modelli', () => {
+  it('solo Modello 1 e Modello 2 (niente «Schede vuote»), titoli neutri, immagini in public/modelli', () => {
     expect(TEMPLATES.map((t) => [t.id, t.label, t.image])).toEqual([
       ['m1', 'Modello 1', 'modelli/modello-1.webp'],
       ['m2', 'Modello 2', 'modelli/modello-2.webp'],
-      ['empty', 'Schede vuote', undefined],
     ]);
   });
 

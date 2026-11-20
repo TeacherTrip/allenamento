@@ -84,7 +84,7 @@ export interface Program {
   items: ProgramItem[];
 }
 
-export type TemplateId = 'm1' | 'm2' | 'empty';
+export type TemplateId = 'm1' | 'm2';
 
 export interface Template {
   id: TemplateId;

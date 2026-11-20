@@ -331,10 +331,6 @@ ul { margin: 4px 0; padding-left: 18px; }
 }
 .model.on { border-color: var(--ac); }
 .model img { display: block; width: 100%; height: auto; aspect-ratio: 800 / 597; object-fit: cover; background: #fff; }
-.model-empty {
-  display: flex; align-items: center; justify-content: center; height: 96px;
-  background: var(--card2); color: var(--mut); font-size: 40px;
-}
 .model b { display: block; margin: 10px 12px 4px; font-size: 17px; }
 .model ul { margin: 0; padding: 0 12px 0 30px; color: var(--mut); font-size: 14px; }
 .overlay {

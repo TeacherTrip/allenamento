@@ -1,6 +1,6 @@
 /**
  * Passo 4 della Fase 4-bis: la seduta è guidata dalle schede salvate nel database.
- * Le schede di prova vengono scritte direttamente in IndexedDB (l'editor arriva al passo 6).
+ * Le schede di prova vengono scritte direttamente in IndexedDB (l'app non ha un editor delle schede).
  * Dati e nomi INVENTATI.
  */
 import { expect, test, type Page } from '@playwright/test';
@@ -74,7 +74,7 @@ test('D01 superset con serie diverse: gsq 3 + cr 2 → in coppia per 2 giri, poi
 test('D02 recupero "–": nessun timer automatico, niente "rec." e pulsante manuale da 60 s', async ({ page }) => {
   await useProgramsIn(page, [program('p1', 'Prova', 1, [item('hfs', 2, [30, 40], null), item('pa', 2, [12, 15], 60)])]);
   await expect(card(page, 'hfs').locator('.meta')).not.toContainText('rec.');
-  await expect(card(page, 'hfs').locator('.meta')).toContainText('2 × 30-40 s /lato');
+  await expect(card(page, 'hfs').locator('.meta')).toContainText('2 × 30-40 s per lato');
   await expect(card(page, 'hfs').getByRole('button', { name: 'Avvia recupero 60s' })).toBeVisible();
   await typeSet(page, 'hfs', 0, { sec: 30 });
   await checkSet(page, 'hfs', 0);
@@ -83,9 +83,9 @@ test('D02 recupero "–": nessun timer automatico, niente "rec." e pulsante manu
   await expect(card(page, 'hfs').locator('.hint')).toHaveCount(0);
 });
 
-test('D03 scheda senza esercizi: messaggio "Aggiungi esercizi da Info" e Inizia disattivato', async ({ page }) => {
+test('D03 scheda senza esercizi (es. da un backup): messaggio neutro, nessun rimando a un editor, Inizia disattivato', async ({ page }) => {
   await useProgramsIn(page, [program('p1', 'Vuota', 1, [])]);
-  await expect(page.getByTestId('empty-program')).toContainText('Aggiungi esercizi da Info');
+  await expect(page.getByTestId('empty-program')).toHaveText('Questa scheda non ha esercizi.');
   await expect(page.getByRole('button', { name: '▶ Inizia allenamento' })).toBeDisabled();
   await expect(page.locator('section.ex')).toHaveCount(0);
 });
@@ -153,8 +153,11 @@ test('D05 note: catalogo + nota della voce; note della scheda in cima o in fondo
   expect(await bottom.evaluate((n) => !!(n.compareDocumentPosition(document.querySelector('section.ex')!) & Node.DOCUMENT_POSITION_PRECEDING))).toBe(true);
 });
 
-test('D06 lato di partenza destro: testi e ordine dei tasti dei lati', async ({ page }) => {
-  await useProgramsIn(page, [program('p1', 'Prova', 1, [item('row', 2, [8, 12], 75), item('bdog', 2, [6, 8], 60)])], { startSide: 'right' });
+test('D06 lati separati, lato di partenza destro: testi e ordine dei tasti dei lati', async ({ page }) => {
+  await useProgramsIn(page, [program('p1', 'Prova', 1, [item('row', 2, [8, 12], 75), item('bdog', 2, [6, 8], 60)])], {
+    startSide: 'right',
+    separateSides: true,
+  });
   await expect(card(page, 'row')).toContainText('Parti dal lato destro: tocca Dx, poi Sx senza pausa');
   await expect(card(page, 'bdog')).toContainText('Parti dal lato destro, lati alternati');
   const r = row(page, 'row', 0);
@@ -210,7 +213,7 @@ test('D09 esercizi nuovi del catalogo nella seduta: immagine, unilaterale per la
   autoDialogs(page);
   await useProgramsIn(page, [program('p1', 'Prova', 1, [item('ss', 2, [8, 10], 75, { startValue: 0 }), item('cls', 2, [12, 15], 75), item('cr', 2, [15, 20], 90)])]);
   await expect(card(page, 'ss').locator('.thumb img')).toHaveAttribute('src', /esercizi\/ss\.webp$/);
-  await expect(card(page, 'ss').locator('.meta')).toContainText('2 × 8-10 /lato');
+  await expect(card(page, 'ss').locator('.meta')).toContainText('2 × 8-10 per lato');
   await logSet(page, 'ss', 0, { kg: 0, reps: 8 });
   await logSet(page, 'cls', 0, { reps: 12 });
   await logSet(page, 'cr', 0, { reps: 15 });

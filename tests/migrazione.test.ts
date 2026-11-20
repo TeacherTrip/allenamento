@@ -45,12 +45,13 @@ describe('migrazione v1 → v2: sedute', () => {
 describe('migrazione v1 → v2: impostazioni', () => {
   const sessions = [{ date: '2026-10-05T09:00:00.000Z' }, { date: '2026-09-28T09:00:00.000Z' }];
 
-  it('installazione esistente: primo avvio fatto, Modello 1, lato sinistro, nome vuoto', () => {
+  it('installazione esistente: primo avvio fatto, Modello 1, lati separati dal sinistro, nome vuoto', () => {
     const rows: SettingRow[] = [{ key: 'phase1', value: false }, { key: 'cardioProtocol', value: 2 }];
     expect(settingsToAdd(rows, sessions)).toEqual([
       { key: 'onboarded', value: true },
       { key: 'templateId', value: 'm1' },
       { key: 'startSide', value: 'left' },
+      { key: 'separateSides', value: true },
       { key: 'userName', value: '' },
       { key: 'phase1Since', value: null },
     ]);

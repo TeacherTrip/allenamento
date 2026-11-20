@@ -63,6 +63,7 @@ test('prova a secco: migrazione del backup reale', async ({ page }) => {
   if (missing) problems.push(`${missing} impostazioni cambiate`);
   if (!rows.some((r) => r.key === 'onboarded' && r.value === true)) problems.push('primo avvio non segnato come fatto');
   if (!rows.some((r) => r.key === 'startSide' && r.value === 'left')) problems.push('lato di partenza non sinistro');
+  if (!rows.some((r) => r.key === 'separateSides' && r.value === true)) problems.push('«Separa i lati» non acceso (prima i lati erano separati)');
 
   // PRIMA = DOPO sui valori calcolati: solo i percorsi, mai i valori
   const after = computeStats(afterSessions, afterLogs);

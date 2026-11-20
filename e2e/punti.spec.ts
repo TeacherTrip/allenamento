@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   autoDialogs, card, checkSet, expectToast, fakes, goTab, installFakes, openApp, openHistory, row, saveSession,
-  logSet, setVisibility, typeSet, via,
+  logSet, setVisibility, typeSet, via, separateSidesOn,
 } from './helpers';
 
 // Prove dei punti 1-6 (revisione del 2026-11-19).
@@ -157,6 +157,7 @@ test('A02 AudioContext creato/ripreso al tocco su ✓', async ({ page }) => {
 
 test('U01 per lato: Sx (nessun timer) → Dx (timer); a metà la serie non è confermata', async ({ page }) => {
   await openApp(page, 'B');
+  await separateSidesOn(page, 'B'); // prima della Fase 4-bis i lati erano sempre separati
   const r = row(page, 'bss', 0);
   await typeSet(page, 'bss', 0, { kg: 10, reps: 10 });
   await r.getByRole('button', { name: 'Conferma lato sinistro' }).click();
@@ -172,6 +173,7 @@ test('U01 per lato: Sx (nessun timer) → Dx (timer); a metà la serie non è co
 test('U02 per lato: se salvo con solo il lato sinistro fatto, la serie NON viene salvata', async ({ page }) => {
   const msgs = autoDialogs(page);
   await openApp(page, 'C');
+  await separateSidesOn(page, 'C'); // prima della Fase 4-bis i lati erano sempre separati
   await logSet(page, 'slrdl', 0, { kg: 10, reps: 8 }); // S1 completa
   await typeSet(page, 'slrdl', 1, { kg: 10, reps: 8 });
   await row(page, 'slrdl', 1).getByRole('button', { name: 'Conferma lato sinistro' }).click();

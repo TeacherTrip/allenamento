@@ -49,5 +49,5 @@ export function fmtDuration(sec: number): string {
 export function fmtRange(ex: Exercise): string {
   const [a, b] = ex.repRange;
   const r = a === b ? `${a}` : `${a}-${b}`;
-  return `${r}${ex.metric === 'time' ? ' s' : ''}${ex.unilateral ? ' /lato' : ''}`;
+  return `${r}${ex.metric === 'time' ? ' s' : ''}${ex.unilateral ? ' per lato' : ''}`;
 }

@@ -22,6 +22,8 @@ interface Props {
   /** Recupero del pulsante manuale (quello del blocco, o 60 s). */
   manualRestSec: number;
   startSide: Side;
+  /** «Separa i lati» (Info): spento = nessuna indicazione di lato, un solo ✓ per serie. */
+  separateSides: boolean;
   onSetChange: (index: number, entry: DraftEntry | null) => void;
   onExtraChange: (k: number, entry: DraftEntry | null) => void;
   onExtraRemove: (k: number) => void;
@@ -67,6 +69,7 @@ export function ExerciseCard(p: Props) {
         )}
       </details>
       {ex.unilateral &&
+        p.separateSides &&
         (ex.confirmSides ? (
           <div className="side">
             ↔ Parti dal lato {side}: tocca {first}, poi {second} senza pausa
@@ -84,6 +87,7 @@ export function ExerciseCard(p: Props) {
           prefill={prefill[i]}
           entry={entries[i]}
           startSide={p.startSide}
+          separateSides={p.separateSides}
           onChange={(e) => p.onSetChange(i, e)}
           onCheck={() => p.onSetCheck(i)}
           onLeft={p.onSetLeft}
@@ -98,6 +102,7 @@ export function ExerciseCard(p: Props) {
           prefill={p.extraPrefill[k]}
           entry={entry}
           startSide={p.startSide}
+          separateSides={p.separateSides}
           onChange={(e) => p.onExtraChange(k, e)}
           onCheck={() => p.onSetCheck(count + k)}
           onLeft={p.onSetLeft}

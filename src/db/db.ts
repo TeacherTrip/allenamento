@@ -1,11 +1,12 @@
 import Dexie, { type Table } from 'dexie';
-import type { Draft, DraftEntry, Session, SetLog, Settings } from './models';
+import type { Draft, Session, SetLog, Settings } from './models';
 import { DEFAULT_SETTINGS } from './models';
 import type { Day, Program, TemplateId } from '../program/types';
 import { phase1SinceOnSave, phase1Snooze, phase1Toggle } from '../logic/phase1';
-import { PROGRAM_VERSION, exerciseById } from '../program/program';
+import { logsFromDraft } from '../logic/draftLogs';
+import { PROGRAM_VERSION } from '../program/program';
 import { TEMPLATE_BY_ID } from '../catalog/templates';
-import { entryToValues, hasValues, isComplete, newId } from '../logic/values';
+import { hasValues, newId } from '../logic/values';
 import { model1Programs, settingsToAdd, upgradeSession, type SettingRow } from './migrate';
 
 export const DB_NAME = 'teachergym';
@@ -101,46 +102,56 @@ export function programsFromTemplate(templateId: TemplateId): Program[] {
   }));
 }
 
-/** Scelte del primo avvio: tenute solo in memoria finché non si preme «Inizia». */
-export interface FirstRunChoice {
-  userName: string;
-  startSide: 'left' | 'right';
-  templateId: TemplateId;
-}
-
 /**
- * Primo avvio, al tocco di «Inizia»: schede del modello + impostazioni, tutto in UNA transazione
+ * Primo avvio, al tocco di «Inizia»: schede del modello scelto + impostazioni, tutto in UNA transazione
  * (se si chiude l'app prima, non resta niente di salvato e il primo avvio riparte da capo).
  * Se nel frattempo le schede esistono già (es. un'altra scheda del browser), non le duplica.
  */
-export async function completeFirstRun(choice: FirstRunChoice): Promise<void> {
+export async function completeFirstRun(templateId: TemplateId): Promise<void> {
   await db.transaction('rw', [db.programs, db.settings], async () => {
-    if ((await db.programs.count()) === 0) await db.programs.bulkAdd(programsFromTemplate(choice.templateId));
+    if ((await db.programs.count()) === 0) await db.programs.bulkAdd(programsFromTemplate(templateId));
     await db.settings.bulkPut([
-      { key: 'userName', value: choice.userName.trim() },
-      { key: 'startSide', value: choice.startSide },
-      { key: 'templateId', value: choice.templateId },
+      { key: 'templateId', value: templateId },
       { key: 'onboarded', value: true },
     ]);
   });
 }
 
-/** «Ricarica un modello» rifiutata: c'è un allenamento avviato su questa scheda. */
-export class ReloadBlockedError extends Error {
-  constructor(public readonly programName: string) {
-    super(`C'è un allenamento avviato sulla scheda ${programName}: concludilo o annullalo prima di ricaricare un modello.`);
-    this.name = 'ReloadBlockedError';
+/** Bozza "avviata": cronometro partito o circuito in corso. */
+export const isStarted = (d: { startedAt?: string; circuitRun?: unknown }) => !!d.startedAt || !!d.circuitRun;
+
+/** Cambio di un'impostazione rifiutato: c'è un allenamento avviato su questa scheda. */
+export class StartedWorkoutError extends Error {
+  constructor(public readonly programName: string, what: string) {
+    super(`C'è un allenamento avviato sulla scheda ${programName}: concludilo o annullalo prima di ${what}.`);
+    this.name = 'StartedWorkoutError';
   }
 }
 
-/** Bozza "avviata": cronometro partito o circuito in corso. */
-const isStarted = (d: { startedAt?: string; circuitRun?: unknown }) => !!d.startedAt || !!d.circuitRun;
+/** Nome della scheda con un allenamento avviato (dentro una transazione che legge drafts e programs), o null. */
+async function startedProgramName(): Promise<string | null> {
+  const started = (await db.drafts.toArray()).find(isStarted);
+  if (!started) return null;
+  return (await db.programs.get(started.day))?.name ?? started.day;
+}
+
+/**
+ * «Separa i lati» (Info): bloccato con un allenamento avviato (controllo nella stessa transazione).
+ * Le bozze non avviate restano: spento, un «primo lato fatto» torna semplicemente «da confermare».
+ */
+export async function setSeparateSides(on: boolean): Promise<void> {
+  await db.transaction('rw', [db.drafts, db.programs, db.settings], async () => {
+    const name = await startedProgramName();
+    if (name) throw new StartedWorkoutError(name, 'cambiare «Separa i lati»');
+    await db.settings.put({ key: 'separateSides', value: on });
+  });
+}
 
 /**
  * «Ricarica un modello»: le schede attuali vengono CANCELLATE e sostituite da quelle del modello (id nuovi).
  * Lo storico non si tocca: ogni seduta ha già la sua copia (`day` = id vecchio, `programName`, `plan`).
  * In UNA transazione (o tutto o niente):
- * - bloccata se c'è un allenamento avviato (ReloadBlockedError con il nome della scheda);
+ * - bloccata se c'è un allenamento avviato (StartedWorkoutError con il nome della scheda);
  * - le bozze NON avviate (valori scritti senza Inizia) appartengono a schede che spariscono: cancellate;
  * - `templateId` aggiornato.
  * Fuori dalla transazione (non è IndexedDB) resta solo la scheda aperta in `localStorage`: chi chiama la aggiorna;
@@ -149,11 +160,8 @@ const isStarted = (d: { startedAt?: string; circuitRun?: unknown }) => !!d.start
 export async function reloadTemplate(templateId: TemplateId): Promise<Program[]> {
   const programs = programsFromTemplate(templateId);
   await db.transaction('rw', [db.programs, db.settings, db.drafts], async () => {
-    const started = (await db.drafts.toArray()).find(isStarted);
-    if (started) {
-      const p = await db.programs.get(started.day);
-      throw new ReloadBlockedError(p?.name ?? started.day);
-    }
+    const name = await startedProgramName();
+    if (name) throw new StartedWorkoutError(name, 'ricaricare un modello');
     await db.drafts.clear();
     await db.programs.clear();
     await db.programs.bulkAdd(programs);
@@ -198,24 +206,7 @@ export async function saveSessionFromDraft(
   program: Pick<Program, 'name' | 'items'>,
 ): Promise<number> {
   const sessionId = newId();
-  const logs: SetLog[] = [];
-  const add = (exerciseId: string, entries: (DraftEntry | null)[], firstIndex: number, extra: boolean) => {
-    const ex = exerciseById(exerciseId);
-    if (!ex) return;
-    entries.forEach((entry, k) => {
-      if (!entry || entry.pending) return; // non confermata
-      const v = entryToValues(entry);
-      if (!isComplete(ex.metric, v)) return;
-      logs.push({ id: newId(), sessionId, exerciseId, setIndex: firstIndex + k, confirmed: true, ...v, ...(extra ? { extra } : {}) });
-    });
-  };
-  // serie previste (maxSets = quante ne prevede ora la scheda), poi le extra numerate di seguito
-  for (const [exerciseId, arr] of Object.entries(draft.sets)) {
-    add(exerciseId, arr.slice(0, maxSets[exerciseId] ?? arr.length), 0, false);
-  }
-  for (const [exerciseId, arr] of Object.entries(draft.extra ?? {})) {
-    add(exerciseId, arr, maxSets[exerciseId] ?? 0, true);
-  }
+  const logs = logsFromDraft(draft, maxSets, sessionId);
   const hasCircuit = !!draft.circuit && draft.circuit.completedRounds > 0;
   if (logs.length === 0 && !hasCircuit) return 0;
 

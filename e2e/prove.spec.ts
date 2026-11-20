@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { autoDialogs, card, chip, expectToast, goTab, openApp, openHistory, row, saveSession, setPhase1InInfo, typeSet, checkSet, logSet } from './helpers';
+import { autoDialogs, card, chip, expectToast, goTab, openApp, openHistory, row, saveSession, setPhase1InInfo, typeSet, checkSet, logSet, separateSidesOn } from './helpers';
 
 // Prove 1-19 concordate. Ogni test parte da un profilo pulito (database vuoto).
 // Di default "Settimane 1-2" è attivo: 2 serie per esercizio.
@@ -224,6 +224,7 @@ test('P18 export → elimino tutto → import: torna tutto, compresa la precompi
 
 test('P19 rematore e bulgarian split squat: "Parti dal lato sinistro"', async ({ page }) => {
   await openApp(page);
+  await separateSidesOn(page, 'A'); // prima della Fase 4-bis i lati erano sempre separati
   await expect(card(page, 'row')).toContainText('Parti dal lato sinistro');
   await goTab(page, 'B');
   await expect(card(page, 'bss')).toContainText('Parti dal lato sinistro');

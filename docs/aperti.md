@@ -1,6 +1,6 @@
 # Punti aperti
 
-Stato: app **pubblicata** su https://teachertrip.github.io/allenamento/ e installata sul telefono (versione con commit d66419b, Fase 7). **Fase 4-bis in corso sul ramo `fase-4bis`** (passi 1-5, 7 e 8 fatti, non pubblicati; passo 6 eliminato col cambio di piano del 20/11; prossimo: passo 9). **Fase 7 chiusa il 20/11/2026**: checklist §10 completa (dettagli in `docs/storia.md`). Repository **pubblico**; protezioni GitHub attive (secret scanning + push protection, `main` protetto da force push e cancellazione, Issues/Projects/Wiki spenti).
+Stato: app **pubblicata** su https://teachertrip.github.io/allenamento/ e installata sul telefono (versione con commit d66419b, Fase 7). **Fase 4-bis in corso sul ramo `fase-4bis`** (passi 1-5 e 7-9 fatti, non pubblicati; passo 6 eliminato col cambio di piano del 20/11; prossimo: passo 10, rilascio, solo con l'OK dell'utente). **Fase 7 chiusa il 20/11/2026**: checklist §10 completa (dettagli in `docs/storia.md`). Repository **pubblico**; protezioni GitHub attive (secret scanning + push protection, `main` protetto da force push e cancellazione, Issues/Projects/Wiki spenti).
 
 ## Da fare (utente)
 - [ ] Lista privata di parole: risulta senza voci attive (solo vuoti/commenti), quindi il controllo delle parole personali non agisce. La compila l'utente; poi rilanciare il controllo su tutta la cronologia (stampa solo commit e file).
@@ -28,7 +28,7 @@ Piano: `docs/piano-4bis.md`. Rilascio: `docs/rilascio-4bis.md`.
   - **gruppi muscolari** visibili solo se allenati (anche come secondari); solo allungamenti → «Nessuna serie che conti per i gruppi muscolari (gli allungamenti non contano).»; conteggio su tutto il catalogo (`CATALOG_EXERCISES`: primario 1, secondario 0,5, extra comprese, un arto = 1, mobilità esclusa, settimana lun-dom);
   - difetto trovato e corretto: il grafico a barre orizzontale scartava etichette con pochi gruppi → prova ST05 (verificata: fallisce sul codice vecchio);
   - prove: 230 Vitest + 131 Playwright, due passate verdi; build e gitleaks puliti.
-- [ ] Passo 9 (ridotto): prova automatica — ogni esercizio del Modello 1 e del Modello 2 ha un file in `public/esercizi/` e l'immagine si carica nel browser (`naturalWidth > 0`). Se ne manca una: fermarsi e dire quale. Controllo dei file del 20/11: 26 esercizi, nessuna immagine mancante.
+- [x] Passo 9 (20/11): prova automatica `e2e/immagini-modelli.spec.ts` (IM01 file in `public/`, IM02 caricamento nel browser con `naturalWidth > 0`) per ogni esercizio del Modello 1 e del Modello 2, le due immagini dei modelli (`public/modelli/`), riscaldamento e circuito. Verificata togliendo per un momento `gb.webp`: entrambe falliscono e dicono quale file manca. Nessuna immagine mancante. Prove: 230 Vitest + 133 Playwright, due passate verdi.
 - [ ] Passo 10: rilascio (merge in `main` solo con conferma esplicita). Controlli a mano col telefono scollegato: schermo acceso durante il circuito, modalità aereo (`docs/rilascio-4bis.md`).
 - [ ] Prima di aggiornare il telefono attuale: **backup esportato e verificato**, poi prova a secco (`dati-locali/` → `npm run prova-a-secco` → 0 differenze; controlla anche che «Separa i lati» risulti acceso; se lo storico è vuoto basta il backup). Rinviata il 20/11: storico del telefono ancora vuoto.
 

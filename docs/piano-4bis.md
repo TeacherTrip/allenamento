@@ -22,13 +22,13 @@ Obiettivo: l'app va anche su un secondo telefono Android con un'altra scheda. Ni
 
 **Bozze** (decisione, correzione 2): si tiene la tabella `drafts` con la chiave `day`, il cui valore diventa l'id della scheda. Gli id del Modello 1 sono proprio `A`/`B`/`C`, quindi la bozza in corso resta valida **senza copiare né cancellare nulla**. Niente tabella `drafts2`: meno passaggi e nessuna cancellazione da provare.
 
-**Impostazioni** nuove: `userName`, `startSide` (`left`/`right`), `templateId`, `onboarded`, `phase1Since` (data di attivazione di "Settimane 1-2").
+**Impostazioni** nuove: `userName`, `startSide` (`left`/`right`), `templateId`, `onboarded`, `phase1Since` (data della prima seduta salvata con "Settimane 1-2" attive; vuota finché non ce n'è una), `phase1SnoozedUntil` (rinvio dell'avviso «Disattivarle?»).
 
 ## Migrazione (Dexie versione 2)
 1. Crea le schede A/B/C del Modello 1.
 2. Sedute: `programName` = `A`/`B`/`C`; `plan` ricostruito dal Modello 1 (tutte le sedute di oggi sono della versione 1 della scheda).
 3. Bozze: nessuna modifica.
-4. Impostazioni: `onboarded = true`, `templateId = 'm1'`, `startSide = 'left'`. Se "Settimane 1-2" è attivo, `phase1Since` = data della prima seduta (oggi se non ce ne sono).
+4. Impostazioni: `onboarded = true`, `templateId = 'm1'`, `startSide = 'left'`. Se "Settimane 1-2" è attivo, `phase1Since` = data della prima seduta; **senza sedute resta vuota** (correzione del 20/11, passo 5: si scrive al salvataggio della prima seduta, così l'avviso non compare su uno storico vuoto).
 5. Un'installazione nuova non ha il database vecchio, quindi la migrazione non parte e compare il primo avvio.
 
 **Errori** (correzione 4):
@@ -44,7 +44,10 @@ Obiettivo: l'app va anche su un secondo telefono Android con un'altra scheda. Ni
 - **Note**: nel riquadro "Esecuzione" prima quelle del catalogo, poi «Nota della scheda: …». «Come nella scheda A» si scrive per esteso.
 - **Superset numerati per blocchi** (1a/1b, 2…), calcolati dall'ordine.
 - **Lato di partenza** (Info): ordine dei tasti Sx/Dx e testi «Parti dal lato…».
-- **Settimane 1-2**: interruttore in Info. Nella seduta compare solo la riga «Settimane 1-2 attive dal gg/mm».
+- **Settimane 1-2**: interruttore in Info. Nella seduta compare solo la riga «Settimane 1-2 attive dal gg/mm» (senza data finché non c'è una seduta salvata).
+  - `phase1Since` si scrive al salvataggio di una seduta **solo** se Settimane 1-2 sono attive e la data è vuota.
+  - 14 giorni dopo `phase1Since`, se ancora attive, nella seduta: «Settimane 1-2 attive da 2 settimane. Disattivarle?» → «Sì» (le spegne) / «Non ancora» (riappare dopo 7 giorni). Mai spegnimento automatico. Con `phase1Since` vuoto l'avviso non compare mai.
+  - Riattivate da Info → `phase1Since` e rinvio azzerati: la data diventa quella della prima seduta salvata dopo.
 - **Circuito facoltativo**: riquadro chiuso che si apre con un tocco.
 - **Scheda senza voci**: la seduta mostra «Aggiungi esercizi da Info» e il pulsante Inizia è disattivato.
 - **Carico in kg = per manubrio** (verificato: l'import del prototipo legge «2 x 10» come 10, prova in `tests/dataio.test.ts`). Nel Modello 2 rdl e fp partono da 6.
@@ -54,7 +57,9 @@ Obiettivo: l'app va anche su un secondo telefono Android con un'altra scheda. Ni
 - **Scelta del modello** (richiesta del 20/11, da fare al passo 5): ogni modello è una scheda toccabile con l'immagine grande in alto, il titolo «Modello 1» / «Modello 2» e sotto l'elenco delle schede con il numero di esercizi. «Schede vuote» senza immagine (o con un'icona semplice). Le stesse schede, con le immagini, anche in Info → «Ricarica un modello». **Titoli, testi e `alt` neutri**: nessuna parola che indichi il genere, né nel codice né nei testi.
   - Immagini: originali in `immagini-originali/modelli/` (`modello-1.jpg`, `modello-2.jpg`, esclusi da Git) (JPEG 1200 × 896) → `npm run immagini`, con un secondo passaggio in fondo allo script → `public/modelli/modello-1.webp`, `public/modelli/modello-2.webp`, **800 × 597** (proporzioni mantenute, mai ingrandite). `vite.config.ts` non cambia. Conversione al passo 5, con anteprima all'utente prima del commit. Il resto dello script resta uguale: le immagini degli esercizi devono rigenerarsi identiche.
   - Precache: le due immagini sono incluse, così il primo avvio funziona anche offline.
-- **Info**: nome, lato, Settimane 1-2, «Modifica le schede», «Ricarica un modello» (con conferma; non cancella lo storico; bloccato se c'è un allenamento in corso).
+- **Primo avvio, regole (20/11)**: compare solo su un'installazione nuova = nessuna scheda e `onboarded` assente (un database v1 migrato ha le schede e `onboarded = true`). Mai usare il numero di sedute. Le scelte restano in memoria fino a «Inizia» (una transazione): se l'app si chiude prima, riparte dalla prima schermata senza dati parziali. Riga sulle Settimane 1-2: «Le prime 2 settimane: 2 serie per esercizio e più margine (RIR 3, cioè 3 ripetizioni di riserva). Si cambia in Info.»
+- **Info**: nome, lato, Settimane 1-2, «Modifica le schede», «Ricarica un modello».
+- **Ricarica un modello (approvata il 20/11)**: le schede attuali vengono **cancellate** e sostituite da quelle del modello, con id nuovi. Lo storico resta perché ogni seduta ha la sua copia (`day` = id vecchio, `programName`, `plan`). Finestra con tre pulsanti «Scarica backup», «Sostituisci», «Annulla» e il testo «Le schede attuali verranno sostituite. Lo storico resta.». Bloccata se c'è un allenamento avviato (cronometro o circuito): il messaggio dice quale scheda. Un'unica transazione: schede, `templateId` e bozze non avviate (appartengono a schede che spariscono). Riferimenti all'id di una scheda fuori dalla tabella: `drafts` (bloccata o svuotata), `settings.templateId` (aggiornato), `localStorage tg.tab` (la ricarica parte da Info, quindi vale `I`; un id che non esiste più viene comunque ignorato), `sessions.day` (storico, non si tocca).
 - **Editor**: da 1 a 4 schede (rinomina, aggiungi, elimina); per ogni scheda riscaldamento, circuito, note e posizione; voci con ↑ ↓ ✕, "superset con il successivo", serie, range, recupero, partenza, attrezzo e note. Nel catalogo gli esercizi già presenti nella scheda sono disattivati. L'editor è bloccato per la scheda con un allenamento in corso.
 - **Barra in basso**: nomi delle schede di massimo 6 caratteri. Prova a 360 px: pulsanti ≥ 48 px, nessun testo tagliato.
 
@@ -70,7 +75,7 @@ Obiettivo: l'app va anche su un secondo telefono Android con un'altra scheda. Ni
 4. **Seduta dalle schede del database** (barra dinamica, copia delle voci, lato, note, superset, scheda vuota, prova a 360 px).
 5. **Primo avvio + Info + Ricarica un modello** (con le schede dei modelli illustrate). Prova Playwright: profilo pulito → primo avvio → le due immagini sono visibili e caricate (`naturalWidth > 0`) → scelta del Modello 2. Prova: migrazione → Ricarica Modello 2 → le sedute vecchie restano raggruppate sotto il loro `programName` e non si mescolano con le nuove (anche con una nuova scheda chiamata «A»).
 6. **Editor delle schede**.
-7. **Modello 2** (contenuto + prove).
+7. **Prove e controllo del contenuto del Modello 2** (il contenuto è stato anticipato al passo 5, strada A del 20/11, con i soli testi approvati).
 8. **Storico e grafici** (raggruppamento per scheda, polpacci, esercizi fuori scheda).
 9. **Segnaposto immagini**; immagini vere quando arrivano.
 10. **Rilascio**: checklist in `docs/rilascio-4bis.md`; merge in `main` solo dopo conferma esplicita.
@@ -124,7 +129,7 @@ Riscaldamento: in tutte le schede del Modello 2, uguale a quello di oggi. Circui
 ## Esercizi nuovi
 | id | nome | metrica | unilaterale | primari | secondari | immagine |
 |---|---|---|---|---|---|---|
-| gb | Ponte glutei | kg (0 ammesso) | no | glutei | femorali | `immagini-originali/gb.jpg` (oggi è ancora una copia di `wu-bridge.jpg`: da sostituire con la foto col manubrio, senza toccare il codice) |
+| gb | Ponte glutei | kg (0 ammesso) | no | glutei | femorali | `immagini-originali/gb.jpg` (immagine dedicata col manubrio, commit 9e16dfb) |
 | ss | Split squat statico | kg (0 ammesso) | sì | quadricipiti, glutei | femorali | `immagini-originali/ss.jpg` |
 | bdog | Bird dog | bodyweight | sì (alternati) | core | glutei, schiena | `immagini-originali/bdog.jpg` |
 | hfs | Allungamento flessori dell'anca | time, mobilità | sì | quadricipiti | – | `immagini-originali/hfs.jpg` |

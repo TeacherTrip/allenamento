@@ -11,9 +11,15 @@ La migrazione del database sul telefono **non si può annullare**: l'unica rete 
 ## Backup dal telefono attuale (con la versione VECCHIA ancora installata)
 - [ ] Nessun allenamento in corso, nessun recupero attivo.
 - [ ] Info → **Esporta backup** → file `teachergym-backup-AAAA-MM-GG.json` nella cartella Download.
-- [ ] Copiare il file sul PC **fuori dal progetto** (mai dentro `Allenamento`).
+- [ ] Copiare il file sul PC **solo in `dati-locali/`**: è l'unica cartella del progetto ammessa, esclusa da Git e bloccata dal pre-commit. Mai altrove dentro `Allenamento`.
 - [ ] Verificare il file: si apre come JSON, `app` = `TeacherGym`, il numero di sedute corrisponde allo Storico del telefono, ci sono le serie (`setLogs`) e le impostazioni.
 - [ ] Prova di lettura: importarlo in un profilo pulito della versione nuova (Chrome del PC, `npm run dev`) e controllare che lo storico sia completo.
+
+## Prova a secco sui dati reali — OBBLIGATORIA prima dell'aggiornamento
+- [ ] Il backup appena esportato è in `dati-locali/` (vedi sopra).
+- [ ] `npm run prova-a-secco` sul ramo da pubblicare → deve dire **0 differenze e 0 problemi**. Stampa solo conteggi e percorsi, mai i dati.
+- [ ] Se ci sono differenze: **fermarsi**, mostrarle all'utente, non aggiornare il telefono e non correggerle da soli.
+- [ ] Eccezione: se in quel momento lo storico del telefono è ancora vuoto (0 sedute), basta il backup.
 
 ## Aggiornamento
 - [ ] Conferma esplicita dell'utente per il merge di `fase-4bis` in `main`.

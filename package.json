@@ -10,7 +10,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "immagini": "node scripts/ottimizza-immagini.mjs",
-    "icone": "node scripts/icone.mjs"
+    "icone": "node scripts/icone.mjs",
+    "prova-a-secco": "node scripts/prova-a-secco.mjs"
   },
   "dependencies": {
     "chart.js": "^4.6.1",

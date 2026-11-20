@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { markBackupDone, mergeSessions, replaceAllData, setSetting, type PersistState } from '../db/db';
+import { db, markBackupDone, mergeSessions, replaceAllData, setSetting, type PersistState } from '../db/db';
 import type { Session, SetLog, Settings } from '../db/models';
 import { backupFileName, buildBackup, detectFormat, parseBackup } from '../logic/backup';
 import { convertPrototype, protoImportMessage } from '../logic/importPrototype';
@@ -43,7 +43,8 @@ export function InfoScreen({ sessions, logs, settings, persist, toast }: Props) 
   }, [sessions.length]);
 
   const onExport = async () => {
-    const data = buildBackup(sessions, logs, settings);
+    const programs = await db.programs.orderBy('order').toArray();
+    const data = buildBackup(sessions, logs, settings, programs);
     const blob = new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -64,7 +65,7 @@ export function InfoScreen({ sessions, logs, settings, persist, toast }: Props) 
       if (fmt === 'teachergym') {
         const data = parseBackup(obj);
         if (!confirm(`Il backup contiene ${data.sessions.length} sedute. SOSTITUISCE tutti i dati attuali (${sessions.length} sedute). Continuo?`)) return;
-        await replaceAllData(data.sessions, data.setLogs, data.settings);
+        await replaceAllData(data.sessions, data.setLogs, data.settings, data.programs);
         toast(`Backup importato: ${data.sessions.length} sedute`);
       } else if (fmt === 'prototype') {
         const res = convertPrototype(obj);

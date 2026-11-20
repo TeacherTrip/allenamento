@@ -1,13 +1,17 @@
 import Dexie, { type Table } from 'dexie';
 import type { Draft, DraftEntry, Session, SetLog, Settings } from './models';
 import { DEFAULT_SETTINGS } from './models';
-import type { Day } from '../program/types';
+import type { Day, Program } from '../program/types';
 import { EXERCISE_BY_ID, PROGRAM_VERSION } from '../program/program';
 import { entryToValues, hasValues, isComplete, newId } from '../logic/values';
+import { model1Plan, model1Programs, settingsToAdd, upgradeSession, type SettingRow } from './migrate';
 
-interface SettingRow {
-  key: keyof Settings;
-  value: unknown;
+export const DB_NAME = 'teachergym';
+
+/** Solo per le prove automatiche: fa fallire la migrazione a metà (mai impostato nell'app). */
+declare global {
+  // eslint-disable-next-line no-var
+  var __TG_TEST_FAIL_UPGRADE__: boolean | undefined;
 }
 
 /**
@@ -19,15 +23,45 @@ class GymDB extends Dexie {
   setLogs!: Table<SetLog, string>;
   drafts!: Table<Draft, Day>;
   settings!: Table<SettingRow, string>;
+  programs!: Table<Program, string>;
 
   constructor() {
-    super('teachergym');
+    super(DB_NAME);
     this.version(1).stores({
       sessions: 'id, date, day',
       setLogs: 'id, sessionId, exerciseId',
       drafts: 'day',
       settings: 'key',
     });
+    /*
+     * Versione 2 (Fase 4-bis): nuova tabella `programs` (le schede). Le altre tabelle restano uguali:
+     * `day` di sedute e bozze contiene ora l'id della scheda (Modello 1 = 'A' / 'B' / 'C').
+     * L'upgrade gira UNA volta, solo su un database v1 esistente, dentro un'unica transazione:
+     * se qualcosa fallisce il browser annulla tutto e il database resta v1, intatto.
+     * Aggiunge soltanto (schede, campi delle sedute, impostazioni mancanti): niente viene cancellato.
+     */
+    this.version(2)
+      .stores({ programs: 'id, order' })
+      .upgrade(async (tx) => {
+        // 1. schede del Modello 1 (solo se la tabella è vuota)
+        const programs = tx.table<Program, string>('programs');
+        if ((await programs.count()) === 0) await programs.bulkAdd(model1Programs());
+        // 2. sedute: nome della scheda e copia delle voci previste (i campi esistenti non si toccano)
+        await tx
+          .table<Session, string>('sessions')
+          .toCollection()
+          .modify((s) => {
+            const u = upgradeSession(s);
+            if (u !== s) Object.assign(s, { programName: u.programName, plan: u.plan });
+          });
+        if (globalThis.__TG_TEST_FAIL_UPGRADE__) throw new Error('Migrazione interrotta apposta (prova automatica)');
+        // 3. impostazioni nuove, solo quelle che mancano
+        const rows = await tx.table<SettingRow, string>('settings').toArray();
+        const sessions = await tx.table<Session, string>('sessions').toArray();
+        const add = settingsToAdd(rows, sessions);
+        if (add.length) await tx.table<SettingRow, string>('settings').bulkAdd(add);
+        // 4. bozze: nessuna modifica (la chiave `day` vale già come id della scheda)
+      });
   }
 }
 
@@ -90,10 +124,13 @@ export async function saveSessionFromDraft(
   if (logs.length === 0 && !hasCircuit) return 0;
 
   await db.transaction('rw', [db.sessions, db.setLogs, db.drafts, db.settings], async () => {
+    const plan = model1Plan(draft.day);
     await db.sessions.add({
       id: sessionId,
       date: new Date().toISOString(),
       day: draft.day,
+      programName: draft.day,
+      ...(plan ? { plan } : {}),
       phase1,
       notes: draft.notes.trim(),
       programVersion: PROGRAM_VERSION,
@@ -127,13 +164,26 @@ export async function deleteSession(id: string): Promise<void> {
 
 // ---------- backup ----------
 
-/** Sostituisce TUTTI i dati con quelli del backup. */
-export async function replaceAllData(sessions: Session[], setLogs: SetLog[], settings?: Settings): Promise<void> {
-  await db.transaction('rw', [db.sessions, db.setLogs, db.settings], async () => {
+/**
+ * Sostituisce TUTTI i dati con quelli del backup.
+ * Impostazioni: solo le chiavi presenti nel backup (un backup v1 non tocca nome, lato, primo avvio…).
+ * Schede: sostituite solo se il backup le contiene (backup v2).
+ */
+export async function replaceAllData(
+  sessions: Session[],
+  setLogs: SetLog[],
+  settings?: Partial<Settings>,
+  programs?: Program[],
+): Promise<void> {
+  await db.transaction('rw', [db.sessions, db.setLogs, db.settings, db.programs], async () => {
     await db.setLogs.clear();
     await db.sessions.clear();
     await db.sessions.bulkAdd(sessions);
     await db.setLogs.bulkAdd(setLogs);
+    if (programs) {
+      await db.programs.clear();
+      await db.programs.bulkAdd(programs);
+    }
     if (settings) {
       for (const [key, value] of Object.entries(settings)) {
         await db.settings.put({ key: key as keyof Settings, value });

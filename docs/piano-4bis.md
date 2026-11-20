@@ -51,6 +51,9 @@ Obiettivo: l'app va anche su un secondo telefono Android con un'altra scheda. Ni
 
 ## Schermate
 - **Primo avvio** (una sola volta): nome (solo sul dispositivo) → modello → lato di partenza.
+- **Scelta del modello** (richiesta del 20/11, da fare al passo 5): ogni modello è una scheda toccabile con l'immagine grande in alto, il titolo «Modello 1» / «Modello 2» e sotto l'elenco delle schede con il numero di esercizi. «Schede vuote» senza immagine (o con un'icona semplice). Le stesse schede, con le immagini, anche in Info → «Ricarica un modello». **Titoli, testi e `alt` neutri**: nessuna parola che indichi il genere, né nel codice né nei testi.
+  - Immagini: originali in `immagini-originali/modelli/` (`modello-1.jpg`, `modello-2.jpg`, esclusi da Git) (JPEG 1200 × 896) → `npm run immagini`, con un secondo passaggio in fondo allo script → `public/modelli/modello-1.webp`, `public/modelli/modello-2.webp`, **800 × 597** (proporzioni mantenute, mai ingrandite). `vite.config.ts` non cambia. Conversione al passo 5, con anteprima all'utente prima del commit. Il resto dello script resta uguale: le immagini degli esercizi devono rigenerarsi identiche.
+  - Precache: le due immagini sono incluse, così il primo avvio funziona anche offline.
 - **Info**: nome, lato, Settimane 1-2, «Modifica le schede», «Ricarica un modello» (con conferma; non cancella lo storico; bloccato se c'è un allenamento in corso).
 - **Editor**: da 1 a 4 schede (rinomina, aggiungi, elimina); per ogni scheda riscaldamento, circuito, note e posizione; voci con ↑ ↓ ✕, "superset con il successivo", serie, range, recupero, partenza, attrezzo e note. Nel catalogo gli esercizi già presenti nella scheda sono disattivati. L'editor è bloccato per la scheda con un allenamento in corso.
 - **Barra in basso**: nomi delle schede di massimo 6 caratteri. Prova a 360 px: pulsanti ≥ 48 px, nessun testo tagliato.
@@ -58,14 +61,14 @@ Obiettivo: l'app va anche su un secondo telefono Android con un'altra scheda. Ni
 ## Passi (un commit per passo; `tsc`, Vitest e Playwright verdi a ogni passo)
 1. **Catalogo + Modello 1** nel codice; app invariata. Prove: confronto campo per campo Modello 1 = scheda di oggi; id invariati; note del catalogo senza «sinistro/destro».
 2. **Logica pura**: superset, recupero null, 0 kg, mobilità, polpacci, valore di partenza (Vitest).
-3. **Database v2 + migrazione + errori + backup v2**. Prova `migrazione.spec.ts`:
+3. **Database v2 + migrazione + errori + backup v2** (+ prova a secco sui dati reali, solo a mano: `npm run prova-a-secco` con il backup in `dati-locali/`). Prova `migrazione.spec.ts`:
    - database v1 fittizio con sedute, serie, bozza in corso e impostazioni → dati presenti, cronometro attivo, Modello 1 presente, nessun primo avvio;
    - **confronto PRIMA/DOPO** sullo stesso database: e1RM e carico per esercizio, ripetizioni, serie settimanali, indice per gruppo, precompilazione di ogni esercizio, tutti identici;
    - migrazione forzata a fallire → schermata d'errore + backup grezzo;
    - avviso con la versione `blocked`.
    - Vitest per l'import dei backup v1, v2 e del prototipo.
 4. **Seduta dalle schede del database** (barra dinamica, copia delle voci, lato, note, superset, scheda vuota, prova a 360 px).
-5. **Primo avvio + Info + Ricarica un modello**. Prova: migrazione → Ricarica Modello 2 → le sedute vecchie restano raggruppate sotto il loro `programName` e non si mescolano con le nuove (anche con una nuova scheda chiamata «A»).
+5. **Primo avvio + Info + Ricarica un modello** (con le schede dei modelli illustrate). Prova Playwright: profilo pulito → primo avvio → le due immagini sono visibili e caricate (`naturalWidth > 0`) → scelta del Modello 2. Prova: migrazione → Ricarica Modello 2 → le sedute vecchie restano raggruppate sotto il loro `programName` e non si mescolano con le nuove (anche con una nuova scheda chiamata «A»).
 6. **Editor delle schede**.
 7. **Modello 2** (contenuto + prove).
 8. **Storico e grafici** (raggruppamento per scheda, polpacci, esercizi fuori scheda).

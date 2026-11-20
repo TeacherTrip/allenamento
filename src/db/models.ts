@@ -1,4 +1,4 @@
-import type { Day } from '../program/types';
+import type { Day, ProgramItem, TemplateId } from '../program/types';
 import type { CircuitRun } from '../logic/circuit';
 
 /** Valori di una serie. Il significato di `load` dipende dalla metrica:
@@ -19,7 +19,12 @@ export interface CircuitLog {
 export interface Session {
   id: string;
   date: string; // ISO
+  /** Id della scheda (Modello 1 dalla migrazione: 'A' / 'B' / 'C'; schede nuove: id generato). */
   day: Day;
+  /** Nome della scheda quando la seduta è stata salvata (lo storico raggruppa per id e mostra questo). */
+  programName?: string;
+  /** Copia delle voci previste dalla scheda al salvataggio: modificare la scheda dopo non cambia lo storico. */
+  plan?: ProgramItem[];
   phase1: boolean;
   notes: string;
   programVersion: number;
@@ -69,6 +74,16 @@ export interface Settings {
   sessionsSinceBackup: number;
   /** Il recupero parte da solo quando si conferma una serie con ✓. */
   autoRest: boolean;
+  /** Nome di chi usa l'app: resta solo su questo dispositivo (e nei suoi backup). */
+  userName: string;
+  /** Lato da cui partono gli esercizi unilaterali. */
+  startSide: 'left' | 'right';
+  /** Modello da cui sono nate le schede (null = nessuno: primo avvio da fare). */
+  templateId: TemplateId | null;
+  /** Primo avvio già fatto (o installazione esistente migrata). */
+  onboarded: boolean;
+  /** Quando è stato attivato "Settimane 1-2" (ISO), per la riga "attive dal gg/mm". */
+  phase1Since: string | null;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -77,4 +92,12 @@ export const DEFAULT_SETTINGS: Settings = {
   lastBackupAt: null,
   sessionsSinceBackup: 0,
   autoRest: true,
+  userName: '',
+  startSide: 'left',
+  templateId: null,
+  onboarded: false,
+  phase1Since: null,
 };
+
+/** Chiavi delle impostazioni della versione 1 del database (prima della Fase 4-bis). */
+export const SETTINGS_KEYS_V1 = ['phase1', 'cardioProtocol', 'lastBackupAt', 'sessionsSinceBackup', 'autoRest'] as const;

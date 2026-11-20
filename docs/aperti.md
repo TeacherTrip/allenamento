@@ -10,16 +10,15 @@ Stato: app **pubblicata** su https://teachertrip.github.io/allenamento/ e instal
 Piano: `docs/piano-4bis.md`. Rilascio: `docs/rilascio-4bis.md`.
 - [x] Passo 1: catalogo + Modello 1 nel codice (app invariata)
 - [x] Passo 2: logica pura (superset con serie diverse, recupero "–", 0 kg, mobilità, polpacci, valore di partenza)
-- [ ] Passo 3: database v2 + migrazione + schermata d'errore + backup v2 (prova di migrazione con confronto prima/dopo)
+- [x] Passo 3: database v2 + migrazione + schermata d'errore + backup v2 (prova di migrazione con confronto prima/dopo)
 - [ ] Passo 4: seduta guidata dalle schede del database
-- [ ] Passo 5: primo avvio + Info + Ricarica un modello
+- [ ] Passo 5: primo avvio + Info + Ricarica un modello, con le schede dei modelli illustrate (`immagini-originali/modelli/` → `public/modelli/*.webp`, in precache, testi neutri; prova con `naturalWidth > 0` e scelta del Modello 2; anteprima all'utente prima del commit)
 - [ ] Passo 6: editor delle schede
 - [ ] Passo 7: Modello 2
 - [ ] Passo 8: storico e grafici
 - [ ] Passo 9: segnaposto immagini
 - [ ] Passo 10: rilascio (merge in `main` solo con conferma esplicita)
-- [ ] Utente: `immagini-originali/gb.jpg` è identica a `wu-bridge.jpg` (ponte senza manubrio). Sostituirla con la foto col manubrio sul bacino, poi `npm run immagini` e commit di `public/esercizi/gb.webp` (nessuna modifica al codice).
-- [ ] Prima di aggiornare il telefono attuale: **backup esportato e verificato** (checklist di rilascio).
+- [ ] Prima di aggiornare il telefono attuale: **backup esportato e verificato**, poi prova a secco (`dati-locali/` → `npm run prova-a-secco` → 0 differenze; se lo storico è vuoto basta il backup). Rinviata il 20/11: storico del telefono ancora vuoto.
 
 ## Da decidere
 - [ ] Stringere il firewall: una sola regola Allow per node.exe (profilo Private, solo TCP 5173). I comandi li esegue l'utente come amministratore.

@@ -40,6 +40,7 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 ## Comandi
 - `npm run dev` (app su http://localhost:5173/allenamento/), `npm test` (test unitari Vitest), `npx playwright test` (prove nel browser: Chrome del PC, Pixel 7, profilo pulito; i download dei test vanno in una cartella temporanea di sistema, mai nel progetto), `npm run build`.
 - Dopo ogni modifica: `npx tsc --noEmit`, `npm test`, `npx playwright test`. Ogni bug trovato → nuova prova automatica.
+- `npm run prova-a-secco`: migrazione provata sul backup reale messo in `dati-locali/` (esclusa da Git, bloccata dal pre-commit). Solo a mano; stampa solo conteggi e percorsi delle differenze, **mai i dati**. Se ci sono differenze: fermarsi e mostrarle, non correggerle da soli. Il file reale non va mai letto né mostrato.
 - `/chiudi` (`.claude/commands/chiudi.md`): chiusura sessione (stato, diario in `docs/storia.md`, punti aperti in `docs/aperti.md`, controlli, commit, push).
 
 ## Stato per ripartire
@@ -62,4 +63,5 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 - Carico `kg` = **per manubrio** (come l'import del prototipo: «2 x 10» → 10).
 - **Prima di ogni commit**: controllare che `CLAUDE.md`, `docs/` e codice non contengano riferimenti a condizioni di salute (dolori/fastidi localizzati, patologie, infortuni). Ammesse solo indicazioni tecniche generiche da manuale.
 - Note del Modello 2: testi definitivi approvati il 20/11 (in `docs/piano-4bis.md`). `gb.jpg` è ancora una copia di `wu-bridge.jpg`: l'utente la sostituirà.
-- Prove all'inizio della fase: 94 Vitest + 86 Playwright.
+- Prove all'inizio della fase: 94 Vitest + 86 Playwright. Dopo il passo 3: 172 Vitest + 91 Playwright.
+- Database: Dexie versione 2 (IndexedDB 20), tabella `programs`; upgrade in `src/db/db.ts` + regole pure in `src/db/migrate.ts`; errori/altre schede in `src/screens/DbGate.tsx`.

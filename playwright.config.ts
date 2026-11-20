@@ -7,6 +7,8 @@ const external = process.env.E2E_BASE_URL;
 
 export default defineConfig({
   testDir: 'e2e',
+  // prova a secco sui dati reali: solo a mano con `npm run prova-a-secco` (mai nelle prove normali)
+  testIgnore: process.env.PROVA_A_SECCO === '1' ? [] : ['**/prova-a-secco.spec.ts'],
   fullyParallel: true,
   workers: 4,
   reporter: [['list']],

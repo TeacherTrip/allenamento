@@ -303,3 +303,11 @@ ul { margin: 4px 0; padding-left: 18px; }
 .datatable table { width: 100%; border-collapse: collapse; margin-top: 6px; font-variant-numeric: tabular-nums; }
 .datatable th, .datatable td { text-align: right; padding: 3px 6px; border-bottom: 1px solid var(--line); }
 .datatable th:first-child, .datatable td:first-child { text-align: left; }
+
+/* apertura del database: errore, altre schede aperte (Fase 4-bis) */
+.dbgate { max-width: 560px; margin: 24px auto; padding: 16px; }
+.dbgate h2 { margin-top: 0; }
+.dberr {
+  white-space: pre-wrap; word-break: break-word; font-size: 13px;
+  background: var(--card2); border: 1px solid var(--line); border-radius: 10px; padding: 10px;
+}

@@ -12,7 +12,8 @@
     "immagini": "node scripts/ottimizza-immagini.mjs",
     "icone": "node scripts/icone.mjs",
     "prova-a-secco": "node scripts/prova-a-secco.mjs",
-    "prova-usb": "node scripts/prova-usb.mjs"
+    "prova-usb": "node scripts/prova-usb.mjs",
+    "prova-aggiornamento": "node scripts/prova-aggiornamento.mjs"
   },
   "dependencies": {
     "chart.js": "^4.6.1",

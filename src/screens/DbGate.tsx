@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { db, DB_NAME } from '../db/db';
+import { db, DB_NAME, ensurePrograms } from '../db/db';
 import { downloadJson, rawDumpFileName, readRawDump } from '../db/rawDump';
 
 type State = { kind: 'opening' } | { kind: 'ok' } | { kind: 'error'; message: string };
@@ -33,6 +33,7 @@ export function DbGate({ children }: { children: ReactNode }) {
     db.on('versionchange', onVersionChange);
     let alive = true;
     db.open()
+      .then(() => ensurePrograms())
       .then(() => alive && (setBlocked(false), setState({ kind: 'ok' })))
       .catch((e) => alive && setState({ kind: 'error', message: errorText(e) }));
     return () => {

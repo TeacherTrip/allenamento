@@ -24,8 +24,10 @@ describe('Modello 1 = scheda in uso prima della Fase 4-bis', () => {
   it.each(before.EXERCISES.map((e) => [e.id, e] as const))('%s: tutti i campi uguali (note senza il lato di partenza)', (id, old) => {
     const now = EXERCISES.find((e) => e.id === id)!;
     const { notes: oldNotes, ...oldRest } = old;
-    const { notes: newNotes, ...newRest } = now;
-    expect(newRest).toEqual(oldRest);
+    // nuovi campi della Fase 4-bis: recupero "–" (null) dove prima c'era 0, superset "con il successivo"
+    const { notes: newNotes, supersetNext, restSec, ...newRest } = now;
+    expect({ ...newRest, restSec: restSec ?? 0 }).toEqual(oldRest);
+    expect(!!supersetNext).toBe(/a$/.test((old as { superset?: string }).superset ?? ''));
     expect(newNotes).toBe(withoutSide(oldNotes));
   });
 });

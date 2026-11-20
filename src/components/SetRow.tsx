@@ -4,8 +4,12 @@ import { bandOptions } from '../program/bands';
 import type { Exercise } from '../program/types';
 import { parseNum, valuesToEntry } from '../logic/values';
 
+export type Side = 'left' | 'right';
+
 interface Props {
   ex: Exercise;
+  /** Lato di partenza (Info): il primo dei due tasti dei lati. Predefinito: sinistro. */
+  startSide?: Side;
   /** Etichetta della riga: "S1", "S2", … (anche per le extra). */
   label: string;
   prefill: SetValues | undefined;
@@ -14,7 +18,7 @@ interface Props {
   onChange: (entry: DraftEntry | null) => void;
   /** Serie confermata col tasto (per esercizi con lati separati: dopo [Dx]). */
   onCheck?: () => void;
-  /** Esercizi con lati separati: confermato il lato sinistro. */
+  /** Esercizi con lati separati: confermato il PRIMO lato (quello di partenza). */
   onLeft?: () => void;
   /** Serie extra non confermata: si può eliminare. */
   onRemove?: () => void;
@@ -25,12 +29,15 @@ interface Props {
  * Una serie: campi della metrica + conferma. Grigio = da confermare, pieno = confermato.
  * Esercizi con lati separati (confirmSides): due tasti affiancati [Sx] [Dx].
  */
-export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, onRemove, extra }: Props) {
+export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, onRemove, extra, startSide = 'left' }: Props) {
   const confirmed = entry != null && !entry.pending;
   const leftDone = !confirmed && !!entry?.leftDone;
   const shown: DraftEntry = entry ? { load: entry.load, reps: entry.reps, seconds: entry.seconds } : valuesToEntry(prefill);
   const hasAny = [shown.load, shown.reps, shown.seconds].some((x) => x != null && x !== '');
   const sides = !!ex.confirmSides;
+  // `leftDone` nella bozza vuol dire "primo lato fatto" (il primo è quello di partenza)
+  const [firstName, secondName] = startSide === 'left' ? ['sinistro', 'destro'] : ['destro', 'sinistro'];
+  const [firstShort, secondShort] = startSide === 'left' ? ['Sx', 'Dx'] : ['Dx', 'Sx'];
 
   // scrivere NON conferma: conferma solo il tasto ✓ (che fa partire il recupero).
   // Una serie già confermata resta confermata se si corregge un valore.
@@ -104,18 +111,18 @@ export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, o
           className={`check side-btn ${confirmed ? 'on' : leftDone ? 'half' : ''}`}
           onClick={confirmed ? unconfirm : leftDone ? undefined : left}
           disabled={!confirmed && !leftDone && !hasAny}
-          aria-label={confirmed ? 'Annulla conferma' : leftDone ? 'Lato sinistro fatto' : 'Conferma lato sinistro'}
+          aria-label={confirmed ? 'Annulla conferma' : leftDone ? `Lato ${firstName} fatto` : `Conferma lato ${firstName}`}
         >
-          Sx
+          {firstShort}
         </button>
         <button
           type="button"
           className={`check side-btn ${confirmed ? 'on' : ''}`}
           onClick={leftDone ? confirm : undefined}
           disabled={!leftDone}
-          aria-label={confirmed ? 'Lato destro fatto' : 'Conferma lato destro'}
+          aria-label={confirmed ? `Lato ${secondName} fatto` : `Conferma lato ${secondName}`}
         >
-          Dx
+          {secondShort}
         </button>
       </div>
     );

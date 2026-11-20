@@ -63,5 +63,6 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 - Carico `kg` = **per manubrio** (come l'import del prototipo: «2 x 10» → 10).
 - **Prima di ogni commit**: controllare che `CLAUDE.md`, `docs/` e codice non contengano riferimenti a condizioni di salute (dolori/fastidi localizzati, patologie, infortuni). Ammesse solo indicazioni tecniche generiche da manuale.
 - Note del Modello 2: testi definitivi approvati il 20/11 (in `docs/piano-4bis.md`). `gb.jpg` è ancora una copia di `wu-bridge.jpg`: l'utente la sostituirà.
-- Prove all'inizio della fase: 94 Vitest + 86 Playwright. Dopo il passo 3: 172 Vitest + 91 Playwright.
+- Prove all'inizio della fase: 94 Vitest + 86 Playwright. Dopo il passo 3: 172 + 91. Dopo il passo 4: 172 Vitest + 100 Playwright.
+- Passo 4: installazione nuova senza schede → `ensurePrograms()` (in `DbGate`) crea il Modello 1 con id generati. PROVVISORIO: al passo 5 lo sostituisce il primo avvio. Le prove passano il NOME della scheda (`goTab(page, 'A')`, `patchDraft(page, 'A', …)`), mai l'id.
 - Database: Dexie versione 2 (IndexedDB 20), tabella `programs`; upgrade in `src/db/db.ts` + regole pure in `src/db/migrate.ts`; errori/altre schede in `src/screens/DbGate.tsx`.

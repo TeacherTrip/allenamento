@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { deleteSession, updateSession } from '../db/db';
 import type { Session, SetLog } from '../db/models';
-import { EXERCISE_BY_ID, EXERCISES } from '../program/program';
+import { EXERCISES, exerciseById } from '../program/program';
+import { CATALOG } from '../catalog/exercises';
 import { fmtDate, fmtDuration, formatSet } from '../logic/format';
 import { fmtNum, parseNum } from '../logic/values';
 
@@ -11,17 +12,26 @@ interface Props {
   toast: (msg: string) => void;
 }
 
-const exOrder = (id: string) => {
-  const ex = EXERCISE_BY_ID[id];
-  return ex ? `${ex.day}${String(ex.order).padStart(2, '0')}` : `Z${id}`;
-};
+/** Nome della scheda di una seduta: quello salvato con la seduta (le sedute migrate: 'A'/'B'/'C'). */
+export const sessionLabel = (s: Session) => s.programName ?? s.day;
 
-function groupByExercise(logs: SetLog[]): [string, SetLog[]][] {
+/** Ordine degli esercizi in una seduta: quello della copia della scheda salvata con la seduta, poi il catalogo. */
+function exOrder(session: Session) {
+  const plan = (session.plan ?? []).map((i) => i.exerciseId);
+  const catalog = CATALOG.map((c) => c.id);
+  return (id: string) => {
+    const p = plan.indexOf(id);
+    return p >= 0 ? p : 1000 + (catalog.indexOf(id) >= 0 ? catalog.indexOf(id) : 999);
+  };
+}
+
+function groupByExercise(session: Session, logs: SetLog[]): [string, SetLog[]][] {
+  const order = exOrder(session);
   const m = new Map<string, SetLog[]>();
   for (const l of logs) m.set(l.exerciseId, [...(m.get(l.exerciseId) ?? []), l]);
   return [...m.entries()]
     .map(([id, arr]): [string, SetLog[]] => [id, arr.sort((a, b) => a.setIndex - b.setIndex)])
-    .sort((a, b) => exOrder(a[0]).localeCompare(exOrder(b[0])));
+    .sort((a, b) => order(a[0]) - order(b[0]) || a[0].localeCompare(b[0]));
 }
 
 export function HistoryScreen({ sessions, logs, toast }: Props) {
@@ -32,7 +42,7 @@ export function HistoryScreen({ sessions, logs, toast }: Props) {
     <>
       <h2>Storico</h2>
       <p className="sub">{sessions.length} sedute salvate</p>
-      {sorted.length === 0 && <div className="box">Nessuna seduta ancora. Salvane una da A, B o C.</div>}
+      {sorted.length === 0 && <div className="box">Nessuna seduta ancora. Salvane una da una delle schede.</div>}
       <div className="hist">
         {sorted.map((s) => {
           const sLogs = logs.filter((l) => l.sessionId === s.id);
@@ -51,7 +61,7 @@ export function HistoryScreen({ sessions, logs, toast }: Props) {
           return (
             <details key={s.id}>
               <summary>
-                {fmtDate(s.date)} · Seduta {s.day}{' '}
+                {fmtDate(s.date)} · Seduta {sessionLabel(s)}{' '}
                 <span className="muted">
                   · {sLogs.length} serie{s.durationSec != null && ` · ${fmtDuration(s.durationSec)}`}
                 </span>
@@ -61,8 +71,8 @@ export function HistoryScreen({ sessions, logs, toast }: Props) {
                   <b>Durata</b>: {fmtDuration(s.durationSec)}
                 </div>
               )}
-              {groupByExercise(sLogs).map(([id, arr]) => {
-                const ex = EXERCISE_BY_ID[id];
+              {groupByExercise(s, sLogs).map(([id, arr]) => {
+                const ex = exerciseById(id);
                 return (
                   <div className="it" key={id}>
                     <b>{ex?.name ?? id}</b>: {ex ? arr.map((l) => formatSet(ex, l) + (l.extra ? ' (extra)' : '')).join(' · ') : ''}
@@ -87,7 +97,7 @@ export function HistoryScreen({ sessions, logs, toast }: Props) {
                 <button
                   className="ghost danger"
                   onClick={async () => {
-                    if (!confirm(`Eliminare definitivamente la seduta ${s.day} del ${fmtDate(s.date)}?`)) return;
+                    if (!confirm(`Eliminare definitivamente la seduta ${sessionLabel(s)} del ${fmtDate(s.date)}?`)) return;
                     await deleteSession(s.id);
                     toast('Seduta eliminata');
                   }}
@@ -126,7 +136,7 @@ function SessionEditor({ session, logs, onDone }: { session: Session; logs: SetL
   const [notes, setNotes] = useState(session.notes);
   const [minutes, setMinutes] = useState(session.durationSec != null ? String(Math.round(session.durationSec / 60)) : '');
   const [rows, setRows] = useState<EditRow[]>(() =>
-    groupByExercise(logs).flatMap(([, arr]) =>
+    groupByExercise(session, logs).flatMap(([, arr]) =>
       arr.map((l) => ({
         id: l.id,
         exerciseId: l.exerciseId,
@@ -165,7 +175,7 @@ function SessionEditor({ session, logs, onDone }: { session: Session; logs: SetL
 
   return (
     <div className="box editor">
-      <b>Modifica seduta {session.day}</b>
+      <b>Modifica seduta {sessionLabel(session)}</b>
       <label className="field">
         Data <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
       </label>
@@ -174,7 +184,7 @@ function SessionEditor({ session, logs, onDone }: { session: Session; logs: SetL
         <input inputMode="numeric" className="duration" value={minutes} onChange={(e) => setMinutes(e.target.value)} />
       </label>
       {rows.map((r) => {
-        const ex = EXERCISE_BY_ID[r.exerciseId] ?? EXERCISES[0];
+        const ex = exerciseById(r.exerciseId) ?? EXERCISES[0];
         return (
           <div className="editrow" key={r.id}>
             <span className="edname">

@@ -9,28 +9,27 @@ import { InfoScreen } from './screens/InfoScreen';
 import { RestBar, restRemaining, type RestState } from './components/RestBar';
 import { UpdateBanner } from './components/UpdateBanner';
 import { fmtElapsed } from './logic/format';
-import type { Day } from './program/types';
+import type { Program } from './program/types';
 
 // Grafici (Chart.js) caricati solo quando si apre la schermata: avvio più leggero
 const ChartsScreen = lazy(() => import('./screens/ChartsScreen').then((m) => ({ default: m.ChartsScreen })));
 
-type Tab = Day | 'H' | 'G' | 'I';
-const TABS: [Tab, string][] = [
-  ['A', 'A'],
-  ['B', 'B'],
-  ['C', 'C'],
+/** Pulsanti fissi della barra in basso, dopo le schede (che sono dinamiche: id della scheda). */
+type Fixed = 'H' | 'G' | 'I';
+type Tab = string;
+const FIXED_TABS: [Fixed, string][] = [
   ['H', 'Storico'],
   ['G', 'Grafici'],
   ['I', 'Info'],
 ];
+const isFixed = (t: Tab): t is Fixed => FIXED_TABS.some(([k]) => k === t);
 
-// la scheda aperta è solo una comodità: se il browser non la ricorda, si riparte da A
-function readTab(): Tab {
+// la scheda aperta è solo una comodità: se il browser non la ricorda (o non esiste più), si riparte dalla prima
+function readTab(): Tab | null {
   try {
-    const t = localStorage.getItem('tg.tab');
-    if (t && TABS.some(([k]) => k === t)) return t as Tab;
+    return localStorage.getItem('tg.tab');
   } catch { /* storage non disponibile */ }
-  return 'A';
+  return null;
 }
 
 function readRest(): RestState | null {
@@ -57,7 +56,8 @@ function Stopwatch({ since }: { since: string }) {
 }
 
 export function App() {
-  const [tab, setTab] = useState<Tab>(readTab);
+  const [savedTab, setTab] = useState<Tab | null>(readTab);
+  const programs = useLiveQuery(() => db.programs.orderBy('order').toArray(), []);
   const [persist, setPersist] = useState<PersistState | null>(null);
   const [toastMsg, setToastMsg] = useState('');
   const [rest, setRest] = useState<RestState | null>(readRest);
@@ -103,6 +103,13 @@ export function App() {
     } catch { /* ignora */ }
   }, [rest]);
 
+  const programById = new Map((programs ?? []).map((p): [string, Program] => [p.id, p]));
+  const tab: Tab | null =
+    savedTab && (isFixed(savedTab) || programById.has(savedTab)) ? savedTab : programs?.[0]?.id ?? (programs ? 'I' : null);
+  const tabs: [Tab, string][] = [...(programs ?? []).map((p): [Tab, string] => [p.id, p.name]), ...FIXED_TABS];
+  const activeProgram = active ? programById.get(active.day) : undefined;
+  const activeName = activeProgram?.name ?? active?.day;
+
   const go = (t: Tab) => {
     setTab(t);
     try { localStorage.setItem('tg.tab', t); } catch { /* ignora */ }
@@ -110,7 +117,7 @@ export function App() {
   };
 
   let body;
-  if (!history || !settings) body = <p className="sub">Caricamento…</p>;
+  if (!history || !settings || !programs || tab == null) body = <p className="sub">Caricamento…</p>;
   else if (tab === 'H') body = <HistoryScreen sessions={history.sessions} logs={history.logs} toast={toast} />;
   else if (tab === 'G')
     body = (
@@ -123,7 +130,8 @@ export function App() {
   else
     body = (
       <SessionScreen
-        day={tab}
+        program={programById.get(tab)!}
+        activeName={activeName}
         sessions={history.sessions}
         logs={history.logs}
         settings={settings}
@@ -141,7 +149,7 @@ export function App() {
         <h1>TeacherGym</h1>
         {active?.startedAt && (
           <button className="stopwatch" onClick={() => go(active.day)} aria-label="Allenamento in corso">
-            ⏱ {active.day} · <Stopwatch since={active.startedAt} />
+            ⏱ {activeName} · <Stopwatch since={active.startedAt} />
           </button>
         )}
       </header>
@@ -150,8 +158,8 @@ export function App() {
         {body}
       </main>
       {rest && <RestBar rest={rest} onPlus={plusRest} onStop={stopRest} />}
-      <nav className="tabbar">
-        {TABS.map(([k, label]) => (
+      <nav className={`tabbar${tabs.length > 6 ? ' many' : ''}`}>
+        {tabs.map(([k, label]) => (
           <button key={k} className={tab === k ? 'on' : ''} onClick={() => go(k)}>
             {label}
           </button>

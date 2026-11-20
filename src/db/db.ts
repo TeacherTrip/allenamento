@@ -1,10 +1,11 @@
 import Dexie, { type Table } from 'dexie';
 import type { Draft, DraftEntry, Session, SetLog, Settings } from './models';
 import { DEFAULT_SETTINGS } from './models';
-import type { Day, Program } from '../program/types';
-import { EXERCISE_BY_ID, PROGRAM_VERSION } from '../program/program';
+import type { Day, Program, TemplateId } from '../program/types';
+import { PROGRAM_VERSION, exerciseById } from '../program/program';
+import { TEMPLATE_BY_ID } from '../catalog/templates';
 import { entryToValues, hasValues, isComplete, newId } from '../logic/values';
-import { model1Plan, model1Programs, settingsToAdd, upgradeSession, type SettingRow } from './migrate';
+import { model1Programs, settingsToAdd, upgradeSession, type SettingRow } from './migrate';
 
 export const DB_NAME = 'teachergym';
 
@@ -80,6 +81,46 @@ export async function setSetting<K extends keyof Settings>(key: K, value: Settin
   await db.settings.put({ key, value });
 }
 
+// ---------- schede ----------
+
+/**
+ * Schede nuove da un modello: id GENERATI (mai 'A'/'B'/'C', che restano alle sedute migrate),
+ * così le sedute vecchie non si mescolano con una scheda nuova che si chiama "A".
+ */
+export function programsFromTemplate(templateId: TemplateId): Program[] {
+  const t = TEMPLATE_BY_ID[templateId];
+  if (!t) throw new Error(`Modello sconosciuto: ${templateId}`);
+  return t.programs.map((p, i) => ({
+    ...JSON.parse(JSON.stringify(p)),
+    id: newId(),
+    order: i + 1,
+  }));
+}
+
+/** Sostituisce le schede con quelle di un modello. Lo storico non si tocca. */
+export async function applyTemplate(templateId: TemplateId): Promise<Program[]> {
+  const programs = programsFromTemplate(templateId);
+  await db.transaction('rw', [db.programs, db.settings], async () => {
+    await db.programs.clear();
+    await db.programs.bulkAdd(programs);
+    await db.settings.put({ key: 'templateId', value: templateId });
+  });
+  return programs;
+}
+
+/**
+ * PROVVISORIO (passo 4, fino al primo avvio del passo 5): un'installazione nuova senza schede
+ * riceve il Modello 1 con id generati, così l'app è usabile.
+ */
+export async function ensurePrograms(): Promise<void> {
+  // controllo e scrittura nella stessa transazione: due chiamate insieme non creano due volte le schede
+  await db.transaction('rw', [db.programs, db.settings], async () => {
+    if ((await db.programs.count()) > 0) return;
+    await db.programs.bulkAdd(programsFromTemplate('m1'));
+    await db.settings.put({ key: 'templateId', value: 'm1' });
+  });
+}
+
 // ---------- bozza della seduta in corso ----------
 
 export async function saveDraft(draft: Draft): Promise<void> {
@@ -99,12 +140,13 @@ export async function saveSessionFromDraft(
   draft: Draft,
   phase1: boolean,
   maxSets: Record<string, number>,
-  durationSec?: number,
+  durationSec: number | undefined,
+  program: Pick<Program, 'name' | 'items'>,
 ): Promise<number> {
   const sessionId = newId();
   const logs: SetLog[] = [];
   const add = (exerciseId: string, entries: (DraftEntry | null)[], firstIndex: number, extra: boolean) => {
-    const ex = EXERCISE_BY_ID[exerciseId];
+    const ex = exerciseById(exerciseId);
     if (!ex) return;
     entries.forEach((entry, k) => {
       if (!entry || entry.pending) return; // non confermata
@@ -124,13 +166,13 @@ export async function saveSessionFromDraft(
   if (logs.length === 0 && !hasCircuit) return 0;
 
   await db.transaction('rw', [db.sessions, db.setLogs, db.drafts, db.settings], async () => {
-    const plan = model1Plan(draft.day);
     await db.sessions.add({
       id: sessionId,
       date: new Date().toISOString(),
       day: draft.day,
-      programName: draft.day,
-      ...(plan ? { plan } : {}),
+      // copia della scheda di adesso: modificarla dopo non cambia questa seduta
+      programName: program.name,
+      plan: JSON.parse(JSON.stringify(program.items)),
       phase1,
       notes: draft.notes.trim(),
       programVersion: PROGRAM_VERSION,

@@ -143,22 +143,29 @@ export async function openHistory(page: Page) {
   for (let i = 0; i < n; i++) await items.nth(i).locator('summary').click();
 }
 
-/** Modifica direttamente la bozza nel database (per simulare il passare del tempo). */
-export async function patchDraft(page: Page, day: string, patch: Record<string, unknown>) {
+/**
+ * Modifica direttamente la bozza nel database (per simulare il passare del tempo).
+ * `name` = nome della scheda (es. "A"): la bozza è salvata con l'id della scheda, che si cerca per nome.
+ */
+export async function patchDraft(page: Page, name: string, patch: Record<string, unknown>) {
   await page.evaluate(
-    ([day, patch]) =>
+    ([name, patch]) =>
       new Promise<void>((resolve, reject) => {
         const req = indexedDB.open('teachergym');
         req.onerror = () => reject(req.error);
         req.onsuccess = () => {
-          const tx = req.result.transaction('drafts', 'readwrite');
-          const store = tx.objectStore('drafts');
-          const g = store.get(day as string);
-          g.onsuccess = () => store.put({ ...g.result, ...(patch as object) });
+          const tx = req.result.transaction(['programs', 'drafts'], 'readwrite');
+          const progs = tx.objectStore('programs').getAll();
+          progs.onsuccess = () => {
+            const id = (progs.result as { id: string; name: string }[]).find((p) => p.name === name)?.id ?? name;
+            const store = tx.objectStore('drafts');
+            const g = store.get(id);
+            g.onsuccess = () => store.put({ ...g.result, ...(patch as object) });
+          };
           tx.oncomplete = () => resolve();
           tx.onerror = () => reject(tx.error);
         };
       }),
-    [day, patch] as const,
+    [name, patch] as const,
   );
 }

@@ -38,7 +38,7 @@ export function resolveProgram(program: Program): Exercise[] {
       order: i + 1,
       sets: it.sets,
       repRange: it.repRange,
-      restSec: it.restSec ?? 0,
+      restSec: it.restSec,
       metric: c.metric,
       unilateral: c.unilateral,
       muscles: c.muscles,
@@ -49,6 +49,9 @@ export function resolveProgram(program: Program): Exercise[] {
     if (c.bandDirection) ex.bandDirection = c.bandDirection;
     if (c.confirmSides) ex.confirmSides = c.confirmSides;
     if (c.kind) ex.kind = c.kind;
+    if (it.supersetNext && i < program.items.length - 1) ex.supersetNext = true;
+    if (it.startValue != null) ex.startValue = it.startValue;
+    if (it.notes) ex.itemNotes = it.notes;
     if (c.image) ex.image = c.image;
     return ex;
   });
@@ -82,9 +85,7 @@ export function exercisesForDay(day: string): Exercise[] {
   return EXERCISES.filter((e) => e.day === day && !e.retired).sort((a, b) => a.order - b.order);
 }
 
-/** Nome dell'esercizio successivo nel superset (per "passa subito a 2b"). */
-export function supersetPartner(ex: Exercise): Exercise | undefined {
-  if (!ex.superset?.endsWith('a')) return undefined;
-  const target = ex.superset.slice(0, -1) + 'b';
-  return EXERCISES.find((e) => e.day === ex.day && e.superset === target && !e.retired);
+/** Esercizio per id: quello del Modello 1 se c'è, altrimenti dal catalogo (storico, grafici, salvataggio). */
+export function exerciseById(id: string): Exercise | undefined {
+  return EXERCISE_BY_ID[id] ?? (CATALOG_BY_ID[id] ? catalogExercise(id) : undefined);
 }

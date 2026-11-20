@@ -1,4 +1,8 @@
-export type Day = 'A' | 'B' | 'C';
+/**
+ * Id di una scheda. Le schede del Modello 1 migrate dalle installazioni di prima hanno 'A' / 'B' / 'C';
+ * tutte le altre un id generato. (Il nome storico "Day" resta per non cambiare il database.)
+ */
+export type Day = string;
 
 /** Come si registra una serie. */
 export type Metric = 'kg' | 'band' | 'level' | 'bodyweight' | 'time';
@@ -99,8 +103,14 @@ export interface Exercise {
   sets: number;
   /** Range di ripetizioni (o di secondi per metric 'time'). */
   repRange: [number, number];
-  /** Recupero dopo l'esercizio; 0 = passa subito al successivo del superset. */
-  restSec: number;
+  /** Recupero dopo l'esercizio; null = "–", nessun timer. */
+  restSec: number | null;
+  /** Superset con l'esercizio successivo della scheda. */
+  supersetNext?: boolean;
+  /** Valore di partenza della voce (se l'esercizio non ha storico). */
+  startValue?: number;
+  /** Note della voce di scheda (mostrate dopo quelle del catalogo). */
+  itemNotes?: string;
   metric: Metric;
   /** Obbligatorio per metric 'band'. */
   bandDirection?: BandDirection;

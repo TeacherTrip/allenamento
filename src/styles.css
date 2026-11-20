@@ -106,18 +106,21 @@ h2 { margin: 8px 0 2px; font-size: 20px; }
 /* ---------- barra di navigazione in basso ---------- */
 nav.tabbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
-  display: flex; gap: 4px;
+  display: flex; gap: 2px;
   background: var(--card);
   border-top: 1px solid var(--line);
-  padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+  /* margini stretti: con 4 schede + 3 pulsanti, a 360 px ognuno resta ≥ 48 px (prova D08) */
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
 }
 nav.tabbar button {
-  flex: 1; min-width: 0;
+  flex: 1; min-width: 0; min-height: 48px; /* area da toccare ≥ 48 × 48 px */
   padding: 11px 0; border: 0; border-radius: 10px;
   background: transparent; color: var(--mut);
   font-weight: 650; font-size: 13.5px;
 }
 nav.tabbar button.on { background: var(--ac); color: var(--ac-tx); }
+/* 4 schede + 3 pulsanti: carattere più piccolo, così un nome da 6 caratteri sta intero a 360 px */
+nav.tabbar.many button { font-size: 12px; letter-spacing: -0.1px; }
 
 /* ---------- blocchi ---------- */
 .box { background: var(--card); border-radius: var(--r); padding: 12px; margin: 10px 0; font-size: 14px; }

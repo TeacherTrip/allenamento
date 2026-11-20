@@ -11,7 +11,7 @@ Piano: `docs/piano-4bis.md`. Rilascio: `docs/rilascio-4bis.md`.
 - [x] Passo 1: catalogo + Modello 1 nel codice (app invariata)
 - [x] Passo 2: logica pura (superset con serie diverse, recupero "–", 0 kg, mobilità, polpacci, valore di partenza)
 - [x] Passo 3: database v2 + migrazione + schermata d'errore + backup v2 (prova di migrazione con confronto prima/dopo)
-- [ ] Passo 4: seduta guidata dalle schede del database
+- [x] Passo 4: seduta guidata dalle schede del database
 - [ ] Passo 5: primo avvio + Info + Ricarica un modello, con le schede dei modelli illustrate (`immagini-originali/modelli/` → `public/modelli/*.webp`, in precache, testi neutri; prova con `naturalWidth > 0` e scelta del Modello 2; anteprima all'utente prima del commit)
 - [ ] Passo 6: editor delle schede
 - [ ] Passo 7: Modello 2

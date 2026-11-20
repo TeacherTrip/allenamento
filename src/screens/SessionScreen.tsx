@@ -61,7 +61,7 @@ const shownValues = (entry: DraftEntry | null | undefined, prefill: SetValues | 
 export function SessionScreen({ program, activeName, sessions, logs, settings, activeDay, goToDay, startRest, stopRest, toast }: Props) {
   const day = program.id;
   const exercises = useMemo(() => resolveProgram(program), [program]);
-  const title = `Seduta ${program.name}${program.description ? ` — ${program.description}` : ''}`;
+  const title = nb(`Seduta ${program.name}${program.description ? ` — ${program.description}` : ''}`);
   const startSide = settings.startSide;
   const [draft, setDraft] = useState<Draft | null>(null);
 
@@ -282,7 +282,7 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
   return (
     <>
       <h2>{title}</h2>
-      {program.subtitle && <p className="sub">{program.subtitle}</p>}
+      {program.subtitle && <p className="sub" data-testid="program-subtitle">{nb(program.subtitle)}</p>}
 
       {started ? (
         <>

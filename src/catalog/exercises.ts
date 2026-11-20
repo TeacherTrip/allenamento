@@ -16,7 +16,7 @@ export const CATALOG: CatalogExercise[] = [
   {
     id: 'pu', image: 'pu', name: 'Push-up inclinati', metric: 'level', unilateral: false, equipment: 'Mani rialzate',
     muscles: { primary: ['petto'], secondary: ['tricipiti', 'spalle'] },
-    notes: "Scegli l'appoggio che ti tiene in 8-12 reps a RIR 2. Scala: piano cucina/tavolo → schienale o bracciolo divano → seduta divano → gradino → terra. Corpo rigido come una tavola.",
+    notes: "Scala: piano cucina/tavolo → schienale o bracciolo divano → seduta divano → gradino → terra. Corpo rigido come una tavola.",
     defaults: { sets: 3, repRange: [8, 12], restSec: 75 },
   },
   {
@@ -34,7 +34,7 @@ export const CATALOG: CatalogExercise[] = [
   {
     id: 'pull', image: 'pull', name: 'Trazioni assistite', metric: 'band', bandDirection: 'assistance', unilateral: false, equipment: 'Barra + elastico',
     muscles: { primary: ['schiena'], secondary: ['bicipiti'] },
-    notes: "Rigorose, zero slancio (corridoio stretto). Sali su una sedia per infilare ginocchio o piede nell'elastico. Se non ne completi 3: negative, discesa in 5 s. Controlla la tenuta della barra prima di ogni seduta.",
+    notes: "Sali su una sedia per infilare ginocchio o piede nell'elastico. Controlla la tenuta della barra prima di ogni seduta.",
     defaults: { sets: 3, repRange: [3, 6], restSec: 90 },
   },
   {
@@ -50,9 +50,9 @@ export const CATALOG: CatalogExercise[] = [
     defaults: { sets: 3, repRange: [8, 12], restSec: 90 },
   },
   {
-    id: 'ht', image: 'ht', name: 'Hip thrust', metric: 'kg', unilateral: false, equipment: 'Manubrio + fascia',
+    id: 'ht', image: 'ht', name: 'Hip thrust', metric: 'kg', unilateral: false, equipment: 'Manubrio',
     muscles: { primary: ['glutei'], secondary: ['femorali'] },
-    notes: 'Scapole sul bordo del divano, pausa 1 s in alto, mento verso il petto, spingi le ginocchia contro la fascia.',
+    notes: 'Scapole sul bordo del divano, pausa 1 s in alto, mento verso il petto.',
     defaults: { sets: 3, repRange: [12, 15], restSec: 75 },
   },
   {
@@ -64,7 +64,7 @@ export const CATALOG: CatalogExercise[] = [
   {
     id: 'lpd', image: 'lpd', name: 'Lat pulldown con elastico', metric: 'band', bandDirection: 'resistance', unilateral: false, equipment: 'Elastico',
     muscles: { primary: ['schiena'], secondary: ['bicipiti'] },
-    notes: 'In ginocchio sotto la barra, tira verso il petto portando i gomiti in basso e indietro.',
+    notes: 'Tira verso il petto portando i gomiti in basso e indietro.',
     defaults: { sets: 3, repRange: [12, 15], restSec: 75 },
   },
   {
@@ -94,11 +94,11 @@ export const CATALOG: CatalogExercise[] = [
   {
     id: 'lc', image: 'lc', name: 'Leg curl con asciugamano', metric: 'bodyweight', unilateral: false, equipment: 'Pavimento liscio + materassino sotto le spalle',
     muscles: { primary: ['femorali'], secondary: [] },
-    notes: 'Supino, talloni su un asciugamano, bacino alto per tutta la serie. Se non completi il movimento: solo la fase di distensione lenta (4 s), poi risali in ponte.',
+    notes: 'Sdraiati sulla schiena, talloni su un asciugamano, bacino alto per tutta la serie. Se non completi il movimento: solo la fase di distensione lenta (4 s), poi risali in ponte.',
     defaults: { sets: 3, repRange: [8, 12], restSec: 75 },
   },
   {
-    id: 'ap', image: 'ap', name: 'Arnold press (seduto)', metric: 'kg', unilateral: false, equipment: 'Manubri',
+    id: 'ap', image: 'ap', name: 'Arnold press (da seduti)', metric: 'kg', unilateral: false, equipment: 'Manubri',
     muscles: { primary: ['spalle'], secondary: ['tricipiti'] },
     notes: 'Parti con i palmi verso di te, ruotali mentre spingi sopra la testa.',
     defaults: { sets: 3, repRange: [8, 12], restSec: 75 },
@@ -132,7 +132,7 @@ export const CATALOG: CatalogExercise[] = [
   {
     id: 'gb', image: 'gb', name: 'Ponte glutei', metric: 'kg', unilateral: false, equipment: 'Manubrio + asciugamano',
     muscles: { primary: ['glutei'], secondary: ['femorali'] },
-    notes: 'Supini, piedi a terra vicini ai glutei. Manubrio appoggiato sul bacino con un asciugamano. Spingi con i talloni e contrai i glutei in alto. Si può fare anche a 0 kg.',
+    notes: 'Sdraiati sulla schiena, piedi a terra vicini ai glutei. Manubrio appoggiato sul bacino con un asciugamano. Spingi con i talloni e contrai i glutei in alto. Si può fare anche a 0 kg.',
     defaults: { sets: 2, repRange: [12, 15], restSec: 75 },
   },
   {
@@ -162,7 +162,7 @@ export const CATALOG: CatalogExercise[] = [
   {
     id: 'cls', image: 'cls', name: 'Clamshell con fascia', metric: 'bodyweight', unilateral: true, confirmSides: true, equipment: 'Fascia elastica in stoffa',
     muscles: { primary: ['glutei'], secondary: [] },
-    notes: 'Sul fianco, ginocchia piegate e talloni uniti, fascia in stoffa sopra le ginocchia. Apri il ginocchio di sopra senza muovere il bacino.',
+    notes: 'Sul fianco, ginocchia piegate e talloni uniti. Apri il ginocchio di sopra senza muovere il bacino.',
     defaults: { sets: 2, repRange: [12, 15], restSec: 75 },
   },
 ];

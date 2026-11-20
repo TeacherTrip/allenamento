@@ -14,6 +14,7 @@ import {
   type PersistState,
 } from '../db/db';
 import { TEMPLATE_BY_ID } from '../catalog/templates';
+import { modelInfo } from '../catalog/infoTexts';
 import { ModelCards } from '../components/ModelCards';
 import type { Program, TemplateId } from '../program/types';
 import type { Session, SetLog, Settings } from '../db/models';
@@ -51,6 +52,7 @@ const ddmm = (iso: string) => new Date(iso).toLocaleDateString('it-IT', { day: '
 
 export function InfoScreen({ sessions, logs, settings, programs, persist, toast }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const info = modelInfo(settings.templateId);
   const [usage, setUsage] = useState<string>('');
   const [autoRest, setAutoRest] = useState(settings.autoRest);
   useEffect(() => setAutoRest(settings.autoRest), [settings.autoRest]);
@@ -299,37 +301,48 @@ export function InfoScreen({ sessions, logs, settings, programs, persist, toast 
         />
       </div>
 
+      {/* Testi del modello scelto (src/catalog/infoTexts.ts) */}
       <h2>Settimana tipo</h2>
-      <table>
+      {info.weekIntro && (
+        <p className="sub" data-testid="week-intro">
+          {nb(info.weekIntro)}
+        </p>
+      )}
+      {info.weekTitle && <b className="block">{info.weekTitle}</b>}
+      <table data-testid="week">
         <tbody>
           <tr><th>Giorno</th><th>Attività</th></tr>
-          <tr><td>Lun</td><td>Seduta A — full body</td></tr>
-          <tr><td>Mar</td><td>Camminata veloce 30-40 min</td></tr>
-          <tr><td>Mer</td><td>Seduta C — braccia, spalle, femorali + circuito</td></tr>
-          <tr><td>Gio</td><td>Riposo (passi quotidiani)</td></tr>
-          <tr><td>Ven</td><td>Seduta B — full body</td></tr>
-          <tr><td>Sab</td><td>Camminata veloce 30-40 min</td></tr>
-          <tr><td>Dom</td><td>Riposo</td></tr>
+          {info.week.map(([d, a]) => (
+            <tr key={d}><td>{d}</td><td>{nb(a)}</td></tr>
+          ))}
         </tbody>
       </table>
-      <div className="box">
-        <b>Ogni giorno</b>7.000-9.000 passi. Camminate in zona 2: riesci a parlare, non a cantare. Tra A e B almeno 48 ore.
+      <div className="box" data-testid="daily">
+        <b>Ogni giorno</b>
+        {typeof info.daily === 'string' ? (
+          nb(info.daily)
+        ) : (
+          <ul>
+            {info.daily.map((t) => (
+              <li key={t}>{nb(t)}</li>
+            ))}
+          </ul>
+        )}
       </div>
-      <div className="box">
+      <div className="box" data-testid="rules">
         <b>Regole</b>
         <ul>
-          <li><strong>{nb('RIR 2')}</strong> (Reps In Reserve): chiudi la serie quando ne avresti ancora 2.</li>
-          <li><strong>Settimane 1-2</strong>: {nb('2 serie, RIR 3 (interruttore qui sopra, in Impostazioni).')}</li>
-          <li><strong>Doppia progressione</strong>: quando arrivi al massimo del range su tutte le serie, aumenta il carico o passa alla variante più difficile.</li>
-          <li><strong>Esercizi a un arto</strong>: ripetizioni e kg per lato, stesse reps con l’altro lato.</li>
-          <li><strong>Superset</strong> (stessa lettera, es. 2a/2b): esercizi di seguito, recupero solo dopo la coppia.</li>
-          <li><strong>Gambe senza carico extra</strong> {nb('(quando 14 kg diventa leggero): discesa in 4-5 s, pausa 2 s in basso, 1,5 reps.')}</li>
-          <li><strong>Dolore articolare</strong> (non fatica muscolare): fermati e cambia esercizio.</li>
+          {info.rules.map((r) => (
+            <li key={r.t}>
+              {r.b && <strong>{nb(r.b)}</strong>}
+              {nb(r.t)}
+            </li>
+          ))}
         </ul>
       </div>
-      <div className="box">
+      <div className="box" data-testid="pushup-scale">
         <b>Push-up: scala degli appoggi</b>
-        {Object.entries(PUSHUP_LEVELS).map(([k, v]) => `${k} ${v}`).join(' → ')}. {nb('Passi al livello successivo quando fai 3 × 12 a RIR 2.')}
+        {Object.entries(PUSHUP_LEVELS).map(([k, v]) => `${k} ${v}`).join(' → ')}. {nb(info.pushupRule)}
       </div>
 
       <p className="muted small" data-testid="app-version">

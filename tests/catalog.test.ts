@@ -11,6 +11,33 @@ const withoutSide = (notes: string) =>
     .filter((s) => !/sinistro/i.test(s))
     .join(' ');
 
+/** Forme neutre (20/11): «Supino/Supini» → «Sdraiati sulla schiena», «(seduto)» → «(da seduti)». */
+const neutral = (t: string) => t.replace(/^Supin[oi],/, 'Sdraiati sulla schiena,').replace('(seduto)', '(da seduti)');
+
+/** Note del Modello 1 divise il 20/11: vecchia nota = parte nel catalogo + parte nella voce del Modello 1. */
+const MOVED_TO_ITEM: Record<string, { old: string; catalog: string; item: string }> = {
+  pu: {
+    old: "Scegli l'appoggio che ti tiene in 8-12 reps a RIR 2. Scala: piano cucina/tavolo → schienale o bracciolo divano → seduta divano → gradino → terra. Corpo rigido come una tavola.",
+    catalog: 'Scala: piano cucina/tavolo → schienale o bracciolo divano → seduta divano → gradino → terra. Corpo rigido come una tavola.',
+    item: "Scegli l'appoggio che ti tiene in 8-12 reps a RIR 2.",
+  },
+  pull: {
+    old: "Rigorose, zero slancio (corridoio stretto). Sali su una sedia per infilare ginocchio o piede nell'elastico. Se non ne completi 3: negative, discesa in 5 s. Controlla la tenuta della barra prima di ogni seduta.",
+    catalog: "Sali su una sedia per infilare ginocchio o piede nell'elastico. Controlla la tenuta della barra prima di ogni seduta.",
+    item: 'Rigorose, zero slancio (corridoio stretto). Se non ne completi 3: negative, discesa in 5 s.',
+  },
+  ht: {
+    old: 'Scapole sul bordo del divano, pausa 1 s in alto, mento verso il petto, spingi le ginocchia contro la fascia.',
+    catalog: 'Scapole sul bordo del divano, pausa 1 s in alto, mento verso il petto.',
+    item: 'Spingi le ginocchia contro la fascia.',
+  },
+  lpd: {
+    old: 'In ginocchio sotto la barra, tira verso il petto portando i gomiti in basso e indietro.',
+    catalog: 'Tira verso il petto portando i gomiti in basso e indietro.',
+    item: 'In ginocchio sotto la barra.',
+  },
+};
+
 describe('Modello 1 = scheda in uso prima della Fase 4-bis', () => {
   it('stessa versione e stessi giorni (titoli e sottotitoli)', () => {
     expect(PROGRAM_VERSION).toBe(before.PROGRAM_VERSION);
@@ -25,10 +52,19 @@ describe('Modello 1 = scheda in uso prima della Fase 4-bis', () => {
     const now = EXERCISES.find((e) => e.id === id)!;
     const { notes: oldNotes, ...oldRest } = old;
     // nuovi campi della Fase 4-bis: recupero "–" (null) dove prima c'era 0, superset "con il successivo"
-    const { notes: newNotes, supersetNext, restSec, ...newRest } = now;
-    expect({ ...newRest, restSec: restSec ?? 0 }).toEqual(oldRest);
+    const { notes: newNotes, itemNotes: _itemNotes, supersetNext, restSec, ...newRest } = now;
+    expect({ ...newRest, restSec: restSec ?? 0 }).toEqual({ ...oldRest, name: neutral(oldRest.name) });
     expect(!!supersetNext).toBe(/a$/.test((old as { superset?: string }).superset ?? ''));
-    expect(newNotes).toBe(withoutSide(oldNotes));
+    // dal 20/11 le parti legate al Modello 1 stanno nella nota della voce («Nota della scheda»), con testo identico
+    const moved = MOVED_TO_ITEM[id];
+    if (moved) {
+      expect(newNotes).toBe(moved.catalog);
+      expect(_itemNotes).toBe(moved.item);
+      expect(withoutSide(oldNotes)).toBe(moved.old);
+    } else {
+      expect(newNotes).toBe(neutral(withoutSide(oldNotes)));
+      expect(_itemNotes).toBeUndefined();
+    }
   });
 });
 

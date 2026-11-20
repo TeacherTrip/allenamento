@@ -14,7 +14,7 @@ export const WARMUP: SimpleItem[] = [
   { id: 'wu-bridge', image: 'wu-bridge', name: '10 ponti glutei' },
   { id: 'wu-monster', image: 'wu-monster', name: '10 monster walk per lato (fascia)' },
   { id: 'wu-pa', image: 'pa', name: '10 band pull-apart' },
-  { id: 'wu-hang', image: 'wu-hang', name: '2 hang alla barra da 15-20 s' },
+  { id: 'wu-hang', image: 'wu-hang', name: '2 hang alla barra da 15-20 s (anche con i piedi appoggiati, se serve)' },
 ];
 
 export const PUSHUP_LEVELS: Record<number, string> = {

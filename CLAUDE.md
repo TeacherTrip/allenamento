@@ -44,14 +44,14 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 - `/chiudi` (`.claude/commands/chiudi.md`): chiusura sessione (stato, diario in `docs/storia.md`, punti aperti in `docs/aperti.md`, controlli, commit, push).
 
 ## Stato per ripartire
-- **Fase 4-bis IN CORSO sul ramo `fase-4bis`** (dettagli nella sezione sotto e in `docs/piano-4bis.md`): passi 1-4 fatti e inviati (ultimo commit del passo 4: ccb0a9f). `main` e il sito sono ancora alla Fase 7 (d66419b, sul telefono). Merge in `main` solo al passo 10, con conferma esplicita.
+- **Fase 4-bis IN CORSO sul ramo `fase-4bis`** (dettagli nella sezione sotto e in `docs/piano-4bis.md`): passi 1-4 fatti e inviati (passo 4: ccb0a9f). `main` e il sito sono ancora alla Fase 7 (d66419b, sul telefono). Merge in `main` solo al passo 10, con conferma esplicita.
 - Regole dell'app (19/11): la serie si conferma **solo con ✓**, la ✓ avvia il recupero; "Termina e salva" ferma il recupero. PWA: aggiornamento solo a richiesta.
 - GitHub: repo **pubblico**, `main` protetto, Pages solo da `main`. **Conferma dell'utente prima di ogni modifica su GitHub** (push del ramo `fase-4bis` già autorizzato; /chiudi = push del ramo).
 - Prove: 172 Vitest + 100 Playwright, verdi. Prova a secco sui dati reali (`npm run prova-a-secco`) rinviata: storico del telefono vuoto; obbligatoria al rilascio.
 - Da provare sull'utente/telefono: niente finché la Fase 4-bis non viene pubblicata (passo 10, checklist `docs/rilascio-4bis.md`).
 - Lista privata di parole: **nessuna voce attiva** (la compila l'utente). Hook: eccezione esatta solo per `i@izs.me`. Immagini: `npm run immagini`; icone: `npm run icone`. Per gitleaks/adb/gh ricaricare il PATH o riavviare Claude Code.
-- **Prossimo passo: passo 5** (primo avvio con le immagini dei modelli → `public/modelli/*.webp` 800 × 597 con anteprima prima del commit; Info: nome, lato, Settimane 1-2 con data; «Ricarica un modello»; togliere il provvisorio `ensurePrograms()`).
-
+- **Prossimo passo: passo 5** (primo avvio con le immagini dei modelli; Info: nome, lato, Settimane 1-2; «Ricarica un modello»; togliere il provvisorio `ensurePrograms()`). Requisiti dettagliati: **aggiunte 1-5 alla voce del passo 5 in `docs/aperti.md`** (con la regola della riattivazione di Settimane 1-2).
+- **PROMEMORIA nuova sessione:** leggere `CLAUDE.md`, `docs/aperti.md` e `docs/piano-4bis.md`; confermare all'utente ramo, ultimo commit, prove e prossimo passo; **non scrivere codice del passo 5 finché l'utente non approva**.
 ## Fase 4-bis + Modello 2 — IN CORSO (piano approvato il 20/11/2026)
 - Piano completo: **`docs/piano-4bis.md`** (fonte di verità della fase). Rilascio: **`docs/rilascio-4bis.md`** (checklist).
 - Secondo telefono Android con un'altra scheda; niente profili/account, ogni dispositivo ha i suoi dati.
@@ -61,7 +61,7 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 - Id `A`/`B`/`C` assegnati **solo dalla migrazione**; ogni scheda creata dopo ha un id generato univoco (`newId()`), anche se si chiama «A».
 - Carico `kg` = **per manubrio** (come l'import del prototipo: «2 x 10» → 10).
 - **Prima di ogni commit**: controllare che `CLAUDE.md`, `docs/` e codice non contengano riferimenti a condizioni di salute (dolori/fastidi localizzati, patologie, infortuni). Ammesse solo indicazioni tecniche generiche da manuale.
-- Note del Modello 2: testi definitivi approvati il 20/11 (in `docs/piano-4bis.md`). `gb.jpg` è ancora una copia di `wu-bridge.jpg`: l'utente la sostituirà.
+- Note del Modello 2: testi definitivi approvati il 20/11 (in `docs/piano-4bis.md`). `gb` ha la sua immagine dedicata (`gb.webp`, commit 9e16dfb), non più una copia di `wu-bridge`.
 - Prove all'inizio della fase: 94 Vitest + 86 Playwright. Dopo il passo 3: 172 + 91. Dopo il passo 4: 172 Vitest + 100 Playwright.
 - Passo 4: installazione nuova senza schede → `ensurePrograms()` (in `DbGate`) crea il Modello 1 con id generati. PROVVISORIO: al passo 5 lo sostituisce il primo avvio. Le prove passano il NOME della scheda (`goTab(page, 'A')`, `patchDraft(page, 'A', …)`), mai l'id.
 - Database: Dexie versione 2 (IndexedDB 20), tabella `programs`; upgrade in `src/db/db.ts` + regole pure in `src/db/migrate.ts`; errori/altre schede in `src/screens/DbGate.tsx`.

@@ -172,3 +172,13 @@ Orari presi da `git reflog show origin/main`.
 - Fino al passo 5 un'installazione nuova riceve il Modello 1 con id generati (provvisorio).
 
 **Commit:** 2578150, e044ac5, da54c68, edd081e, 9e16dfb, 36cfd45, ccb0a9f (+ commit di chiusura sessione).
+
+## 2026-11-20 (sera) — Fase 4-bis: requisiti aggiuntivi del passo 5 (solo documenti)
+- Scritte in `docs/aperti.md`, alla voce del passo 5, le aggiunte 1-5 dell'utente: niente Modello 1 automatico (primo avvio su profilo pulito, nessuna scheda prima di «Inizia»); Settimane 1-2 attive di serie con riga di spiegazione, `phase1Since` = prima seduta salvata, avviso dopo 14 giorni con «Sì» / «Non ancora» (rinvio 7 giorni, mai spegnimento automatico); Ricarica un modello con id generati e blocco durante l'allenamento; immagini dei modelli a 800 px con anteprima e pesi; istruzioni per la prova sul telefono in Wi-Fi a fine passo 5.
+- Corretta in `CLAUDE.md` la frase superata su `gb.jpg` (ora `gb.webp` dedicata, commit 9e16dfb).
+- Nessun codice scritto: il passo 5 parte solo dopo l'approvazione dell'utente.
+
+**Decisioni**
+- Se Settimane 1-2 viene riattivato da Info, `phase1Since` diventa la data della prima seduta salvata dopo la riattivazione e il rinvio del «Non ancora» si azzera.
+
+**Commit:** e3caed6 (+ commit di chiusura sessione).

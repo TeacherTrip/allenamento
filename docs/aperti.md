@@ -20,6 +20,7 @@ Piano: `docs/piano-4bis.md`. Rilascio: `docs/rilascio-4bis.md`.
      - `phase1Since` = data della prima seduta salvata, non del primo avvio;
      - 14 giorni dopo `phase1Since`, se sono ancora attive, nella seduta compare l'avviso «Settimane 1-2 attive da 2 settimane. Disattivarle?» con «Sì» (le spegne) e «Non ancora» (riappare dopo 7 giorni). Mai spegnimento automatico;
      - prove Vitest per la logica dell'avviso (date finte) + una prova Playwright per «Sì».
+     - Se Settimane 1-2 viene riattivato da Info, `phase1Since` diventa la data della prima seduta salvata dopo la riattivazione, e il rinvio del «Non ancora» si azzera.
   3. Ricarica un modello: schede nuove sempre con id generati; bloccata se c'è un allenamento avviato; dopo la ricarica lo storico resta raggruppato sotto i nomi vecchi (prova già prevista).
   4. Immagini dei modelli: conversione a 800 px; anteprima e pesi mostrati all'utente prima del commit.
   5. Alla fine del passo 5, prima del 6: istruzioni per provare l'app sul telefono in Wi-Fi con il server locale (indirizzo, comando, cosa controllare), confermando che quell'indirizzo è diverso da quello dell'app installata, quindi i suoi dati non vengono toccati.

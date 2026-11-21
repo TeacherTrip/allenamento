@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { Session, SetLog } from '../src/db/models';
-import { afterCheck, blockOf, blockRest, manualRest, type FlowItem } from '../src/logic/superset';
+import { afterCheck, blockOf, blockRest, manualRest, supersetToast, type FlowItem } from '../src/logic/superset';
 import { bestSet, exerciseCharts, exerciseIndex, groupIndex, MUSCLES, weeklySets } from '../src/logic/charts';
 import { prefillWithStart, startValues } from '../src/logic/prefill';
 import { progressionHint } from '../src/logic/progression';
-import { isComplete } from '../src/logic/values';
+import { isComplete, missingText } from '../src/logic/values';
 import { formatSet, nb } from '../src/logic/format';
 import { catalogExercise } from '../src/program/program';
 
@@ -226,5 +226,35 @@ describe('nb(): spazi non separabili solo dove servono (D4)', () => {
   });
   it('non tocca le parole che iniziano come un\'unità', () => {
     expect(nb('2 settimane, 3 serie, 5 secchi')).toBe(`2${N}settimane, 3${N}serie, 5 secchi`);
+  });
+});
+
+// ---------- avviso del superset (correzione del 21/11/2026) ----------
+describe('avviso dopo la ✓ in un superset: nome del prossimo esercizio e recupero che segue', () => {
+  it('con recupero del blocco', () => {
+    expect(supersetToast('Calf raise in piedi', 90)).toBe('Superset: ora Calf raise in piedi, poi recupero 90 s');
+  });
+  it('recupero "–" (null o 0): nessun recupero', () => {
+    expect(supersetToast('Dead bug', null)).toBe('Superset: ora Dead bug, poi nessun recupero');
+    expect(supersetToast('Dead bug', 0)).toBe('Superset: ora Dead bug, poi nessun recupero');
+  });
+});
+
+// ---------- ✓ su una serie incompleta (correzione del 21/11/2026) ----------
+describe('cosa manca per confermare una serie', () => {
+  it('kg: ripetizioni, kg o entrambi', () => {
+    expect(missingText('kg', { load: 6 })).toBe('Mancano le ripetizioni');
+    expect(missingText('kg', { reps: 10 })).toBe('Mancano i kg');
+    expect(missingText('kg', {})).toBe('Mancano kg e ripetizioni');
+    expect(missingText('kg', { load: 0, reps: 10 })).toBeNull(); // 0 kg è un valore valido
+  });
+  it('tempo, corpo libero, livello, elastico', () => {
+    expect(missingText('time', {})).toBe('Mancano i secondi');
+    expect(missingText('time', { seconds: 30 })).toBeNull();
+    expect(missingText('bodyweight', {})).toBe('Mancano le ripetizioni');
+    expect(missingText('bodyweight', { reps: 15 })).toBeNull();
+    expect(missingText('level', { reps: 8 })).toBe('Manca il livello');
+    expect(missingText('band', { reps: 8 })).toBe("Manca l'elastico");
+    expect(missingText('band', { load: 20 })).toBe('Mancano le ripetizioni');
   });
 });

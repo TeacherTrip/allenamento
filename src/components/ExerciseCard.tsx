@@ -32,6 +32,8 @@ interface Props {
   onSetCheck: (rowIndex: number) => void;
   /** Primo lato confermato. */
   onSetLeft: () => void;
+  /** ✓ su una serie incompleta: cosa manca. */
+  onIncomplete: (missing: string) => void;
   onRest: (sec: number) => void;
 }
 
@@ -91,6 +93,7 @@ export function ExerciseCard(p: Props) {
           onChange={(e) => p.onSetChange(i, e)}
           onCheck={() => p.onSetCheck(i)}
           onLeft={p.onSetLeft}
+          onIncomplete={p.onIncomplete}
         />
       ))}
       {p.extraEntries.map((entry, k) => (
@@ -106,6 +109,7 @@ export function ExerciseCard(p: Props) {
           onChange={(e) => p.onExtraChange(k, e)}
           onCheck={() => p.onSetCheck(count + k)}
           onLeft={p.onSetLeft}
+          onIncomplete={p.onIncomplete}
           onRemove={() => p.onExtraRemove(k)}
         />
       ))}

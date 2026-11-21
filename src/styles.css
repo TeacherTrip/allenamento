@@ -352,3 +352,5 @@ main.with-rest.with-toast { padding-bottom: calc(170px + 72px + env(safe-area-in
 .dialog h2 { margin-top: 0; }
 .hist-group h3 { margin: 18px 0 4px; font-size: 16px; }
 .hist-group:first-child h3 { margin-top: 8px; }
+.slow-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.slow-actions [role='status'] { flex-basis: 100%; margin: 4px 0 0; }

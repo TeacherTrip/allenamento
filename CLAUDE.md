@@ -47,10 +47,17 @@ Il repo è/diventerà **pubblico**. Queste regole hanno priorità su velocità e
 - `/chiudi` (`.claude/commands/chiudi.md`): chiusura sessione (stato, diario in `docs/storia.md`, punti aperti in `docs/aperti.md`, controlli, commit, push).
 
 ## Stato per ripartire
+- **Correzione del blocco su «Caricamento» (21/11/2026), ramo `fix-recupero`** → merge `--no-ff` in `main` = **pubblicazione n. 9**. Diagnosi e prove in `docs/storia.md` (21/11). In sintesi: sul secondo telefono l'app era aperta insieme in una scheda di Chrome e come app installata; il database (sano) non rispondeva più e l'app aspettava all'infinito. Ora:
+  - **una sola copia dell'app per volta** (Web Locks, `src/db/appLock.ts`): la seconda copia mostra «App già aperta» con i passaggi e parte da sola quando l'altra si chiude. **Nelle prove, due pagine dell'app nello stesso contesto = la seconda vede «App già aperta»** (chiudere la prima o usare un contesto nuovo; le pagine di servizio aprono `favicon.svg`);
+  - «Caricamento…» con tempo massimo (`src/components/Loading.tsx`, 8 s; `__TG_TEST_SLOW_MS__` nelle prove), error boundary, backup grezzo con tempo massimo di 5 s;
+  - dati non validi all'avvio (`src/db/sanitize.ts`): impostazioni → predefinito, bozze → scartate (copia solo in memoria), sedute mai toccate;
+  - il ✓ conferma solo serie complete («Mancano le ripetizioni: la serie non è confermata»); avviso del superset col nome del prossimo esercizio e il recupero.
+  - Scoperto in Chrome: una **scrittura** lasciata aperta su una tabella blocca le scritture su **tutte** le altre; una lettura blocca solo la sua tabella.
+- **Fase 5 (Google Drive) sospesa** sul ramo `fase-5-drive` (piano preliminare da approvare, nessun codice). Prima di riprenderla: portare `main` nel ramo.
 - **Fase 4-bis PUBBLICATA il 20/11/2026** (passo 10): merge `--no-ff` di `fase-4bis` in `main` = **6f23f93**, pubblicazione n. 7 su Actions verde; prima del merge `main` era a 01f7f1f (codice d66419b, Fase 7). Ramo `fase-4bis` conservato (non cancellare). Da qui si lavora di nuovo su `main` (o su un ramo nuovo, se la modifica è grande).
 - Regole dell'app: serie confermata **solo con ✓** (avvia il recupero); "Termina e salva" ferma il recupero. PWA: aggiornamento solo a richiesta. Avvisi brevi in basso, chiudibili.
 - GitHub: repo **pubblico**, `main` protetto, Pages solo da `main`. **Conferma dell'utente prima di ogni modifica su GitHub** (push di `fase-4bis` autorizzato; /chiudi = push del ramo).
-- Prove: 230 Vitest + 133 Playwright, verdi; `npm run prova-aggiornamento` 2/2 verde (due passate). `npm run prova-usb` solo a mano.
+- Prove: **239 Vitest + 155 Playwright**, verdi; `npm run prova-aggiornamento` 2/2 verde. `npm run prova-usb` solo a mano. Prova completa sul secondo telefono via USB (21/11, versione di `fix-recupero` su `localhost:5173`, in Chrome e come app installata, anche senza rete): 15/15 OK, nessun errore in console.
 - Telefono attuale: storico vuoto, quindi niente backup né prova a secco (sostituite dalla prova di aggiornamento reale). Aggiornare col pulsante «Aggiorna».
 - Lista privata di parole: **nessuna voce attiva** (la compila l'utente). Hook: eccezione esatta solo per `i@izs.me`. Per gitleaks/adb/gh ricaricare il PATH. `fake-indexeddb`: NON si installa.
 - **Ancora da verificare a mano su un telefono vero** (in `docs/aperti.md`): schermo acceso durante il circuito col telefono scollegato; modalità aereo reale. Poi il secondo telefono (Modello 2).

@@ -99,13 +99,13 @@ test('R01 scrivere i valori NON avvia il recupero; il tasto ✓ sì', async ({ p
   await expect(page.locator('.restbar .t')).toHaveText(/01:(30|29|28)/);
 });
 
-test('R02 superset: ✓ su 2a → avviso "Passa a 2b" senza timer; ✓ su 2b → timer', async ({ page }) => {
+test('R02 superset: ✓ su 2a → avviso col nome di 2b e il recupero che segue, senza timer; ✓ su 2b → timer', async ({ page }) => {
   await openApp(page);
   await separateSidesOn(page, 'A'); // prima della Fase 4-bis i lati erano sempre separati
   await chip(page, 'pu', 0, '2 Schienale divano');
   await typeSet(page, 'pu', 0, { reps: 10 });
   await row(page, 'pu', 0).locator('.check').click();
-  await expectToast(page, '→ Passa a 2b');
+  await expectToast(page, 'Superset: ora Rematore a un braccio, poi recupero 75 s');
   await expect(page.locator('.restbar')).toHaveCount(0);
   // 2b è per lato: dopo Sx niente timer, dopo Dx sì
   await typeSet(page, 'row', 0, { kg: 14, reps: 10 });

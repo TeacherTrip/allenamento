@@ -2,7 +2,7 @@ import type { DraftEntry, DraftField, SetValues } from '../db/models';
 import { PUSHUP_LEVELS } from '../program/program';
 import { bandOptions } from '../program/bands';
 import type { Exercise } from '../program/types';
-import { parseNum, valuesToEntry } from '../logic/values';
+import { entryToValues, missingText, parseNum, valuesToEntry } from '../logic/values';
 
 export type Side = 'left' | 'right';
 
@@ -20,6 +20,8 @@ interface Props {
   onCheck?: () => void;
   /** Esercizi con lati separati: confermato il PRIMO lato (quello di partenza). */
   onLeft?: () => void;
+  /** ✓ (o primo lato) toccato su una serie incompleta: cosa manca. La serie NON si conferma. */
+  onIncomplete?: (missing: string) => void;
   /** Serie extra non confermata: si può eliminare. */
   onRemove?: () => void;
   extra?: boolean;
@@ -31,7 +33,7 @@ interface Props {
  * Una serie: campi della metrica + conferma. Grigio = da confermare, pieno = confermato.
  * Esercizi con lati separati (confirmSides) e «Separa i lati» acceso: due tasti affiancati [Sx] [Dx].
  */
-export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, onRemove, extra, startSide = 'left', separateSides = false }: Props) {
+export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, onIncomplete, onRemove, extra, startSide = 'left', separateSides = false }: Props) {
   const confirmed = entry != null && !entry.pending;
   // tasti [Sx] [Dx] solo con «Separa i lati» acceso; spento, un «primo lato fatto» rimasto in bozza è solo «da confermare»
   const sides = !!ex.confirmSides && separateSides;
@@ -52,11 +54,19 @@ export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, o
     );
 
   const unconfirm = () => onChange({ ...shown, pending: true }); // toglie la conferma, tiene i valori
+  // conferma solo una serie completa (ripetizioni o secondi, e il carico dove serve); altrimenti dice cosa manca
+  const incomplete = () => {
+    const miss = missingText(ex.metric, entryToValues(shown));
+    if (miss) onIncomplete?.(miss);
+    return !!miss;
+  };
   const confirm = () => {
+    if (incomplete()) return;
     onChange(shown);
     onCheck?.();
   };
   const left = () => {
+    if (incomplete()) return;
     onChange({ ...shown, pending: true, leftDone: true });
     onLeft?.();
   };

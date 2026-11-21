@@ -2,6 +2,15 @@
 
 Stato: app **pubblicata** su https://teachertrip.github.io/allenamento/ con la **Fase 4-bis** (merge 6f23f93 in `main`, pubblicazione n. 7 del 20/11/2026; prima: d66419b, Fase 7). Ramo `fase-4bis` conservato. Il telefono attuale si aggiorna col pulsante «Aggiorna». **Fase 7 chiusa il 20/11/2026**: checklist §10 completa (dettagli in `docs/storia.md`). Repository **pubblico**; protezioni GitHub attive (secret scanning + push protection, `main` protetto da force push e cancellazione, Issues/Projects/Wiki spenti).
 
+## Correzione del blocco su «Caricamento» (21/11/2026, ramo `fix-recupero`, pubblicazione n. 9)
+- [x] Diagnosi sul secondo telefono via USB (database sano; app aperta sia in una scheda di Chrome sia come app installata). Copia in `dati-locali/` (fuori da Git).
+- [x] Correzioni con prove: copia unica (Web Locks), messaggio d'attesa con «Continua ad aspettare», error boundary, backup grezzo con tempo massimo, dati non validi all'avvio, transazioni ristrette, ✓ solo su serie complete, avviso del superset, nota sotto «Recupero automatico», avviso «App già aperta» adatto al caso.
+- [x] Prova completa sul secondo telefono (Chrome + app installata + senza rete): 15/15 OK.
+- [ ] Secondo telefono: disinstallare l'app di prova di `localhost:5173` e cancellare solo i dati di `localhost:5173` (Chrome → Impostazioni sito → Tutti i siti → localhost:5173 → Elimina e reimposta); poi reinstallare l'app pubblicata e usarla **solo dall'icona**.
+- [ ] Telefono principale: «Aggiorna» alla versione n. 9, poi chiudere eventuali schede di Chrome con l'app (il lucchetto vale solo tra copie della versione nuova).
+- [ ] Causa a monte del blocco non identificata con certezza (nessuna transazione dell'app poteva tenere occupate sedute e serie con 0 sedute; probabile attesa dentro Chrome, sparita col riavvio di Chrome). Se si ripresenta: debug USB, `docs/storia.md` del 21/11.
+- [ ] Riprendere la Fase 5 sul ramo `fase-5-drive` dopo aver portato `main` nel ramo.
+
 ## Da verificare a mano su un telefono vero (non provabili sul PC)
 - [ ] **Schermo acceso durante il circuito col telefono SCOLLEGATO** dal PC: avviare il timer del circuito e non toccare il telefono per più del tempo di spegnimento dello schermo; deve restare acceso fino alla fine o a «Interrompi».
 - [ ] **Modalità aereo reale**: attivarla, chiudere l'app e riaprirla dall'icona: si apre con immagini, schede, Storico e Grafici; una seduta si salva. Poi disattivarla.

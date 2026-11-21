@@ -31,6 +31,7 @@ test('P02 elastico e appoggio si selezionano con i pulsanti (confermati solo con
   await expect(row(page, 'pull', 0).getByRole('button', { name: '30', exact: true })).toHaveClass(/on confirmed/);
   await chip(page, 'pu', 0, '2 Schienale divano');
   await expect(row(page, 'pu', 0).getByRole('button', { name: '2 Schienale divano' })).toHaveClass(/on prefilled/);
+  await typeSet(page, 'pu', 0, { reps: 10 }); // dal 21/11 il ✓ conferma solo una serie completa
   await checkSet(page, 'pu', 0);
   await expect(row(page, 'pu', 0).getByRole('button', { name: '2 Schienale divano' })).toHaveClass(/on confirmed/);
 });
@@ -129,14 +130,15 @@ test('P10 interruttore Settimane 1-2 (in Info): 2 serie attivo, 3 disattivo; nel
   await expect(page.getByTestId('phase1-line')).toHaveCount(0);
 });
 
-test('P11 solo kg senza ripetizioni: non salvata e avviso', async ({ page }) => {
-  const msgs = autoDialogs(page);
+test('P11 solo kg senza ripetizioni: il ✓ non conferma, avviso, niente salvato', async ({ page }) => {
+  autoDialogs(page);
   await openApp(page);
   await logSet(page, 'gsq', 0, { kg: 14 });
+  // dal 21/11: avviso subito al ✓ e serie non confermata
+  await expectToast(page, 'Mancano le ripetizioni: la serie non è confermata');
+  await expect(row(page, 'gsq', 0)).toHaveClass(/prefilled/);
   await saveSession(page);
-  const warned =
-    msgs.some((m) => /ripetizioni/i.test(m)) || (await page.locator('.toast').textContent().catch(() => ''))?.match(/ripetizioni/i);
-  expect(warned, 'deve comparire un avviso sulle ripetizioni mancanti').toBeTruthy();
+  await expectToast(page, 'Nessuna serie confermata');
   await openHistory(page);
   await expect(page.locator('.hist')).not.toContainText('Goblet squat');
 });

@@ -9,6 +9,10 @@ import { InfoScreen } from './screens/InfoScreen';
 import { FirstRun } from './screens/FirstRun';
 import { RestBar, restRemaining, type RestState } from './components/RestBar';
 import { UpdateBanner } from './components/UpdateBanner';
+import { Loading } from './components/Loading';
+import { shouldSuggestIcon } from './db/appLock';
+import { DataNotice } from './components/DataNotice';
+import { validDraft } from './db/sanitize';
 import { fmtElapsed } from './logic/format';
 import type { Program } from './program/types';
 
@@ -56,19 +60,28 @@ function Stopwatch({ since }: { since: string }) {
   return <>{fmtElapsed(now - Date.parse(since))}</>;
 }
 
+declare global {
+  /** Solo per le prove automatiche: errore di disegno forzato (mai impostato nell'app). */
+  // eslint-disable-next-line no-var
+  var __TG_TEST_RENDER_ERROR__: boolean | undefined;
+}
+
 export function App() {
+  if (globalThis.__TG_TEST_RENDER_ERROR__) throw new Error('Errore apposta (prova automatica)');
   const [savedTab, setTab] = useState<Tab | null>(readTab);
   const programs = useLiveQuery(() => db.programs.orderBy('order').toArray(), []);
   const [persist, setPersist] = useState<PersistState | null>(null);
   const [toastMsg, setToastMsg] = useState('');
   const [rest, setRest] = useState<RestState | null>(readRest);
+  const [suggestIcon] = useState(shouldSuggestIcon);
   const toastTimer = useRef<number>(undefined);
   const history = useHistory();
   const settings = useSettings();
   // allenamento in corso = bozza con orario di inizio
-  const active = useLiveQuery(() => db.drafts.filter((d) => !!d.startedAt).first(), []);
+  // (le bozze non valide non contano: le scarta il controllo all'avvio, src/db/sanitize.ts)
+  const active = useLiveQuery(() => db.drafts.filter((d) => validDraft(d) && !!d.startedAt).first(), []);
 
-  const circuitRunning = useLiveQuery(() => db.drafts.filter((d) => !!d.circuitRun).count(), []);
+  const circuitRunning = useLiveQuery(() => db.drafts.filter((d) => validDraft(d) && !!d.circuitRun).count(), []);
 
   useWakeLock(!!active);
 
@@ -135,7 +148,7 @@ export function App() {
   // Primo avvio SOLO su un'installazione nuova: nessuna scheda e primo avvio mai fatto.
   // (Un database v1 migrato ha le schede e onboarded = true; il numero di sedute non conta mai.)
   // Finché impostazioni e schede non sono lette non si mostra niente (né barra né primo avvio): nessuno sfarfallio.
-  if (!settings || !programs) return <p className="sub">Caricamento…</p>;
+  if (!settings || !programs) return <Loading />;
   // Il service worker si registra in UpdateBanner: serve anche qui, così l'app è pronta offline già dal primo avvio.
   if (firstRun)
     return (
@@ -146,11 +159,11 @@ export function App() {
     );
 
   let body;
-  if (!history || !settings || !programs || tab == null) body = <p className="sub">Caricamento…</p>;
+  if (!history || !settings || !programs || tab == null) body = <Loading />;
   else if (tab === 'H') body = <HistoryScreen sessions={history.sessions} logs={history.logs} programs={programs} toast={toast} />;
   else if (tab === 'G')
     body = (
-      <Suspense fallback={<p className="sub">Caricamento…</p>}>
+      <Suspense fallback={<Loading />}>
         <ChartsScreen sessions={history.sessions} logs={history.logs} programs={programs} />
       </Suspense>
     );
@@ -186,6 +199,12 @@ export function App() {
       </header>
       <main className={[rest ? 'with-rest' : '', toastMsg ? 'with-toast' : ''].join(' ').trim() || undefined}>
         <UpdateBanner busy={!!active || !!rest || !!circuitRunning} toast={toast} />
+        <DataNotice />
+        {suggestIcon && (
+          <div className="warnbox" data-testid="use-icon">
+            <b>Usa l’app dall’icona.</b> Su questo telefono TeacherGym è stata usata come app installata: se la apri anche qui in Chrome, le due copie possono bloccarsi a vicenda.
+          </div>
+        )}
         {body}
       </main>
       {rest && <RestBar rest={rest} onPlus={plusRest} onStop={stopRest} />}

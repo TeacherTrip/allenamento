@@ -61,3 +61,30 @@ test.describe('schermo stretto (360 × 640)', () => {
     await sequenzaDelBug(page, 'm2');
   });
 });
+
+test('RG04 allenamento avviato, Info: «Separa i lati» bloccato col motivo accanto; «Recupero automatico» libero, lo dice, e si salva', async ({ page }) => {
+  await openApp(page, 'A', 'm2');
+  await page.getByRole('button', { name: /Inizia allenamento/ }).click();
+  await goTab(page, 'Info');
+  await expect(page.getByRole('checkbox', { name: /Separa i lati/ })).toBeDisabled();
+  await expect(page.getByTestId('sides-blocked')).toContainText('C’è un allenamento avviato sulla scheda A');
+  await expect(page.getByTestId('autorest-free')).toHaveText('Si può cambiare anche durante l’allenamento.');
+  const box = autoRestBox(page);
+  await box.click();
+  await expect(box).not.toBeChecked();
+  const saved = () =>
+    page.evaluate(
+      () =>
+        new Promise<unknown>((res) => {
+          const req = indexedDB.open('teachergym');
+          req.onsuccess = () => {
+            const r = req.result.transaction('settings', 'readonly').objectStore('settings').get('autoRest');
+            r.onsuccess = () => (req.result.close(), res(r.result?.value));
+          };
+        }),
+    );
+  await expect.poll(saved).toBe(false);
+  await box.click();
+  await expect(box).toBeChecked();
+  await expect.poll(saved).toBe(true);
+});

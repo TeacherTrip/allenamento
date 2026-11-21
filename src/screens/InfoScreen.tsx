@@ -165,7 +165,15 @@ export function InfoScreen({ sessions, logs, settings, programs, persist, toast 
             void setSetting('autoRest', e.target.checked);
           }}
         />
-        {nb('Recupero automatico (parte quando confermi una serie con ✓)')}
+        <span>
+          {nb('Recupero automatico (parte quando confermi una serie con ✓)')}
+          {startedName && (
+            // con un allenamento avviato alcune opzioni sono bloccate: questa no, e lo dice
+            <span className="muted small block" data-testid="autorest-free">
+              Si può cambiare anche durante l’allenamento.
+            </span>
+          )}
+        </span>
       </label>
       <label className="toggle">
         <input

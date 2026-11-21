@@ -128,7 +128,10 @@ export class StartedWorkoutError extends Error {
   }
 }
 
-/** Nome della scheda con un allenamento avviato (dentro una transazione che legge drafts e programs), o null. */
+/**
+ * Nome della scheda con un allenamento avviato, o null. Dentro una transazione usa quella; fuori, due letture
+ * in sola lettura (bozze, poi il nome della scheda solo se serve).
+ */
 async function startedProgramName(): Promise<string | null> {
   const started = (await db.drafts.toArray()).find(isStarted);
   if (!started) return null;
@@ -136,15 +139,16 @@ async function startedProgramName(): Promise<string | null> {
 }
 
 /**
- * «Separa i lati» (Info): bloccato con un allenamento avviato (controllo nella stessa transazione).
+ * «Separa i lati» (Info): bloccato con un allenamento avviato.
+ * Controllo in sola lettura, poi una sola scrittura su `settings` (nessuna tabella bloccata in scrittura senza motivo).
+ * Basta così perché i dati li tocca una sola copia dell'app per volta (src/db/appLock.ts) e in questa pagina,
+ * tra il controllo e la scrittura, nessuno può avviare un allenamento.
  * Le bozze non avviate restano: spento, un «primo lato fatto» torna semplicemente «da confermare».
  */
 export async function setSeparateSides(on: boolean): Promise<void> {
-  await db.transaction('rw', [db.drafts, db.programs, db.settings], async () => {
-    const name = await startedProgramName();
-    if (name) throw new StartedWorkoutError(name, 'cambiare «Separa i lati»');
-    await db.settings.put({ key: 'separateSides', value: on });
-  });
+  const name = await startedProgramName();
+  if (name) throw new StartedWorkoutError(name, 'cambiare «Separa i lati»');
+  await db.settings.put({ key: 'separateSides', value: on });
 }
 
 /**
@@ -271,7 +275,9 @@ export async function replaceAllData(
   settings?: Partial<Settings>,
   programs?: Program[],
 ): Promise<void> {
-  await db.transaction('rw', [db.sessions, db.setLogs, db.settings, db.programs], async () => {
+  // solo le tabelle che servono: schede e impostazioni solo se il backup le contiene
+  const tables = [db.sessions, db.setLogs, ...(settings ? [db.settings] : []), ...(programs ? [db.programs] : [])];
+  await db.transaction('rw', tables, async () => {
     await db.setLogs.clear();
     await db.sessions.clear();
     await db.sessions.bulkAdd(sessions);

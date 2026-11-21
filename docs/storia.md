@@ -330,3 +330,21 @@ Verifica chiesta dall'utente della regola «la ✓ conferma solo una serie compl
 - Commit di chiusura sessione solo locale su `main` (come 1385da5): un push pubblicherebbe la n. 11 con soli documenti; parte con la prossima pubblicazione.
 
 **Commit:** 215ac91, a5ec80a, 971a364 (merge) (+ commit di chiusura sessione).
+
+## 2026-11-21 (terza sessione) — circuito facoltativo in A e B del Modello 1 (ramo `circuito-ab`)
+
+**Richiesta:** in fondo alle schede A e B del Modello 1 lo stesso circuito senza salti della C, facoltativo, con la frase «facoltativo: si salta se stanco o poco recuperato». C e Modello 2 invariati; niente migrazione (sul telefono nessuna seduta: si usa «Ricarica un modello»).
+
+**Fatto**
+- Catalogo: A e B con `circuit: 'optional'` e `circuitNote` (campo nuovo della scheda, facoltativo: frase sotto il titolo al posto di «(facoltativo)»). Il Modello 2 non ha `circuitNote`: il suo riquadro resta «Circuito cardio senza salti (facoltativo)».
+- Il circuito è un riquadro in fondo alla seduta, non una voce di esercizio: le voci di A e B non cambiano e il circuito non entra nelle serie settimanali dei gruppi muscolari (come nella C).
+- Protocollo del circuito: una sola impostazione (`cardioProtocol`) scelta a mano, uguale per A, B e C.
+- Seduta senza circuito: si salva senza avvisi; col circuito: salvati serie e circuito.
+- «Ricarica un modello»: sostituisce schede e bozze e registra il modello; tutte le altre impostazioni restano («Separa i lati», lato di partenza, Settimane 1-2 con data e rinvio, protocollo), storico intatto.
+- Info del Modello 1: «Seduta A/B — full body + circuito facoltativo» e regola «Circuito cardio» (8 regole).
+- Prova instabile CI01 corretta: rifallita 2 volte su 30 sotto carico; il pulsante si accende subito ma la scrittura nel database arriva dopo, e la prova ricaricava prima. Ora aspetta il valore nel database: 0 su 60. App invariata.
+- Prove nuove: CA01-CA05 (`e2e/circuito-ab.spec.ts`), Vitest `tests/circuito-ab.test.ts`; IM03 aggiornata.
+
+**Prove:** da 241 + 162 a **248 Vitest + 167 Playwright** (due passate), build, `npm run prova-aggiornamento` 2/2.
+
+**Commit:** d4ba154, 079f64b, c739b43 + documentazione; merge in `main` = pubblicazione n. 11 (autorizzata dall'utente).

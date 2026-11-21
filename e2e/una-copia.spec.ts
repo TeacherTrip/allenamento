@@ -29,7 +29,10 @@ test('UC01 seconda copia aperta: avviso con i passaggi e «Riprova», nessuna sc
   await second.goto('./');
   await expect(otherCopy(second)).toBeVisible();
   await expect(otherCopy(second)).toContainText('TeacherGym è aperta anche in un’altra scheda o finestra');
-  await expect(otherCopy(second)).toContainText('Apri Chrome → tocca il quadratino delle schede → chiudi la scheda di TeacherGym → poi tocca Riprova');
+  // in una scheda di Chrome: chiudere questa scheda (se l'app è installata) o l'altra scheda
+  await expect(otherCopy(second)).toContainText('Se hai installato TeacherGym: chiudi questa scheda e usa l’app dall’icona.');
+  await expect(otherCopy(second)).toContainText('tocca il quadratino delle schede → chiudi l’altra scheda di TeacherGym → poi tocca Riprova');
+  await expect(otherCopy(second)).not.toContainText('Apri Chrome');
   await expect(otherCopy(second).getByRole('button', { name: 'Riprova' })).toBeVisible();
   await expect(second.locator('nav.tabbar')).toHaveCount(0);
   // nessuna scrittura dalla seconda copia
@@ -65,4 +68,16 @@ test('UC03 app installata (aperta dall’icona) e poi aperta in una scheda di Ch
 test('UC04 mai aperta dall’icona: nessun consiglio nella scheda del browser', async ({ page }) => {
   await openApp(page, 'A', 'm2');
   await expect(page.getByTestId('use-icon')).toHaveCount(0);
+});
+
+test('UC05 app installata aperta mentre c’è una scheda di Chrome: i passaggi per chiudere la scheda di Chrome', async ({ page, context }) => {
+  await openApp(page, 'A', 'm2'); // scheda di Chrome
+  const app = await context.newPage();
+  await standalone(app); // aperta dall'icona
+  await app.goto('./');
+  await expect(otherCopy(app)).toContainText('TeacherGym è aperta anche in un’altra scheda o finestra');
+  await expect(otherCopy(app)).toContainText('Apri Chrome → tocca il quadratino delle schede → chiudi la scheda di TeacherGym → poi tocca Riprova.');
+  await expect(otherCopy(app)).not.toContainText('usa l’app dall’icona');
+  await page.close();
+  await expect(app.locator('nav.tabbar')).toBeVisible({ timeout: 5000 });
 });

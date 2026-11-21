@@ -98,9 +98,19 @@ function OtherCopy() {
       <p>
         <b>TeacherGym è aperta anche in un’altra scheda o finestra.</b> Due copie aperte insieme possono bloccarsi a vicenda.
       </p>
-      <p>Apri Chrome → tocca il quadratino delle schede → chiudi la scheda di TeacherGym → poi tocca Riprova.</p>
-      <p className="muted small">Se l’altra copia è l’app installata, chiudila dalle app recenti. Appena l’altra copia si chiude, questa parte da sola.</p>
-      {!isStandalone() && <p className="muted small">Se hai installato TeacherGym, usa l’app dall’icona.</p>}
+      {isStandalone() ? (
+        // aperta dall'icona: l'altra copia è una scheda di Chrome
+        <p>Apri Chrome → tocca il quadratino delle schede → chiudi la scheda di TeacherGym → poi tocca Riprova.</p>
+      ) : (
+        // aperta in una scheda di Chrome: l'altra copia è l'app installata o un'altra scheda
+        <>
+          <p>
+            <b>Se hai installato TeacherGym: chiudi questa scheda e usa l’app dall’icona.</b>
+          </p>
+          <p>Altrimenti tocca il quadratino delle schede → chiudi l’altra scheda di TeacherGym → poi tocca Riprova.</p>
+        </>
+      )}
+      <p className="muted small">Appena l’altra copia si chiude, questa parte da sola.</p>
       <button className="primary" onClick={() => location.reload()}>
         Riprova
       </button>

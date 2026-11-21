@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Session, SetLog } from '../src/db/models';
-import { afterCheck, blockOf, blockRest, manualRest, type FlowItem } from '../src/logic/superset';
+import { afterCheck, blockOf, blockRest, manualRest, supersetToast, type FlowItem } from '../src/logic/superset';
 import { bestSet, exerciseCharts, exerciseIndex, groupIndex, MUSCLES, weeklySets } from '../src/logic/charts';
 import { prefillWithStart, startValues } from '../src/logic/prefill';
 import { progressionHint } from '../src/logic/progression';
@@ -226,5 +226,16 @@ describe('nb(): spazi non separabili solo dove servono (D4)', () => {
   });
   it('non tocca le parole che iniziano come un\'unità', () => {
     expect(nb('2 settimane, 3 serie, 5 secchi')).toBe(`2${N}settimane, 3${N}serie, 5 secchi`);
+  });
+});
+
+// ---------- avviso del superset (correzione del 21/11/2026) ----------
+describe('avviso dopo la ✓ in un superset: nome del prossimo esercizio e recupero che segue', () => {
+  it('con recupero del blocco', () => {
+    expect(supersetToast('Calf raise in piedi', 90)).toBe('Superset: ora Calf raise in piedi, poi recupero 90 s');
+  });
+  it('recupero "–" (null o 0): nessun recupero', () => {
+    expect(supersetToast('Dead bug', null)).toBe('Superset: ora Dead bug, poi nessun recupero');
+    expect(supersetToast('Dead bug', 0)).toBe('Superset: ora Dead bug, poi nessun recupero');
   });
 });

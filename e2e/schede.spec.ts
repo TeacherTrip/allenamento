@@ -52,7 +52,7 @@ test('D01 superset con serie diverse: gsq 3 + cr 2 → in coppia per 2 giri, poi
 
   for (let i = 0; i < 2; i++) {
     await logSet(page, 'gsq', i, { kg: 6, reps: 10 });
-    await expectToast(page, '→ Passa a 1b');
+    await expectToast(page, 'Superset: ora Calf raise in piedi, poi recupero 90 s');
     await expect(bar).toHaveCount(0);
     await logSet(page, 'cr', i, { reps: 15 });
     await expect(bar).toContainText('Calf raise in piedi');

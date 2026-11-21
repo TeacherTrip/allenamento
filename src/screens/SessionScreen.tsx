@@ -5,7 +5,7 @@ import type { Draft, DraftEntry, Session, SetLog, SetValues, Settings } from '..
 import { WARMUP, resolveProgram } from '../program/program';
 import type { Day, Exercise, Program } from '../program/types';
 import { lastSessionSets, prefillWithStart } from '../logic/prefill';
-import { afterCheck, blockOf, manualRest, type FlowItem } from '../logic/superset';
+import { afterCheck, blockOf, blockRest, manualRest, supersetToast, type FlowItem } from '../logic/superset';
 import { progressionHint } from '../logic/progression';
 import { durationSec, fmtDuration, formatSet, nb, NBSP } from '../logic/format';
 import { entryToValues, hasValues, isComplete } from '../logic/values';
@@ -170,7 +170,7 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
     const action = afterCheck(flow, index, rowIndex);
     if (action.kind === 'next') {
       const to = exercises.find((e) => e.id === action.to);
-      toast(`→ Passa a ${to?.superset ?? to?.name ?? ''}`);
+      toast(supersetToast(to?.name ?? '', blockRest(flow, index)));
     } else if (action.kind === 'rest' && settings.autoRest) {
       startRest(action.sec, exercises[index].name);
     }

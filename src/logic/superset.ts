@@ -39,6 +39,14 @@ export function blockRest(items: FlowItem[], index: number): number | null {
   return null;
 }
 
+/**
+ * Avviso dopo la ✓ quando si passa all'esercizio successivo del superset:
+ * nome dell'esercizio e recupero che seguirà a fine giro (null o 0 = "–", nessun recupero).
+ */
+export function supersetToast(nextName: string, restSec: number | null): string {
+  return `Superset: ora ${nextName}, ${restSec ? `poi recupero ${restSec} s` : 'poi nessun recupero'}`;
+}
+
 /** Recupero del pulsante manuale: quello del blocco, oppure 60 s. */
 export function manualRest(items: FlowItem[], index: number): number {
   return blockRest(items, index) ?? 60;

@@ -13,10 +13,13 @@ const item = (exerciseId: string, sets: number, repRange: [number, number], rest
 /**
  * MODELLO 1 = le schede A/B/C usate fino alla Fase 4-bis. Gli id delle schede (A, B, C) non si cambiano: lo storico li usa.
  * Note delle voci (pu, pull, ht, lpd): parti delle vecchie note del catalogo legate al Modello 1, spostate qui con testo identico (20/11).
+ * Circuito: obbligatorio in C; facoltativo in A e B (21/11), in fondo alla seduta, stessi esercizi e protocolli della C.
  */
+const M1_OPTIONAL_CIRCUIT = 'facoltativo: si salta se stanco o poco recuperato';
+
 const MODEL_1: Program[] = [
   {
-    id: 'A', order: 1, name: 'A', description: 'Full body', subtitle: 'Lunedì · ~45 min', warmup: true, circuit: 'no',
+    id: 'A', order: 1, name: 'A', description: 'Full body', subtitle: 'Lunedì · ~45 min', warmup: true, circuit: 'optional', circuitNote: M1_OPTIONAL_CIRCUIT,
     items: [
       item('gsq', 3, [8, 12], 90, { equipment: 'Manubrio 14 kg' }),
       item('pu', 3, [8, 12], null, { supersetNext: true, notes: "Scegli l'appoggio che ti tiene in 8-12 reps a RIR 2." }),
@@ -30,7 +33,7 @@ const MODEL_1: Program[] = [
     ],
   },
   {
-    id: 'B', order: 2, name: 'B', description: 'Full body', subtitle: 'Venerdì · ~45 min', warmup: true, circuit: 'no',
+    id: 'B', order: 2, name: 'B', description: 'Full body', subtitle: 'Venerdì · ~45 min', warmup: true, circuit: 'optional', circuitNote: M1_OPTIONAL_CIRCUIT,
     items: [
       item('bss', 3, [8, 12], 90, { equipment: '2 × 10 kg oppure 14 kg al petto' }),
       item('ht', 3, [12, 15], 75, { equipment: '14 kg + fascia sopra le ginocchia', notes: 'Spingi le ginocchia contro la fascia.' }),

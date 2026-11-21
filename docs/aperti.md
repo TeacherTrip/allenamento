@@ -12,6 +12,12 @@ Stato: app **pubblicata** su https://teachertrip.github.io/allenamento/ con la *
 - [ ] Sul telefono, nel primo allenamento dopo «Aggiorna»: una serie svuotata dopo la ✓ torna grigia; ricompilata torna verde senza un'altra ✓; su un push-up senza livello la ✓ dice «Manca il livello».
 - Limite accettato: una serie confermata in una bozza di prima della pubblicazione n. 9 e rimasta incompleta torna verde appena la si completa, senza un'altra ✓ (la ✓ era già stata toccata allora); il recupero non riparte.
 
+## Pubblicazione n. 11: circuito facoltativo in A e B del Modello 1 (ramo `circuito-ab`, 21/11/2026)
+- [x] Catalogo: A e B con il circuito facoltativo in fondo (stessi esercizi e protocolli della C); C e Modello 2 invariati; nessuna migrazione. Prove CA01-CA05; prova instabile CI01 corretta (aspetta la scrittura nel database prima di ricaricare: 0 fallimenti su 60). Prove: 248 Vitest + 167 Playwright (due passate), build, `npm run prova-aggiornamento` 2/2.
+- [x] Merge in `main` (= pubblicazione n. 11) autorizzato dall'utente il 21/11.
+- [ ] Dopo l'aggiornamento, sul telefono: Info → «Ricarica un modello» → Modello 1 (cancella le bozze; impostazioni e storico restano), poi controllare il circuito in fondo ad A e B.
+- Nota: un'installazione di prima della Fase 4-bis che si aggiorna riceve A e B già con il circuito (la migrazione copia il catalogo attuale). Le schede già in un database non cambiano senza «Ricarica un modello».
+
 ## Da verificare a mano su un telefono vero (non provabili sul PC)
 - [ ] **Schermo acceso durante il circuito col telefono SCOLLEGATO** dal PC: avviare il timer del circuito e non toccare il telefono per più del tempo di spegnimento dello schermo; deve restare acceso fino alla fine o a «Interrompi».
 - [ ] **Modalità aereo reale**: attivarla, chiudere l'app e riaprirla dall'icona: si apre con immagini, schede, Storico e Grafici; una seduta si salva. Poi disattivarla.
@@ -77,7 +83,6 @@ Tolto dalla Fase 4-bis il 20/11. Era: da 1 a 4 schede (rinomina, aggiungi, elimi
 6. Se Windows chiede il permesso del firewall per Node.js: solo reti **private**.
 
 ## Da decidere
-- [ ] **Prova instabile CI01** (protocollo del circuito): fallita 1 volta sotto carico il 20/11, poi sempre verde. **Se si ripete, va corretta prima del rilascio** (passo 10).
 - [ ] `docs/piano-4bis.md` usa ancora «/lato» come abbreviazione nella tabella dei modelli (solo documentazione; l'app dice «per lato»).
 - [ ] Stringere il firewall: una sola regola Allow per node.exe (profilo Private, solo TCP 5173). I comandi li esegue l'utente come amministratore.
 - [ ] Valutare la notifica di fine recupero (vibra/suona anche a telefono bloccato).

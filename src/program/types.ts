@@ -81,6 +81,8 @@ export interface Program {
   notesPosition?: 'top' | 'bottom';
   warmup: boolean;
   circuit: 'no' | 'yes' | 'optional';
+  /** Solo con circuit 'optional': frase sotto il titolo del circuito, al posto di «(facoltativo)». */
+  circuitNote?: string;
   items: ProgramItem[];
 }
 

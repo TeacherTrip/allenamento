@@ -51,7 +51,7 @@ test('IM02 Modello 2: titoli e sottotitoli delle sedute senza giorni fissi; Info
   await expect(page.getByTestId('pushup-scale')).toContainText('5 Terra. A 3 × 12 pulite si scende di un livello.');
 });
 
-test('IM03 Modello 1: sottotitoli con i giorni e Info invariata', async ({ page }) => {
+test('IM03 Modello 1: sottotitoli con i giorni e Info (con il circuito facoltativo in A e B)', async ({ page }) => {
   await openApp(page, 'A', 'm1');
   await expect(page.getByTestId('program-subtitle')).toHaveText('Lunedì · ~45 min');
   await goTab(page, 'Info');
@@ -59,6 +59,7 @@ test('IM03 Modello 1: sottotitoli con i giorni e Info invariata', async ({ page 
   await expect(page.getByText('Esempio', { exact: true })).toHaveCount(0);
   await expect(page.getByTestId('week')).toContainText('Seduta A — full body');
   await expect(page.getByTestId('daily')).toContainText('Tra A e B almeno 48 ore.');
-  await expect(page.getByTestId('rules').locator('li')).toHaveCount(7);
+  await expect(page.getByTestId('rules').locator('li')).toHaveCount(8); // 8 dal 21/11: circuito facoltativo in A e B
+  await expect(page.getByTestId('rules')).toContainText('in A e B è facoltativo, si salta se stanco o poco recuperato');
   await expect(page.getByTestId('pushup-scale')).toContainText('Passi al livello successivo quando fai 3 × 12 a RIR 2.');
 });

@@ -2,7 +2,7 @@ import type { DraftEntry, DraftField, SetValues } from '../db/models';
 import { PUSHUP_LEVELS } from '../program/program';
 import { bandOptions } from '../program/bands';
 import type { Exercise } from '../program/types';
-import { entryToValues, missingText, parseNum, valuesToEntry } from '../logic/values';
+import { entryToValues, isComplete, missingText, parseNum, valuesToEntry } from '../logic/values';
 
 export type Side = 'left' | 'right';
 
@@ -34,11 +34,15 @@ interface Props {
  * Esercizi con lati separati (confirmSides) e «Separa i lati» acceso: due tasti affiancati [Sx] [Dx].
  */
 export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, onIncomplete, onRemove, extra, startSide = 'left', separateSides = false }: Props) {
-  const confirmed = entry != null && !entry.pending;
+  const shown: DraftEntry = entry ? { load: entry.load, reps: entry.reps, seconds: entry.seconds } : valuesToEntry(prefill);
+  // `stored` = confermata nella bozza. VERDE solo se è anche completa (= verrà salvata): una serie confermata
+  // e poi svuotata, o una bozza di prima della pubblicazione n. 9 con serie confermate incomplete, torna grigia.
+  // Correggendo i valori la conferma nella bozza resta: completata di nuovo, torna verde senza un altro ✓.
+  const stored = entry != null && !entry.pending;
+  const confirmed = stored && isComplete(ex.metric, entryToValues(shown));
   // tasti [Sx] [Dx] solo con «Separa i lati» acceso; spento, un «primo lato fatto» rimasto in bozza è solo «da confermare»
   const sides = !!ex.confirmSides && separateSides;
-  const leftDone = sides && !confirmed && !!entry?.leftDone;
-  const shown: DraftEntry = entry ? { load: entry.load, reps: entry.reps, seconds: entry.seconds } : valuesToEntry(prefill);
+  const leftDone = sides && !stored && !!entry?.leftDone;
   const hasAny = [shown.load, shown.reps, shown.seconds].some((x) => x != null && x !== '');
   // `leftDone` nella bozza vuol dire "primo lato fatto" (il primo è quello di partenza)
   const [firstName, secondName] = startSide === 'left' ? ['sinistro', 'destro'] : ['destro', 'sinistro'];
@@ -48,7 +52,7 @@ export function SetRow({ ex, label, prefill, entry, onChange, onCheck, onLeft, o
   // Una serie già confermata resta confermata se si corregge un valore.
   const edit = (field: DraftField, value: string) =>
     onChange(
-      confirmed
+      stored
         ? { ...shown, [field]: value }
         : { ...shown, [field]: value, pending: true, ...(leftDone ? { leftDone: true } : {}) },
     );

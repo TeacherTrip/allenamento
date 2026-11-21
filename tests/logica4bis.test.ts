@@ -256,5 +256,21 @@ describe('cosa manca per confermare una serie', () => {
     expect(missingText('level', { reps: 8 })).toBe('Manca il livello');
     expect(missingText('band', { reps: 8 })).toBe("Manca l'elastico");
     expect(missingText('band', { load: 20 })).toBe('Mancano le ripetizioni');
+    expect(missingText('band', { load: 0, reps: 4 })).toBeNull(); // 0 = nessun elastico (trazioni)
+  });
+  // verifica del 21/11 (ramo fix-spunta): livello ed elastico vuoti insieme alle ripetizioni
+  it('livello o elastico mancanti insieme alle ripetizioni', () => {
+    expect(missingText('level', {})).toBe('Mancano livello e ripetizioni');
+    expect(missingText('band', {})).toBe('Mancano elastico e ripetizioni');
+  });
+  it('stessa regola del salvataggio: nessun avviso ⇔ serie completa, per ogni metrica e combinazione', () => {
+    const metrics = ['kg', 'band', 'level', 'bodyweight', 'time'] as const;
+    for (const m of metrics)
+      for (const load of [undefined, 0, 6])
+        for (const reps of [undefined, 0, 10])
+          for (const seconds of [undefined, 30]) {
+            const v = { ...(load != null ? { load } : {}), ...(reps != null ? { reps } : {}), ...(seconds != null ? { seconds } : {}) };
+            expect(missingText(m, v) == null, `${m} ${JSON.stringify(v)}`).toBe(isComplete(m, v));
+          }
   });
 });

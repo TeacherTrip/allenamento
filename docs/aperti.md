@@ -8,6 +8,10 @@ Stato: app **pubblicata** su https://teachertrip.github.io/allenamento/ con la *
 - [ ] Causa a monte del blocco non identificata con certezza (nessuna transazione dell'app poteva tenere occupate sedute e serie con 0 sedute; probabile attesa dentro Chrome, sparita col riavvio di Chrome). Se si ripresenta: debug USB, `docs/storia.md` del 21/11.
 - [ ] Riprendere la Fase 5 sul ramo `fase-5-drive` dopo aver portato `main` nel ramo.
 
+## Dopo la verifica della ✓ (ramo `fix-spunta`, 21/11/2026)
+- [ ] Sul telefono, nel primo allenamento dopo «Aggiorna»: una serie svuotata dopo la ✓ torna grigia; ricompilata torna verde senza un'altra ✓; su un push-up senza livello la ✓ dice «Manca il livello».
+- Limite accettato: una serie confermata in una bozza di prima della pubblicazione n. 9 e rimasta incompleta torna verde appena la si completa, senza un'altra ✓ (la ✓ era già stata toccata allora); il recupero non riparte.
+
 ## Da verificare a mano su un telefono vero (non provabili sul PC)
 - [ ] **Schermo acceso durante il circuito col telefono SCOLLEGATO** dal PC: avviare il timer del circuito e non toccare il telefono per più del tempo di spegnimento dello schermo; deve restare acceso fino alla fine o a «Interrompi».
 - [ ] **Modalità aereo reale**: attivarla, chiudere l'app e riaprirla dall'icona: si apre con immagini, schede, Storico e Grafici; una seduta si salva. Poi disattivarla.

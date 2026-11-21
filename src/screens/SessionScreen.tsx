@@ -231,7 +231,7 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
     if (complete === 0 && !hasCircuit) {
       toast(
         incomplete > 0
-          ? 'Serie incomplete: mancano le ripetizioni (o i secondi). Completale per salvarle.'
+          ? 'Serie incomplete (in grigio): completa i valori mancanti per salvarle.'
           : 'Nessuna serie confermata: tocca ✓ sulle serie fatte',
       );
       return;
@@ -239,7 +239,12 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
     const dur = started ? durationSec(started) : undefined;
     const lines: string[] = [];
     if (pending) lines.push(`${pending} serie non confermate (senza ✓) NON verranno salvate.`);
-    if (incomplete) lines.push(`${incomplete} serie senza ripetizioni (o secondi) NON verranno salvate.`);
+    if (incomplete)
+      lines.push(
+        incomplete === 1
+          ? '1 serie confermata ma incompleta (manca un valore) NON verrà salvata.'
+          : `${incomplete} serie confermate ma incomplete (manca un valore) NON verranno salvate.`,
+      );
     if (dur != null || lines.length) {
       const head = dur != null ? `Terminare l'allenamento? Durata: ${fmtDuration(dur)}` : 'Salvo la seduta?';
       if (!confirm([head, ...lines].join('\n\n'))) return;

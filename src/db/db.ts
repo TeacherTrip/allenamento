@@ -8,6 +8,7 @@ import { PROGRAM_VERSION } from '../program/program';
 import { TEMPLATE_BY_ID } from '../catalog/templates';
 import { hasValues, newId } from '../logic/values';
 import { model1Programs, settingsToAdd, upgradeSession, type SettingRow } from './migrate';
+import { sanitizeSettings, validDraft, type StartupRepairs } from './sanitize';
 
 export const DB_NAME = 'teachergym';
 
@@ -75,11 +76,35 @@ export const db = new GymDB();
 
 // ---------- impostazioni ----------
 
+/** Impostazioni lette dal database; un valore non valido vale come predefinito (src/db/sanitize.ts). */
 export async function loadSettings(): Promise<Settings> {
-  const rows = await db.settings.toArray();
-  const s: Settings = { ...DEFAULT_SETTINGS };
-  for (const r of rows) (s as unknown as Record<string, unknown>)[r.key] = r.value;
-  return s;
+  return sanitizeSettings(await db.settings.toArray()).settings;
+}
+
+/**
+ * Controllo all'avvio (DbGate, dopo l'apertura): bozze non valide scartate (copiate in memoria, poi cancellate,
+ * in una scrittura che tocca solo `drafts` e solo se serve), impostazioni non valide solo elencate.
+ * Le sedute non si toccano.
+ */
+export async function checkStoredData(): Promise<StartupRepairs> {
+  const [drafts, rows, programs] = await Promise.all([db.drafts.toArray(), db.settings.toArray(), db.programs.toArray()]);
+  const bad = drafts.filter((d) => !validDraft(d));
+  if (bad.length)
+    // si ricontrolla dentro la scrittura: una bozza valida scritta nel frattempo con la stessa chiave resta
+    await db.transaction('rw', db.drafts, async () => {
+      for (const d of bad) {
+        const key = (d as { day?: unknown }).day;
+        if (typeof key !== 'string') continue;
+        const cur = await db.drafts.get(key);
+        if (cur && !validDraft(cur)) await db.drafts.delete(key);
+      }
+    });
+  const name = (day: unknown) => programs.find((p) => p.id === day)?.name ?? (typeof day === 'string' ? day : '?');
+  return {
+    drafts: bad,
+    draftNames: bad.map((d) => name((d as { day?: unknown }).day)),
+    settings: sanitizeSettings(rows).invalid,
+  };
 }
 
 export async function setSetting<K extends keyof Settings>(key: K, value: Settings[K]): Promise<void> {
@@ -118,7 +143,7 @@ export async function completeFirstRun(templateId: TemplateId): Promise<void> {
 }
 
 /** Bozza "avviata": cronometro partito o circuito in corso. */
-export const isStarted = (d: { startedAt?: string; circuitRun?: unknown }) => !!d.startedAt || !!d.circuitRun;
+export const isStarted = (d: { startedAt?: string; circuitRun?: unknown }) => validDraft(d) && (!!d.startedAt || !!d.circuitRun);
 
 /** Cambio di un'impostazione rifiutato: c'è un allenamento avviato su questa scheda. */
 export class StartedWorkoutError extends Error {

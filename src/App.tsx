@@ -11,6 +11,8 @@ import { RestBar, restRemaining, type RestState } from './components/RestBar';
 import { UpdateBanner } from './components/UpdateBanner';
 import { Loading } from './components/Loading';
 import { shouldSuggestIcon } from './db/appLock';
+import { DataNotice } from './components/DataNotice';
+import { validDraft } from './db/sanitize';
 import { fmtElapsed } from './logic/format';
 import type { Program } from './program/types';
 
@@ -76,9 +78,10 @@ export function App() {
   const history = useHistory();
   const settings = useSettings();
   // allenamento in corso = bozza con orario di inizio
-  const active = useLiveQuery(() => db.drafts.filter((d) => !!d.startedAt).first(), []);
+  // (le bozze non valide non contano: le scarta il controllo all'avvio, src/db/sanitize.ts)
+  const active = useLiveQuery(() => db.drafts.filter((d) => validDraft(d) && !!d.startedAt).first(), []);
 
-  const circuitRunning = useLiveQuery(() => db.drafts.filter((d) => !!d.circuitRun).count(), []);
+  const circuitRunning = useLiveQuery(() => db.drafts.filter((d) => validDraft(d) && !!d.circuitRun).count(), []);
 
   useWakeLock(!!active);
 
@@ -196,6 +199,7 @@ export function App() {
       </header>
       <main className={[rest ? 'with-rest' : '', toastMsg ? 'with-toast' : ''].join(' ').trim() || undefined}>
         <UpdateBanner busy={!!active || !!rest || !!circuitRunning} toast={toast} />
+        <DataNotice />
         {suggestIcon && (
           <div className="warnbox" data-testid="use-icon">
             <b>Usa l’app dall’icona.</b> Su questo telefono TeacherGym è stata usata come app installata: se la apri anche qui in Chrome, le due copie possono bloccarsi a vicenda.

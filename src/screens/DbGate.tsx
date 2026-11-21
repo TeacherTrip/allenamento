@@ -1,8 +1,19 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { db } from '../db/db';
+import { checkStoredData, db } from '../db/db';
+import { setStartupRepairs } from '../db/sanitize';
 import { Loading } from '../components/Loading';
 import { RawBackupButton } from '../components/RawBackupButton';
 import { acquireAppLock, heldElsewhere, isStandalone } from '../db/appLock';
+
+/**
+ * Apertura, una sola volta per pagina (StrictMode esegue l'effetto due volte). Il controllo dei dati gira dopo,
+ * in secondo piano: se una tabella è occupata non ferma l'avvio (le letture ignorano già le bozze non valide).
+ */
+let started: Promise<void> | null = null;
+const openOnce = () =>
+  (started ??= db.open().then(() => {
+    checkStoredData().then(setStartupRepairs, (e: unknown) => console.error('TeacherGym: controllo dei dati non riuscito', e));
+  }));
 
 type State = { kind: 'opening' } | { kind: 'ok' } | { kind: 'error'; message: string };
 
@@ -44,7 +55,7 @@ export function DbGate({ children }: { children: ReactNode }) {
         locked = true;
         if (!alive) return;
         setOtherCopy(false);
-        return db.open().then(() => alive && (setBlocked(false), setState({ kind: 'ok' })));
+        return openOnce().then(() => alive && (setBlocked(false), setState({ kind: 'ok' })));
       })
       .catch((e) => alive && setState({ kind: 'error', message: errorText(e) }));
     return () => {

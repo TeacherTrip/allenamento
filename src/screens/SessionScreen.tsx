@@ -16,6 +16,7 @@ import { Thumb } from '../components/Thumb';
 import { CARDIO_EXERCISES, CARDIO_INTENSITY, CARDIO_PROTOCOLS } from '../program/cardio';
 import { CircuitOverlay } from '../components/CircuitOverlay';
 import { Loading } from '../components/Loading';
+import { validDraft } from '../db/sanitize';
 import { pauseRun, resumeRun } from '../logic/circuit';
 import type { SimpleItem } from '../program/types';
 
@@ -80,7 +81,8 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
     let alive = true;
     setDraft(null);
     db.drafts.get(day).then(
-      (d) => alive && setDraft(d ?? emptyDraft(day)),
+      // bozza non valida: si riparte vuoti (la copia e la cancellazione le fa il controllo all'avvio)
+      (d) => alive && setDraft(d && validDraft(d) ? d : emptyDraft(day)),
       (e: unknown) => alive && setDraftError(e),
     );
     return () => {

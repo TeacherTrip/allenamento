@@ -88,3 +88,16 @@ test('RG04 allenamento avviato, Info: «Separa i lati» bloccato col motivo acca
   await expect(box).toBeChecked();
   await expect.poll(saved).toBe(true);
 });
+
+test('RG05 primo avvio (Modello 1 e 2): Settimane 1-2 accese di serie (2 serie in seduta, interruttore acceso in Info)', async ({ browser }, info) => {
+  for (const model of ['m1', 'm2'] as const) {
+    const { baseURL, ...use } = info.project.use;
+    const ctx = await browser.newContext({ ...(use as object), baseURL }); // profilo pulito
+    const page = await ctx.newPage();
+    await openApp(page, 'A', model);
+    await expect(card(page, 'gsq').locator('.setrow')).toHaveCount(2);
+    await goTab(page, 'Info');
+    await expect(page.getByRole('checkbox', { name: /Settimane 1-2/ })).toBeChecked();
+    await ctx.close();
+  }
+});

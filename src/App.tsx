@@ -10,6 +10,7 @@ import { FirstRun } from './screens/FirstRun';
 import { RestBar, restRemaining, type RestState } from './components/RestBar';
 import { UpdateBanner } from './components/UpdateBanner';
 import { Loading } from './components/Loading';
+import { shouldSuggestIcon } from './db/appLock';
 import { fmtElapsed } from './logic/format';
 import type { Program } from './program/types';
 
@@ -70,6 +71,7 @@ export function App() {
   const [persist, setPersist] = useState<PersistState | null>(null);
   const [toastMsg, setToastMsg] = useState('');
   const [rest, setRest] = useState<RestState | null>(readRest);
+  const [suggestIcon] = useState(shouldSuggestIcon);
   const toastTimer = useRef<number>(undefined);
   const history = useHistory();
   const settings = useSettings();
@@ -194,6 +196,11 @@ export function App() {
       </header>
       <main className={[rest ? 'with-rest' : '', toastMsg ? 'with-toast' : ''].join(' ').trim() || undefined}>
         <UpdateBanner busy={!!active || !!rest || !!circuitRunning} toast={toast} />
+        {suggestIcon && (
+          <div className="warnbox" data-testid="use-icon">
+            <b>Usa l’app dall’icona.</b> Su questo telefono TeacherGym è stata usata come app installata: se la apri anche qui in Chrome, le due copie possono bloccarsi a vicenda.
+          </div>
+        )}
         {body}
       </main>
       {rest && <RestBar rest={rest} onPlus={plusRest} onStop={stopRest} />}

@@ -196,7 +196,8 @@ test('M3 migrazione che fallisce a metà: schermata d’errore, dati v1 intatti,
   expect(dump.stores.drafts).toEqual(data.drafts);
   await expect(page.getByTestId('db-dump-status')).toContainText('Backup grezzo scaricato');
 
-  // senza il guasto (nuova scheda del browser) la migrazione riesce
+  // senza il guasto (nuova scheda del browser, chiusa la prima: una sola copia dell'app per volta) la migrazione riesce
+  await page.close();
   const page2 = await context.newPage();
   await page2.goto('./');
   await expect(page2.locator('h1')).toHaveText('TeacherGym');

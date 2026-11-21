@@ -279,3 +279,14 @@ Orari presi da `git reflog show origin/main`.
 - Le due migliorie (✓ solo su serie complete, avviso adatto al caso) incluse prima del merge.
 
 **Prove:** da 230 + 133 a **239 Vitest + 155 Playwright**; `npm run prova-aggiornamento` 2/2; build riuscita; gitleaks pulito.
+
+**Seguito (21/11, fine sessione)**
+- Prova sul secondo telefono completata (passaggi 13-15: app installata in secondo piano, senza rete, scheda di Chrome con l'app aperta): tutto OK; server, registratore e `adb reverse`/`adb forward` chiusi.
+- Due migliorie chieste dall'utente prima del merge: ✓ solo su serie complete (8c79634) e avviso «App già aperta» adatto al caso (51f68e1); provate sul PC, non ancora sul telefono.
+- Documentazione (7382c72); controlli su ramo e su `main`: tsc, 239 Vitest, 155 Playwright (due passate), build, prova di aggiornamento 2/2; autori solo noreply.
+- **Merge** `--no-ff` in `main` = **ce93e43**, push, GitHub Actions **n. 9 verde**; il sito pubblicato contiene il lucchetto e l'avviso «Mancano le ripetizioni».
+
+**Decisioni**
+- Merge e pubblicazione autorizzati dall'utente dopo le due migliorie.
+
+**Commit:** 9858c3e, 0bce484, ba75f82, 8f8928f, e89d29e, 521fd49, 3ea9bb4, 036e023, 621279f, 8c79634, 51f68e1, 7382c72, ce93e43 (merge) (+ commit di chiusura sessione).

@@ -387,6 +387,7 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
             onExtraRemove={(k) => setExtra(r.ex.id, (arr) => (arr.splice(k, 1), arr))}
             onAddSet={() => setExtra(r.ex.id, (arr) => [...arr, null])}
             onSetCheck={(i) => onCheck(idx, i)}
+            onIncomplete={(missing) => toast(`${missing}: la serie non è confermata`)}
             onSetLeft={() => {
               unlockAudio();
               toast(`→ Lato ${startSide === 'left' ? 'destro' : 'sinistro'}, senza pausa`);

@@ -50,6 +50,19 @@ export function isComplete(metric: Metric, v: SetValues): boolean {
   return true;
 }
 
+/**
+ * Cosa manca per confermare una serie con ✓ (stesse regole di isComplete), oppure null se è completa.
+ * Senza questo controllo una serie con i soli kg grigi risultava confermata ma poi non veniva salvata.
+ */
+export function missingText(metric: Metric, v: SetValues): string | null {
+  if (metric === 'time') return v.seconds == null ? 'Mancano i secondi' : null;
+  const needsLoad = metric === 'kg' || metric === 'band' || metric === 'level';
+  const noLoad = needsLoad && v.load == null;
+  if (v.reps == null) return noLoad && metric === 'kg' ? 'Mancano kg e ripetizioni' : 'Mancano le ripetizioni';
+  if (!noLoad) return null;
+  return metric === 'kg' ? 'Mancano i kg' : metric === 'level' ? 'Manca il livello' : "Manca l'elastico";
+}
+
 /** Id univoci senza crypto.randomUUID (non disponibile su http in Wi-Fi). */
 export function newId(): string {
   return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);

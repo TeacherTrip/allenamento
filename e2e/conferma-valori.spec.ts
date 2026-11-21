@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openApp, row } from './helpers';
+import { expectToast, openApp, row, separateSidesOn, typeSet } from './helpers';
 import { readDb } from './migrazione-helpers';
 
 // Punto 1 della correzione del 21/11: le ripetizioni scritte subito prima della ✓ non devono andare perse.
@@ -40,4 +40,35 @@ test('CV02 solo ripetizioni (kg precompilato in grigio) e ✓ subito: ripetizion
   await page.reload();
   await expect(row(page, 'gsq', 0)).toHaveClass(/confirmed/);
   await expect(row(page, 'gsq', 0).locator('input[data-field="reps"]')).toHaveValue('12');
+});
+
+// Miglioria del 21/11/2026: il ✓ con le ripetizioni vuote (kg precompilati in grigio) non conferma la serie,
+// dice cosa manca. Prima la serie risultava confermata ma non veniva salvata (bozza trovata sul telefono).
+test('CV03 ✓ con i kg grigi e le ripetizioni vuote: avviso «Mancano le ripetizioni», la serie non si conferma', async ({ page }) => {
+  await openApp(page, 'A', 'm2');
+  await page.getByRole('button', { name: /Inizia allenamento/ }).click();
+  const r = row(page, 'gsq', 0);
+  await expect(r.locator('input[placeholder="kg"]')).toHaveValue('6');
+  await r.getByRole('button', { name: 'Conferma serie' }).click();
+  await expectToast(page, 'Mancano le ripetizioni');
+  await expect(r).toHaveClass(/prefilled/);
+  await expect(page.locator('.restbar')).toHaveCount(0);
+  expect(await draftSet(page, 'gsq', 0)).toBeUndefined();
+  // scritte le ripetizioni, il ✓ conferma
+  await typeSet(page, 'gsq', 0, { reps: 10 });
+  await r.getByRole('button', { name: 'Conferma serie' }).click();
+  await expect(r).toHaveClass(/confirmed/);
+  await expect.poll(() => draftSet(page, 'gsq', 0)).toEqual({ load: '6', reps: '10' });
+});
+
+test('CV04 lati separati: [Sx] con le ripetizioni vuote non segna il primo lato', async ({ page }) => {
+  await openApp(page, 'A', 'm2');
+  await separateSidesOn(page, 'A');
+  const r = row(page, 'row', 0);
+  await r.getByRole('button', { name: 'Conferma lato sinistro' }).click();
+  await expectToast(page, 'Mancano le ripetizioni');
+  await expect(r).not.toHaveClass(/left-done/);
+  await typeSet(page, 'row', 0, { reps: 10 });
+  await r.getByRole('button', { name: 'Conferma lato sinistro' }).click();
+  await expect(r).toHaveClass(/left-done/);
 });

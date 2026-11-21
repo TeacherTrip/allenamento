@@ -249,3 +249,33 @@ Orari presi da `git reflog show origin/main`.
 - Restano da verificare a mano su un telefono vero: schermo acceso nel circuito col telefono scollegato; modalità aereo reale.
 
 **Commit:** 536024f (prova di aggiornamento), 6f23f93 (merge) (+ commit della documentazione).
+
+## 2026-11-21 — Correzione urgente: blocco su «Caricamento» (ramo `fix-recupero`)
+**Segnalazione** (versione 8, secondo telefono, installazione nuova, Modello 2): dopo una ✓ sul goblet squat e un interruttore toccato in Info, ogni pagina restava bianca con «Caricamento…» (barra in basso visibile); l'app si bloccava anche riaperta.
+
+**Diagnosi**
+- La prova di regressione della sequenza (RG01-RG03) non riproduceva il bug, né in sviluppo né nella versione costruita.
+- Telefono via debug USB, prima in sola lettura: database letto da `favicon.svg` (nessun codice dell'app); copia in `dati-locali/`. Database **sano** (versione 20, letture in pochi millisecondi). Bozza della A con 6 kg confermati senza ripetizioni e senza orario di inizio; Settimane 1-2 spente; «Recupero automatico» mai scritto: le ultime scritture dell'app installata non erano arrivate.
+- C'era **una scheda di Chrome aperta sull'app**, oltre all'app installata. Ricaricata da Chrome, si apriva normalmente con gli stessi dati.
+- Riprodotto il sintomo sul PC: un'altra pagina che tiene aperta una scrittura su `sessions`/`setLogs` dà esattamente «barra + Caricamento su ogni pagina».
+- Nessuna transazione dell'app poteva tenere occupate sedute e serie con 0 sedute: innesco a monte non identificato con certezza (probabile attesa dentro Chrome, sparita col riavvio di Chrome).
+- Scoperto: in Chrome una scrittura lasciata aperta su una tabella blocca le scritture su tutte le altre (anche da un'altra connessione).
+- La ✓ non perde le ripetizioni (CV01-CV02); il ✓ però confermava una serie con i soli kg grigi, che poi non veniva salvata.
+
+**Correzioni** (prove scritte prima)
+- Avviso del superset: «Superset: ora Calf raise in piedi, poi recupero 90 s» (prima «→ Passa a 1b»).
+- Messaggio dopo 8 s di caricamento con «Continua ad aspettare», «Scarica backup», «Ricarica»; error boundary; backup grezzo con tempo massimo (AT01-AT03, EB01).
+- Una sola copia dell'app per volta con Web Locks; avviso «App già aperta» adatto al caso (app installata / scheda di Chrome); consiglio «Usa l'app dall'icona» (UC01-UC05).
+- Transazioni ristrette: «Separa i lati» e importazione (TX01-TX02).
+- Nota sotto «Recupero automatico» con un allenamento avviato (RG04); Settimane 1-2 accese al primo avvio (RG05).
+- Dati non validi all'avvio: impostazioni al predefinito, bozze scartate con copia in memoria, sedute intatte (DV01-DV02 + Vitest).
+- ✓ solo su serie complete, con l'avviso di cosa manca (CV03-CV04 + Vitest; P02 e P11 aggiornate).
+
+**Prova sul secondo telefono** (versione del ramo su `localhost:5173` via `adb reverse`, tocchi veri via debug USB): primo avvio, superset, recupero, Info, salvataggio con ripetizioni, Storico, Grafici, backup, seconda scheda, secondo piano; poi app installata con la scheda di Chrome aperta («App già aperta» → chiusa la scheda → parte da sola), stessi passaggi, secondo piano, **senza rete** (17 immagini su 17 dalla cache), scheda di Chrome con l'app aperta (database identico). 15/15 OK, nessun errore in console. Note: `vite preview` va avviato con `--host 127.0.0.1` (altrimenti ascolta solo su IPv6 e `adb reverse` non arriva); lo strumento dei tocchi deve chiudere la tastiera prima di toccare un pulsante.
+
+**Decisioni**
+- Piano di correzione approvato con le aggiunte dell'utente (tempo massimo del backup, «Continua ad aspettare», copia dei dati scartati solo in memoria, avviso del lucchetto con i passaggi concreti).
+- Al posto di «bozza riletta a ogni modifica»: il lucchetto impedisce la seconda copia.
+- Le due migliorie (✓ solo su serie complete, avviso adatto al caso) incluse prima del merge.
+
+**Prove:** da 230 + 133 a **239 Vitest + 155 Playwright**; `npm run prova-aggiornamento` 2/2; build riuscita; gitleaks pulito.

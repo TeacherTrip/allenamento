@@ -58,7 +58,14 @@ export function missingText(metric: Metric, v: SetValues): string | null {
   if (metric === 'time') return v.seconds == null ? 'Mancano i secondi' : null;
   const needsLoad = metric === 'kg' || metric === 'band' || metric === 'level';
   const noLoad = needsLoad && v.load == null;
-  if (v.reps == null) return noLoad && metric === 'kg' ? 'Mancano kg e ripetizioni' : 'Mancano le ripetizioni';
+  if (v.reps == null)
+    return !noLoad
+      ? 'Mancano le ripetizioni'
+      : metric === 'kg'
+        ? 'Mancano kg e ripetizioni'
+        : metric === 'level'
+          ? 'Mancano livello e ripetizioni'
+          : 'Mancano elastico e ripetizioni';
   if (!noLoad) return null;
   return metric === 'kg' ? 'Mancano i kg' : metric === 'level' ? 'Manca il livello' : "Manca l'elastico";
 }

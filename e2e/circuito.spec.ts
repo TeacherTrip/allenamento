@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { autoDialogs, expectToast, fakes, installFakes, openApp, openHistory, saveSession } from './helpers';
+import { readDb } from './migrazione-helpers';
+import type { SettingRow } from '../src/db/migrate';
 
 // Timer del circuito (seduta C). L'orologio della pagina è finto (page.clock): i minuti passano in un attimo.
 
@@ -26,6 +28,9 @@ test('CI01 protocolli: 4 scelte, la scelta resta dopo il ricaricamento', async (
   await expect(radios.nth(0)).toHaveAttribute('aria-checked', 'true');
   await page.getByRole('radio', { name: /Sett\. 3-4/ }).click();
   await expect(page.getByRole('radio', { name: /Sett\. 3-4/ })).toHaveAttribute('aria-checked', 'true');
+  // il pulsante si accende subito, la scrittura nel database arriva poco dopo: ricaricare solo a scrittura finita
+  // (sotto carico la prova ricaricava prima e falliva: prova instabile CI01, 20/11 e 21/11)
+  await expect.poll(async () => ((await readDb(page)).stores.settings as SettingRow[]).find((r) => r.key === 'cardioProtocol')?.value).toBe(1);
   await page.reload();
   await expect(page.getByRole('radio', { name: /Sett\. 3-4/ })).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByRole('radio', { name: /Sett\. 3-4/ })).toContainText('8× 30/30 s');

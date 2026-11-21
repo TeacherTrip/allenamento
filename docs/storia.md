@@ -290,3 +290,35 @@ Orari presi da `git reflog show origin/main`.
 - Merge e pubblicazione autorizzati dall'utente dopo le due migliorie.
 
 **Commit:** 9858c3e, 0bce484, ba75f82, 8f8928f, e89d29e, 521fd49, 3ea9bb4, 036e023, 621279f, 8c79634, 51f68e1, 7382c72, ce93e43 (merge) (+ commit di chiusura sessione).
+
+## 2026-11-21 (seconda sessione) — verifica della ✓ su serie complete (ramo `fix-spunta`)
+
+Verifica chiesta dall'utente della regola «la ✓ conferma solo una serie completa» (8c79634), aggiunta dopo la prova sul telefono e provata solo sul PC.
+
+**Campi richiesti perché la ✓ confermi** (stessa regola del salvataggio, `isComplete` / `missingText` in `src/logic/values.ts`)
+
+| Tipo di esercizio | Campi mostrati | Campi richiesti | Prove |
+|---|---|---|---|
+| kg | kg + rip. | kg e ripetizioni | CV01-CV03, P11, SP01-SP04, Vitest |
+| 0 kg (`ss`, `gb` della D nel Modello 2) | kg (precompilato «0») + rip. | come kg: 0 è un valore valido | SP03-SP04, Vitest |
+| corpo libero | rip. | ripetizioni | SP01-SP05, Vitest |
+| a tempo | sec | secondi | SP01-SP04, Vitest |
+| a livello (push-up) | pulsanti livello + rip. | livello e ripetizioni | P02, SP01-SP05, Vitest |
+| elastico | pulsanti elastico + rip. | elastico («Nessuno» = 0 vale) e ripetizioni | P02, SP01-SP04, Vitest |
+| un arto, «Separa i lati» spento | una ✓ | come la sua metrica | SP01, SP03, L01 |
+| un arto, «Separa i lati» acceso | [Sx] poi [Dx] (controllo su entrambi) | come la sua metrica | CV04, SP02, SP04 |
+
+**Esito**
+- Tutte le voci di Modello 1 e Modello 2 chiedono solo i campi che mostrano (SP01-SP04 passano anche sul codice di prima).
+- Due problemi trovati e corretti (215ac91):
+  - una serie confermata e poi svuotata restava verde e al salvataggio veniva scartata (in silenzio se svuotata del tutto);
+  - una bozza di prima della n. 9 con serie confermate incomplete non veniva scartata in silenzio (avviso al salvataggio), ma le serie apparivano verdi e l'avviso diceva sempre «senza ripetizioni (o secondi)», anche quando mancavano kg, livello o elastico.
+- Correzione: **verde = confermata e completa** (= verrà salvata); altrimenti grigia, e la ✓ dice cosa manca. Correggendo i valori la conferma nella bozza resta: completata di nuovo, la serie torna verde senza un'altra ✓ e senza ripartire il recupero. Avvisi: «N serie confermate ma incomplete (manca un valore) NON verranno salvate», «Serie incomplete (in grigio): completa i valori mancanti per salvarle.», «Mancano livello e ripetizioni», «Mancano elastico e ripetizioni».
+- **Limite accettato:** una serie incompleta di una bozza di prima della n. 9 torna verde appena la si completa, senza un'altra ✓ (la ✓ era già stata toccata allora).
+- Prove nuove: SP01-SP07 (`e2e/spunta.spec.ts`; SP05-SP07 falliscono sul codice di prima) e Vitest sulla coerenza tra avviso e salvataggio per ogni metrica e combinazione.
+
+**Prove:** da 239 + 155 a **241 Vitest + 162 Playwright**.
+
+**Decisioni**
+- Commit 1385da5 (solo documenti) non inviato da solo: entra in `main` col merge di `fix-spunta` (scelta B dell'utente).
+- Merge di `fix-spunta` in `main` e pubblicazione n. 10 approvati dall'utente.

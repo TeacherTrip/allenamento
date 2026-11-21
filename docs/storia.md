@@ -322,3 +322,11 @@ Verifica chiesta dall'utente della regola «la ✓ conferma solo una serie compl
 **Decisioni**
 - Commit 1385da5 (solo documenti) non inviato da solo: entra in `main` col merge di `fix-spunta` (scelta B dell'utente).
 - Merge di `fix-spunta` in `main` e pubblicazione n. 10 approvati dall'utente.
+
+**Pubblicazione n. 10**
+- Push di `fix-spunta`; documentazione sul ramo (a5ec80a); merge `--no-ff` in `main` = **971a364** (contiene anche 1385da5).
+- Su `main`: tsc, 241 Vitest, 162 Playwright (due passate), build, `npm run prova-aggiornamento` 2/2; autori solo noreply; push.
+- GitHub Actions **n. 10 verde**; il sito pubblicato contiene «Mancano livello e ripetizioni», «Serie incomplete (in grigio)», «confermate ma incomplete». In Info: «versione 10 (971a364)».
+- Commit di chiusura sessione solo locale su `main` (come 1385da5): un push pubblicherebbe la n. 11 con soli documenti; parte con la prossima pubblicazione.
+
+**Commit:** 215ac91, a5ec80a, 971a364 (merge) (+ commit di chiusura sessione).

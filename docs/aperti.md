@@ -1,14 +1,14 @@
 # Punti aperti
 
-Stato: app **pubblicata** su https://teachertrip.github.io/allenamento/ con la **pubblicazione n. 9** del 21/11/2026 (merge ce93e43 di `fix-recupero` in `main`: correzione del blocco su «Caricamento»; prima: a9c24bc, versione 8, e 6f23f93, Fase 4-bis). Rami `fix-recupero` e `fase-4bis` conservati. Repository **pubblico**; protezioni GitHub attive (secret scanning + push protection, `main` protetto da force push e cancellazione, Issues/Projects/Wiki spenti).
+Stato: app **pubblicata** su https://teachertrip.github.io/allenamento/ con la **pubblicazione n. 10** del 21/11/2026 (merge 971a364 di `fix-spunta` in `main`: verifica della ✓; prima: ce93e43, n. 9, correzione del blocco su «Caricamento»). Rami `fix-spunta`, `fix-recupero` e `fase-4bis` conservati. Commit di chiusura del 21/11 (seconda sessione) solo locale su `main`: parte con la prossima pubblicazione. Repository **pubblico**; protezioni GitHub attive (secret scanning + push protection, `main` protetto da force push e cancellazione, Issues/Projects/Wiki spenti).
 
 ## Dopo la pubblicazione n. 9 (correzione del blocco su «Caricamento», 21/11/2026)
 - [ ] Secondo telefono: disinstallare l'app di prova di `localhost:5173` e cancellare solo i dati di `localhost:5173` (Chrome → Impostazioni sito → Tutti i siti → localhost:5173 → Elimina e reimposta); poi reinstallare l'app pubblicata e usarla **solo dall'icona**.
-- [ ] Telefono principale: «Aggiorna» alla versione n. 9 (nel primo allenamento controllare l'avviso «Mancano le ripetizioni» col ✓ su una serie senza ripetizioni), poi chiudere eventuali schede di Chrome con l'app (il lucchetto vale solo tra copie della versione nuova).
+- [ ] Telefono principale: «Aggiorna» alla versione n. 10 (Info: «versione 10 (971a364)»; nel primo allenamento controllare l'avviso «Mancano le ripetizioni» col ✓ su una serie senza ripetizioni), poi chiudere eventuali schede di Chrome con l'app (il lucchetto vale solo tra copie della versione nuova).
 - [ ] Causa a monte del blocco non identificata con certezza (nessuna transazione dell'app poteva tenere occupate sedute e serie con 0 sedute; probabile attesa dentro Chrome, sparita col riavvio di Chrome). Se si ripresenta: debug USB, `docs/storia.md` del 21/11.
-- [ ] Riprendere la Fase 5 sul ramo `fase-5-drive` dopo aver portato `main` nel ramo.
+- [ ] Fase 5 in una sessione nuova: prima aggiornare `fase-5-drive` con `main` (che ora contiene la n. 10), poi il piano da approvare.
 
-## Dopo la verifica della ✓ (ramo `fix-spunta`, 21/11/2026)
+## Dopo la pubblicazione n. 10 (verifica della ✓, 21/11/2026)
 - [ ] Sul telefono, nel primo allenamento dopo «Aggiorna»: una serie svuotata dopo la ✓ torna grigia; ricompilata torna verde senza un'altra ✓; su un push-up senza livello la ✓ dice «Manca il livello».
 - Limite accettato: una serie confermata in una bozza di prima della pubblicazione n. 9 e rimasta incompleta torna verde appena la si completa, senza un'altra ✓ (la ✓ era già stata toccata allora); il recupero non riparte.
 

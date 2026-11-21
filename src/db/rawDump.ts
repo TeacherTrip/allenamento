@@ -43,6 +43,25 @@ export function readRawDump(dbName: string): Promise<RawDump> {
   });
 }
 
+/** Il database non ha risposto entro il tempo massimo (es. un'altra copia dell'app lo tiene occupato). */
+export class DbNotRespondingError extends Error {
+  constructor() {
+    super('Il database non risponde');
+    this.name = 'DbNotRespondingError';
+  }
+}
+
+/** Come readRawDump, ma con un tempo massimo: oltre, DbNotRespondingError (la lettura in corso non si può fermare). */
+export function readRawDumpWithin(dbName: string, ms: number): Promise<RawDump> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new DbNotRespondingError()), ms);
+    readRawDump(dbName).then(
+      (d) => (clearTimeout(t), resolve(d)),
+      (e) => (clearTimeout(t), reject(e)),
+    );
+  });
+}
+
 /** Nome del file: contiene "backup", quindi resta fuori da Git anche se finisce nel progetto. */
 export function rawDumpFileName(now = new Date()): string {
   return `teachergym-backup-grezzo-${now.toISOString().slice(0, 10)}.json`;

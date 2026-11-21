@@ -15,6 +15,7 @@ import { ExerciseCard } from '../components/ExerciseCard';
 import { Thumb } from '../components/Thumb';
 import { CARDIO_EXERCISES, CARDIO_INTENSITY, CARDIO_PROTOCOLS } from '../program/cardio';
 import { CircuitOverlay } from '../components/CircuitOverlay';
+import { Loading } from '../components/Loading';
 import { pauseRun, resumeRun } from '../logic/circuit';
 import type { SimpleItem } from '../program/types';
 
@@ -64,6 +65,9 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
   const title = nb(`Seduta ${program.name}${program.description ? ` — ${program.description}` : ''}`);
   const startSide = settings.startSide;
   const [draft, setDraft] = useState<Draft | null>(null);
+  // lettura della bozza fallita: si rilancia durante il disegno, così la prende l'error boundary
+  const [draftError, setDraftError] = useState<unknown>(null);
+  if (draftError) throw draftError;
 
   // "Settimane 1-2": l'interruttore è in Info; qui la riga e l'avviso «Disattivarle?».
   // Valore locale aggiornato subito al «Sì» (senza aspettare il database): niente sfarfallio
@@ -75,7 +79,10 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
   useEffect(() => {
     let alive = true;
     setDraft(null);
-    db.drafts.get(day).then((d) => alive && setDraft(d ?? emptyDraft(day)));
+    db.drafts.get(day).then(
+      (d) => alive && setDraft(d ?? emptyDraft(day)),
+      (e: unknown) => alive && setDraftError(e),
+    );
     return () => {
       alive = false;
     };
@@ -84,7 +91,7 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
   const update = (fn: (d: Draft) => Draft) =>
     setDraft((prev) => {
       const next = fn(prev ?? emptyDraft(day));
-      void saveDraft(next);
+      saveDraft(next).catch((e: unknown) => toast(`Non salvato: ${e instanceof Error ? e.message : String(e)}`, 6000));
       return next;
     });
 
@@ -128,7 +135,7 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
   );
 
   // draft.day !== day: appena cambiata scheda, la bozza è ancora quella del giorno prima → aspetta
-  if (!draft || draft.day !== day) return <p className="sub">Caricamento…</p>;
+  if (!draft || draft.day !== day) return <Loading />;
 
   const started = draft.startedAt;
   const otherActive = activeDay && activeDay !== day ? activeDay : null;

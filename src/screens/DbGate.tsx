@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { db, DB_NAME } from '../db/db';
-import { downloadJson, rawDumpFileName, readRawDump } from '../db/rawDump';
+import { db } from '../db/db';
+import { Loading } from '../components/Loading';
+import { RawBackupButton } from '../components/RawBackupButton';
 
 type State = { kind: 'opening' } | { kind: 'ok' } | { kind: 'error'; message: string };
 
@@ -60,24 +61,13 @@ export function DbGate({ children }: { children: ReactNode }) {
         <b>Chiudi le altre schede dell’app.</b> Un’altra scheda tiene aperti i dati nella versione vecchia: l’aggiornamento parte appena la chiudi.
       </div>
     ) : (
-      <p className="sub">Caricamento…</p>
+      <Loading />
     );
   }
   return <>{children}</>;
 }
 
 function DbError({ message }: { message: string }) {
-  const [status, setStatus] = useState('');
-  const onDump = async () => {
-    try {
-      const dump = await readRawDump(DB_NAME);
-      downloadJson(dump, rawDumpFileName());
-      const n = Object.values(dump.stores).reduce((a, s) => a + s.length, 0);
-      setStatus(`Backup grezzo scaricato (${n} righe lette). Conservalo: serve per recuperare i dati.`);
-    } catch (e) {
-      setStatus(`Backup grezzo non riuscito: ${errorText(e)}`);
-    }
-  };
   return (
     <div className="dbgate" role="alert" data-testid="db-error">
       <h2>I dati non si aprono</h2>
@@ -86,10 +76,7 @@ function DbError({ message }: { message: string }) {
       <p>
         <b>Non disinstallare l’app.</b> Scarica il backup grezzo e conservalo.
       </p>
-      <button className="primary" onClick={onDump}>
-        Scarica backup grezzo
-      </button>
-      {status && <p data-testid="db-dump-status">{status}</p>}
+      <RawBackupButton label="Scarica backup grezzo" statusTestId="db-dump-status" />
     </div>
   );
 }

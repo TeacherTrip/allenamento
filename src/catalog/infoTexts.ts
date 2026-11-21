@@ -22,18 +22,18 @@ export interface ModelInfo {
 }
 
 /*
- * Modello 1: testi di prima della Fase 4-bis, invariati.
+ * Modello 1: testi di prima della Fase 4-bis; circuito facoltativo in A e B aggiunto il 21/11.
  * Modello 2: testi approvati dall'utente il 20/11/2026 (docs/piano-4bis.md, «Modello 2 — testi di Info»).
  * Solo testi generici: nessun dato personale.
  */
 export const MODEL_INFO: Record<TemplateId, ModelInfo> = {
   m1: {
     week: [
-      ['Lun', 'Seduta A — full body'],
+      ['Lun', 'Seduta A — full body + circuito facoltativo'],
       ['Mar', 'Camminata veloce 30-40 min'],
       ['Mer', 'Seduta C — braccia, spalle, femorali + circuito'],
       ['Gio', 'Riposo (passi quotidiani)'],
-      ['Ven', 'Seduta B — full body'],
+      ['Ven', 'Seduta B — full body + circuito facoltativo'],
       ['Sab', 'Camminata veloce 30-40 min'],
       ['Dom', 'Riposo'],
     ],
@@ -47,6 +47,10 @@ export const MODEL_INFO: Record<TemplateId, ModelInfo> = {
       },
       { b: 'Esercizi a un arto', t: ': ripetizioni e kg per lato, stesse reps con l’altro lato.' },
       { b: 'Superset', t: ' (stessa lettera, es. 2a/2b): esercizi di seguito, recupero solo dopo la coppia.' },
+      {
+        b: 'Circuito cardio',
+        t: ': in C fa parte della seduta; in A e B è facoltativo, si salta se stanco o poco recuperato. Stessa progressione in tutte le schede (Sett. 1-2, 3-4, 5-6, 7+).',
+      },
       { b: 'Gambe senza carico extra', t: ' (quando 14 kg diventa leggero): discesa in 4-5 s, pausa 2 s in basso, 1,5 reps.' },
       { b: 'Dolore articolare', t: ' (non fatica muscolare): fermati e cambia esercizio.' },
     ],

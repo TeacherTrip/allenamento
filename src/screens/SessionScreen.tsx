@@ -406,7 +406,7 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
       })}
 
       {program.circuit !== 'no' && (
-        <CircuitBox optional={program.circuit === 'optional'}>
+        <CircuitBox optional={program.circuit === 'optional'} note={program.circuitNote}>
           <ItemList items={CARDIO_EXERCISES} testId="circuit" />
           <div className="sub">Rotazione dei 4 esercizi, uno per round. Intensità: {CARDIO_INTENSITY.toLowerCase()}</div>
           <div className="seg" role="radiogroup" aria-label="Protocollo del circuito">
@@ -470,8 +470,11 @@ export function SessionScreen({ program, activeName, sessions, logs, settings, a
   );
 }
 
-/** Circuito cardio: riquadro aperto, oppure chiuso da aprire con un tocco se è facoltativo. */
-function CircuitBox({ optional, children }: { optional: boolean; children: ReactNode }) {
+/**
+ * Circuito cardio: riquadro aperto, oppure chiuso da aprire con un tocco se è facoltativo.
+ * Facoltativo con `note`: la frase compare sotto il titolo al posto di «(facoltativo)».
+ */
+function CircuitBox({ optional, note, children }: { optional: boolean; note?: string; children: ReactNode }) {
   if (!optional)
     return (
       <div className="box circuit" data-testid="circuit-box">
@@ -482,7 +485,16 @@ function CircuitBox({ optional, children }: { optional: boolean; children: React
   return (
     <details className="box circuit optional" data-testid="circuit-box">
       <summary>
-        <b>Circuito cardio senza salti (facoltativo)</b>
+        {note ? (
+          <>
+            <b>Circuito cardio senza salti</b>
+            <span className="circuit-note" data-testid="circuit-note">
+              {note}
+            </span>
+          </>
+        ) : (
+          <b>Circuito cardio senza salti (facoltativo)</b>
+        )}
       </summary>
       {children}
     </details>
